@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>日完工 - 郴江电力</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; background:#e9ecf1; }
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+
+  .phone {
+    width:390px; height:820px; background:#f4f6f9; border-radius:36px; overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.18); position:relative; display:flex; flex-direction:column;
+  }
+  .statusbar { height:44px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:14px; font-weight:600; flex-shrink:0; }
+  .statusbar .right { display:flex; align-items:center; gap:6px; font-size:12px; }
+
+  .navbar { height:48px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 12px; border-bottom:1px solid #f0f0f0; flex-shrink:0; }
+  .navbar .back { font-size:15px; color:#2b7cff; padding:8px 4px; cursor:pointer; }
+  .navbar .title { font-size:17px; font-weight:600; color:#222; }
+  .navbar .right { width:60px; text-align:right; }
+
+  /* Tab 切换 */
+  .tabs { display:flex; background:#fff; border-bottom:1px solid #f0f0f0; flex-shrink:0; }
+  .tab { flex:1; text-align:center; padding:12px 0; font-size:14px; color:#666; cursor:pointer; font-weight:500; border-bottom:2px solid transparent; }
+  .tab.on { color:#2b7cff; border-bottom-color:#2b7cff; font-weight:600; }
+
+  .body { flex:1; overflow-y:auto; background:#f4f6f9; }
+
+  /* 日期条 */
+  .date-bar { background:#fff; padding:10px 12px; display:flex; gap:8px; overflow-x:auto; border-bottom:1px solid #f0f0f0; }
+  .date-pill { flex-shrink:0; padding:8px 14px; border-radius:18px; font-size:13px; background:#f0f2f5; color:#555; cursor:pointer; text-align:center; min-width:64px; }
+  .date-pill.on { background:#2b7cff; color:#fff; font-weight:600; }
+  .date-pill .sub { font-size:10px; margin-top:2px; opacity:.8; }
+
+  /* 汇总条 */
+  .head-block { display:none; }
+  .dept-line { display:flex; align-items:center; gap:6px; font-size:12px; color:#98a2b3; }
+  .dept-line .dk { color:#98a2b3; }
+  .dept-line .dv { color:#3a3f47; font-weight:600; font-size:12.5px; }
+  .summary-bar { background:#fff; margin:10px 12px; border-radius:10px; padding:12px 14px; }
+  .summary-bar .dept-line { padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid #f2f4f7; }
+  .summary-bar .sum-row { display:flex; justify-content:space-around; }
+  .summary-bar .item { text-align:center; }
+  .summary-bar .num { font-size:18px; font-weight:700; color:#222; }
+  .summary-bar .num.blue { color:#2b7cff; }
+  .summary-bar .num.orange { color:#ea7a1c; }
+  .summary-bar .num.green { color:#16a34a; }
+  .summary-bar .lbl { font-size:11px; color:#888; margin-top:2px; white-space:nowrap; }
+
+  /* 人员行（以人为主） */
+  .person-card { background:#fff; margin:0 12px 10px; border-radius:12px; padding:12px 14px; }
+  .person-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .person-name { font-size:15px; font-weight:600; color:#222; }
+  .person-meta { font-size:11px; color:#888; margin-top:2px; }
+  .person-sum { text-align:right; flex:none; }
+  .person-sum .ps-day { font-size:12px; color:#3a3f47; font-weight:700; }
+  .person-sum .ps-day .k { font-size:11px; color:#9aa3af; font-weight:400; margin-right:3px; }
+  .person-sum .ps-ot { font-size:11px; color:#c46a00; font-weight:600; margin-top:3px; }
+  .person-sum .ps-day.over { color:#dc2626; }
+  .badge { display:inline-block; font-size:10px; padding:1px 6px; border-radius:4px; margin-right:4px; }
+  .badge-self { background:#dbeafe; color:#1d4ed8; }
+  .badge-sub { background:#fef3c7; color:#b45309; }
+
+  .proj-row { background:#f8f9fb; border-radius:8px; padding:10px; margin-bottom:8px; }
+  .proj-row-name { font-size:12px; color:#555; margin-bottom:6px; }
+  .proj-row-name b { color:#222; }
+  .day-row { display:flex; justify-content:space-between; align-items:center; gap:6px; }
+  .day-amt { font-size:13px; color:#ea7a1c; font-weight:600; white-space:nowrap; }
+  .day-btns { display:flex; gap:4px; flex-wrap:wrap; }
+  .day-btn { height:36px; min-width:40px; padding:0 6px; border-radius:8px; border:1px solid #ddd; background:#fff; font-size:11.5px; cursor:pointer; color:#333; white-space:nowrap; }
+  .day-btn.on { background:#2b7cff; color:#fff; border-color:#2b7cff; font-weight:600; }
+  .day-btn.del { color:#ef4444; border-color:#fecaca; }
+  .day-btn.ot { color:#c46a00; border-color:#f5d9b4; background:#fff8ee; padding:0 8px; }
+  .day-btn.ot.on { background:#ea7a1c; border-color:#ea7a1c; color:#fff; }
+  .ot-tag {
+    display:inline-block; margin-left:6px; padding:1px 7px; border-radius:9px;
+    background:#fef1e2; color:#c46a00; font-size:11px; font-weight:700;
+  }
+  .ot-hint { font-size:12px; color:#8a919c; line-height:1.6; margin-bottom:10px; }
+  .ot-chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .ot-chip {
+    height:38px; min-width:62px; padding:0 12px; border-radius:19px; border:1px solid #e3e7ee;
+    background:#fff; color:#444; font-size:14px; cursor:pointer;
+  }
+  .ot-chip.on { background:#ea7a1c; border-color:#ea7a1c; color:#fff; font-weight:600; }
+  .ot-input-row { margin-top:14px; display:flex; align-items:center; gap:8px; font-size:13px; color:#666; }
+  .ot-input-row input {
+    flex:1; height:40px; border:1px solid #e3e7ee; border-radius:8px; padding:0 10px;
+    font-size:14px; color:#222; outline:none;
+  }
+  .sheet-foot.ot-foot { display:flex; gap:10px; }
+  .ot-foot .btn-secondary, .ot-foot .btn-primary { height:46px; font-size:15px; border-radius:23px; }
+
+  .add-row { margin:8px 12px; padding:12px; text-align:center; font-size:14px; color:#2b7cff; border:1px dashed #c8ddff; border-radius:10px; cursor:pointer; background:#fff; }
+
+  /* 产值表 */
+  .out-card { background:#fff; margin:0 12px 10px; border-radius:12px; overflow:hidden; }
+  .out-head { padding:12px 14px; border-bottom:1px solid #f4f4f4; font-size:15px; font-weight:600; }
+  .out-row { display:flex; align-items:center; padding:10px 14px; border-bottom:1px solid #f4f4f4; font-size:13px; gap:8px; }
+  .out-row:last-child { border-bottom:none; }
+  .out-row label { font-size:11px; color:#888; width:50px; flex-shrink:0; }
+  .out-row input { flex:1; height:34px; border:1px solid #ddd; border-radius:6px; padding:0 8px; font-size:13px; min-width:0; }
+  .out-del { color:#ef4444; cursor:pointer; font-size:16px; padding:4px; }
+  .out-total { padding:10px 14px; background:#f8f9fb; font-size:13px; text-align:right; }
+  .out-total b { color:#ea7a1c; font-size:15px; }
+
+  /* 底部 */
+  .bottom-bar { flex-shrink:0; background:#fff; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid #f0f0f0; display:flex; gap:10px; }
+  .btn-primary { flex:1; height:48px; border:none; border-radius:10px; background:#2b7cff; color:#fff; font-size:16px; font-weight:600; cursor:pointer; }
+  .btn-secondary { flex:1; height:48px; border:1px solid #2b7cff; border-radius:10px; background:#fff; color:#2b7cff; font-size:16px; font-weight:600; cursor:pointer; }
+  .btn-disabled { flex:1; height:48px; border:none; border-radius:10px; background:#f0f0f0; color:#999; font-size:15px; }
+
+  /* 弹窗 */
+  .mask { position:absolute; inset:0; background:rgba(0,0,0,.45); z-index:50; display:none; align-items:flex-end; }
+  .mask.open { display:flex; }
+  .sheet { background:#fff; width:100%; max-height:80%; border-radius:16px 16px 0 0; display:flex; flex-direction:column; }
+  .sheet-head { padding:14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0f0f0; }
+  .sheet-title { font-size:16px; font-weight:600; }
+  .sheet-close { color:#888; font-size:14px; cursor:pointer; }
+  .sheet-body { flex:1; overflow-y:auto; padding:10px 14px; }
+  .sheet-foot { padding:12px 14px; border-top:1px solid #f0f0f0; }
+
+  .worker-item { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f4f4f4; }
+  .worker-item:last-child { border-bottom:none; }
+  .worker-name { font-size:15px; font-weight:500; }
+  .worker-meta { font-size:11px; color:#888; margin-top:2px; }
+  .ins-ok { background:#dcfce7; color:#16a34a; }
+  .ins-warn { background:#ffedd5; color:#ea580c; }
+  .ins-expired { background:#fecaca; color:#dc2626; }
+  .check { width:28px; height:28px; border-radius:50%; border:2px solid #ccc; display:flex; align-items:center; justify-content:center; font-size:16px; color:transparent; }
+  .check.on { background:#2b7cff; border-color:#2b7cff; color:#fff; }
+  .worker-item.disabled { opacity:.5; }
+
+  .toast { position:absolute; bottom:100px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.75); color:#fff; padding:10px 20px; border-radius:20px; font-size:14px; z-index:99; display:none; white-space:nowrap; }
+  .toast.show { display:block; }
+  .empty { padding:40px 20px; text-align:center; color:#999; font-size:14px; }
+
+  /* 内容区 tab（日点工/机械工时/完成产值/外协工时/隐蔽工程） */
+  .body-tabs { display:flex; margin:0 12px 10px; background:#fff; border-radius:10px; overflow-x:auto; }
+  .btab {
+    flex:1 0 auto; min-width:64px; text-align:center; padding:12px 6px 11px;
+    font-size:12px; color:#66707c; position:relative; cursor:pointer; white-space:nowrap;
+  }
+  .btab.on { color:#2b7cff; font-weight:700; }
+  .btab.on::after {
+    content:""; position:absolute; left:50%; transform:translateX(-50%);
+    bottom:4px; width:22px; height:2px; border-radius:2px; background:#2b7cff;
+  }
+  .tab-empty { margin:0 12px 10px; background:#fff; border-radius:10px; padding:30px 18px 32px; text-align:center; }
+  .tab-empty .te-t { font-size:15px; font-weight:600; color:#3a3f47; margin-bottom:6px; }
+  .tab-empty .te-h { font-size:12px; color:#98a2b3; line-height:1.7; }
+  .tab-empty .te-ph {
+    margin:16px auto 0; max-width:240px; padding:18px; border-radius:10px;
+    border:1px dashed #dfe4ec; color:#b3bcc9; font-size:12px;
+  }
+
+  /* 机械工时 */
+  .mach-sum-bar {
+    display:flex; justify-content:space-between; align-items:center;
+    margin:0 12px 10px; padding:10px 14px; background:#fff; border-radius:10px;
+    font-size:12px; color:#66707c;
+  }
+  .mach-sum-bar b { color:#2b7cff; font-size:14px; font-weight:700; margin:0 2px; }
+  .src-tag {
+    display:inline-block; padding:1px 7px; border-radius:9px; margin-right:6px;
+    background:#e8f1ff; color:#1d4ed8; font-size:11px; font-weight:600;
+  }
+  .src-tag.manual { background:#f1f3f7; color:#66707c; }
+  .ord-no { font-size:11px; color:#98a2b3; }
+  .plate-badge { background:#eff4ff; color:#2b7cff; }
+  .day-del {
+    width:30px; height:30px; border-radius:8px; border:1px solid #fecaca; color:#ef4444;
+    display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;
+  }
+  .mach-wait { opacity:.85; }
+  .ma-row { display:flex; align-items:center; gap:10px; padding:8px 0; }
+  .ma-row label { width:64px; flex:none; font-size:13px; color:#66707c; }
+  .ma-row select, .ma-row input {
+    flex:1; height:42px; border:1px solid #e3e7ee; border-radius:8px; padding:0 10px;
+    font-size:14px; color:#222; background:#fff; outline:none;
+  }
+  .ma-unit { font-size:13px; color:#66707c; flex:none; }
+  .pick-row {
+    margin:0 12px 8px; padding:9px; text-align:center; font-size:12px; color:#2b7cff;
+    background:#fff; border-radius:10px; cursor:pointer;
+  }
+  .mp-item {
+    display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid #f1f3f7;
+  }
+  .mp-item:last-child { border-bottom:0; }
+  .mp-main { flex:1; min-width:0; }
+  .mp-t { font-size:14px; font-weight:600; color:#222; }
+  .mp-s { font-size:12px; color:#66707c; margin-top:3px; }
+  .mp-add {
+    flex:none; padding:5px 12px; border-radius:14px; background:#e8f1ff; color:#1d4ed8;
+    font-size:12px; font-weight:600;
+  }
+  .mach-ico { display:inline-flex; width:20px; height:20px; margin-right:4px; vertical-align:-4px; color:#2b7cff; }
+  .mach-ico svg { width:20px; height:20px; fill:none; }
+  .mach-pick-card {
+    margin:0 12px 10px; padding:16px 14px 14px; background:#fff; border-radius:10px; text-align:center;
+  }
+  .mach-pick-card .mpc-t { font-size:14px; font-weight:600; color:#3a3f47; }
+  .mach-pick-card .mpc-s { margin-top:6px; font-size:12px; color:#98a2b3; line-height:1.5; }
+  .mach-pick-card .mpc-btn {
+    margin-top:14px; width:100%; height:42px; border:0; border-radius:8px; background:#2b7cff;
+    color:#fff; font-size:14px; font-weight:600;
+  }
+
+  /* 日点工：项目维度 */
+  .log-op-bar {
+    display:flex; justify-content:space-between; align-items:center;
+    margin:0 12px 10px; padding:10px 14px; background:#fff; border-radius:10px;
+    font-size:12px; color:#66707c;
+  }
+  .log-op-bar .lo-left { display:flex; align-items:center; gap:6px; }
+  .log-op-bar .lo-k { color:#98a2b3; }
+  .log-op-bar .lo-v { font-size:14px; font-weight:700; color:#3a3f47; }
+  .log-op-bar .lo-tip { color:#98a2b3; }
+  .lg-group { margin:0 12px 10px; background:#fff; border-radius:10px; overflow:hidden; }
+  .lg-head {
+    display:flex; flex-direction:column; gap:4px;
+    padding:12px 14px; background:#f7f9fc; border-bottom:1px solid #eef1f6;
+  }
+  .lg-title { font-size:14px; font-weight:700; color:#2b7cff; line-height:1.35; }
+  .lg-sum { font-size:12px; color:#66707c; }
+  .lg-sum b { color:#3a3f47; font-weight:700; margin:0 2px; }
+  .lg-row { padding:10px 14px 12px; border-bottom:1px solid #f1f3f7; }
+  .lg-row:last-of-type { border-bottom:0; }
+  .lg-row-head { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .lg-left { display:flex; align-items:center; gap:5px; min-width:0; flex-wrap:wrap; }
+  .lg-nm { font-size:14px; font-weight:700; color:#222; }
+  .lg-role { font-size:11px; color:#98a2b3; }
+  .lg-right { font-size:11px; color:#66707c; flex:none; }
+  .lg-total { font-size:13px; font-weight:700; color:#dc2626; }
+  .lg-ot { font-size:11px; font-weight:400; color:#ea580c; margin-left:4px; }
+  .lo-warn { color:#dc2626; }
+  .lg-rmk { margin-top:6px; font-size:11px; color:#888; }
+  .lg-add {
+    padding:9px; text-align:center; font-size:12px; color:#2b7cff; cursor:pointer;
+    border-top:1px dashed #e8ecf3;
+  }
+
+  /* 机械工时：项目维度需求行 */
+  .mc-need {
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:12px 14px; border-bottom:1px solid #f1f3f7;
+  }
+  .mc-need-l { display:flex; align-items:center; gap:6px; font-size:13px; color:#3a3f47; min-width:0; }
+  .mc-need-l b { font-weight:700; }
+  .mc-need-tag { font-size:11px; color:#98a2b3; background:#f4f6fa; border-radius:8px; padding:1px 6px; }
+  .mc-need-r { flex:none; display:flex; align-items:center; gap:8px; }
+  .mc-del { font-size:13px; color:#b0b8c4; cursor:pointer; padding:0 2px; }
+  .mc-del:hover { color:#ef4444; }
+  .lg-head-r { flex:none; display:flex; align-items:center; gap:8px; }
+  .lg-del { font-size:13px; color:#b0b8c4; cursor:pointer; padding:0 2px; }
+  .lg-del:hover { color:#ef4444; }
+  .mc-pick { flex:none; font-size:12px; color:#2b7cff; font-weight:600; cursor:pointer; }
+  .mc-wait { flex:none; font-size:11px; color:#ea580c; background:#fff7ed; border-radius:8px; padding:3px 8px; }
+  .mc-rental { font-size:12px; color:#66707c; }
+  .mc-hours { font-size:15px; font-weight:700; color:#e5342b; }
+  .mc-hours.empty { color:#ea580c; font-size:13px; font-weight:600; }
+  .h-red { color:#e5342b; }
+  /* 完成产值 */
+  .ov-row { display:flex; align-items:center; gap:10px; padding:11px 14px; border-bottom:1px solid #f1f3f7; }
+  .ov-l { flex:1; min-width:0; }
+  .ov-nm { font-size:13px; color:#3a3f47; line-height:1.45; word-break:break-word; }
+  .ov-sub { font-size:11px; color:#98a2b3; margin-top:2px; }
+  .ov-r { flex:none; display:flex; align-items:center; gap:8px; }
+  .ov-qty { font-size:13px; color:#3a3f47; font-weight:600; }
+  .ov-amt { font-size:15px; font-weight:700; color:#e5342b; }
+  .ov-empty { padding:14px; font-size:12px; color:#98a2b3; text-align:center; }
+  .qty-item { display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid #f1f3f7; }
+  .qty-l { flex:1; min-width:0; }
+  .qty-nm { font-size:13px; color:#3a3f47; line-height:1.45; word-break:break-word; }
+  .qty-sub { font-size:11px; color:#98a2b3; margin-top:3px; }
+  .qty-r { flex:none; width:104px; text-align:right; }
+  .qty-in {
+    width:100%; height:32px; border:1px solid #dbe1ea; border-radius:8px;
+    text-align:center; font-size:13px; color:#3a3f47; outline:none; box-sizing:border-box;
+  }
+  .qty-amt { font-size:12px; color:#e5342b; font-weight:600; margin-top:4px; }
+  .qty-hl { color:#e5342b; font-weight:700; }
+  .qty-done { color:#16a34a; font-weight:700; }
+  .qty-search-wrap { padding:10px 14px 8px; }
+  .qty-search {
+    width:100%; height:34px; border:1px solid #dbe1ea; border-radius:8px;
+    padding:0 12px; font-size:13px; outline:none; box-sizing:border-box; background:#f8fafc;
+  }
+  /* 工时步进器 */
+  .mach-step { display:flex; align-items:center; gap:0; border:1px solid #dbe1ea; border-radius:8px; overflow:hidden; background:#fff; }
+  .step-btn {
+    width:26px; height:28px; border:0; background:#f7f9fc; color:#3a3f47;
+    font-size:15px; line-height:1; cursor:pointer;
+  }
+  .step-btn:active { background:#eef2f8; }
+  .step-in {
+    width:44px; height:28px; border:0; text-align:center; font-size:13px;
+    font-weight:700; color:#3a3f47; outline:none; background:#fff;
+  }
+  .step-u { font-size:12px; color:#98a2b3; padding-right:4px; }
+  .doc-ico {
+    width:30px; height:30px; flex:none; border:1px solid #e5e7eb; border-radius:8px;
+    background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0;
+  }
+  .doc-ico:active { background:#f5f7fa; }
+  .mc-src { margin-top:6px; display:flex; align-items:center; gap:6px; }
+
+  .cam-btn {
+    width:32px; height:32px; border-radius:8px; background:#f0f7ff; color:#2b7cff;
+    display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer;
+  }
+  .cam-btn.has { background:#dcfce7; color:#16a34a; }
+  .doc-tag {
+    font-size:11px; padding:4px 10px; border-radius:10px;
+    background:#fff7ed; color:#ea580c; border:1px solid #fed7aa; cursor:pointer; font-weight:600;
+    white-space:nowrap; flex:none;
+  }
+  .doc-tag:active { background:#ffedd5; }
+  .photo-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:10px 0; }
+  .photo-ph {
+    aspect-ratio:1; background:#e9ecf1; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    font-size:24px; color:#aaa;
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span class="right">📶 🔋 100%</span></div>
+  <div class="navbar">
+    <div class="back" onclick="location.href='../site.html'">‹ 现场管理</div>
+    <div class="title">日完工</div>
+    <div class="right"></div>
+  </div>
+
+  <div class="body" id="body"></div>
+  <div class="bottom-bar" id="bottomBar"></div>
+
+  <!-- 选人弹窗 -->
+  <div class="mask" id="workerMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="workerSheetTitle">选择人员</div>
+        <div class="sheet-close" onclick="closeWorkerPicker()">关闭</div>
+      </div>
+      <div class="sheet-body" id="workerList"></div>
+      <div class="sheet-foot"><button class="btn-primary" id="workerConfirmBtn" style="width:100%;" onclick="confirmWorkerPicker()">下一步：选项目</button></div>
+    </div>
+  </div>
+
+  <!-- 选项目弹窗（给某个人挂项目用） -->
+  <div class="mask" id="projMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="projSheetTitle">选择项目</div>
+        <div class="sheet-close" onclick="closeProjPicker()">关闭</div>
+      </div>
+      <div style="padding:10px 14px;">
+        <input id="projSearch" placeholder="搜索项目名" style="width:100%;height:40px;border:1px solid #ddd;border-radius:8px;padding:0 10px;font-size:14px;" oninput="renderProjList()">
+      </div>
+      <div class="sheet-body" id="projList"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- 照片弹窗 -->
+  <div class="mask" id="photoMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="photoTitle">现场照片</div>
+        <div class="sheet-close" onclick="closePhotoPicker()">关闭</div>
+      </div>
+      <div class="sheet-body" id="photoBody"></div>
+      <div class="sheet-foot">
+        <button class="btn-primary" onclick="toast('已调起相机（演示）')">📷 拍照</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 加班时长弹窗 -->
+  <div class="mask" id="otMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="otSheetTitle">录入加班（小时）</div>
+        <div class="sheet-close" onclick="closeOt()">关闭</div>
+      </div>
+      <div class="sheet-body">
+        <div class="ot-hint" id="otHint">加班按小时录入，不折算人天；如加班 2.5 小时填 2.5。</div>
+        <div class="ot-chips" id="otChips"></div>
+        <div class="ot-input-row">
+          其他时长
+          <input type="number" id="otInput" step="0.5" min="0" max="16" placeholder="如 3.5" oninput="onOtInput()">
+          小时
+        </div>
+      </div>
+      <div class="sheet-foot ot-foot">
+        <button class="btn-secondary" onclick="clearOt()">清除加班</button>
+        <button class="btn-primary" onclick="confirmOt()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新增机械弹窗 -->
+  <div class="mask" id="machAddMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title">新增机械</div>
+        <div class="sheet-close" onclick="closeMachAdd()">关闭</div>
+      </div>
+      <div class="sheet-body">
+        <div class="ma-row"><label>项目</label><select id="maProj"></select></div>
+        <div class="ma-row"><label>机械类型</label><select id="maType"></select></div>
+        <div class="ma-row"><label>租赁公司</label><select id="maRental"></select></div>
+        <div class="ma-row"><label>车牌</label><input id="maPlate" placeholder="如 湘L-E6666（选填）"></div>
+        <div class="ma-row"><label>工时</label><input id="maHours" type="number" step="0.5" min="0" max="24" value="8" placeholder="小时"><span class="ma-unit">小时</span></div>
+      </div>
+      <div class="sheet-foot" style="display:flex;gap:10px;">
+        <button class="btn-secondary" onclick="closeMachAdd()">取消</button>
+        <button class="btn-primary" onclick="confirmMachAdd()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 选择工程量（完成产值） -->
+  <div class="mask" id="qtyMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="qtyTitle">选择工程量</div>
+        <div class="sheet-close" onclick="closeQtyPick()">关闭</div>
+      </div>
+      <div class="sheet-body" id="qtyBody"></div>
+      <div class="sheet-foot" style="display:flex;gap:10px;">
+        <button class="btn-secondary" onclick="closeQtyPick()">取消</button>
+        <button class="btn-primary" onclick="confirmQtyPick()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 从机械申请选择 -->
+  <div class="mask" id="machPickMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="machPickTitle">从机械申请选择</div>
+        <div class="sheet-close" onclick="closeMachPick()">关闭</div>
+      </div>
+      <div class="sheet-body" id="machPickBody"></div>
+    </div>
+  </div>
+
+  <!-- 汇总明细弹窗 -->
+  <div class="mask" id="summaryMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="summaryTitle">明细</div>
+        <div class="sheet-close" onclick="closeSummary()">关闭</div>
+      </div>
+      <div class="sheet-body" id="summaryBody"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== 基础数据 ==========
+const DATES = (function(){
+  const arr = [];
+  for (let i=30; i>=1; i--) {
+    const d = new Date(2026, 10, 13 - i);
+    const m = (d.getMonth()+1) + "/" + d.getDate();
+    arr.push({ m, label: i===1?"昨天":m, day:"周"+"日一二三四五六"[d.getDay()], past:true, history:true });
+  }
+  arr.push({ m:"11/13", label:"今天", day:"周五", today:true });
+  return arr;
+})();
+let showHistory = false;
+
+const WORKERS = [
+  { id:"w01", name:"黄志远", role:"现场负责人", type:"自有", price:350, insurance:"ok" },
+  { id:"w02", name:"刘建国", role:"现场负责人", type:"自有", price:350, insurance:"ok" },
+  { id:"w03", name:"唐良辉", role:"队长", type:"自有", price:280, insurance:"warn" },
+  { id:"w04", name:"张强", role:"队长", type:"外包", price:280, insurance:"warn" },
+  { id:"w05", name:"李军", role:"技工", type:"自有", price:220, insurance:"ok" },
+  { id:"w06", name:"陈伟", role:"技工", type:"自有", price:220, insurance:"ok" },
+  { id:"w07", name:"王磊", role:"技工", type:"外包", price:220, insurance:"ok" },
+  { id:"w08", name:"赵敏", role:"技工", type:"自有", price:220, insurance:"ok" },
+  { id:"w09", name:"周强", role:"副工", type:"自有", price:180, insurance:"ok" },
+  { id:"w10", name:"吴刚", role:"副工", type:"外包", price:180, insurance:"ok" },
+  { id:"w11", name:"孙杰", role:"副工", type:"外包", price:180, insurance:"ok" },
+  { id:"w12", name:"黄政", role:"副工", type:"外包", price:180, insurance:"expired" },
+];
+const SUBS = [
+  { id:"s01", type:"25吨吊车", price:1500, unit:"台班" },
+  { id:"s02", type:"挖机60型", price:1200, unit:"台班" },
+  { id:"s03", type:"货车4.2米", price:600, unit:"台班" },
+  { id:"s04", type:"高空作业车", price:1800, unit:"台班" },
+  { id:"s05", type:"水准仪", price:200, unit:"天" },
+];
+// 机械申请已安排的机械（当前日期、当前部门项目）
+const MACH_ORDERS = [
+  { id:"JX-20261113-001", projectCode:"xm1", date:"11/13", type:"挖机", plate:"湘L-E6666", rental:"顺达机械", status:"plan" },
+  { id:"JX-20261113-003", projectCode:"xm1", date:"11/13", type:"渣土车", plate:"湘L-F2222", rental:"顺达机械", status:"plan" },
+  { id:"JX-20261113-006", projectCode:"xm2", date:"11/13", type:"吊车", plate:"湘L-D8888", rental:"宏达吊装", status:"plan" },
+  { id:"JX-20261113-009", projectCode:"xm3", date:"11/13", type:"挖机", plate:"", rental:"", status:"wait" },
+];
+const MACH_TYPES = ["挖机", "炮机", "吊车", "随车吊", "渣土车", "铲车"];
+const RENTALS = ["顺达机械", "宏达吊装", "顺丰设备", "城东租赁"];
+// 日计划当天安排的机械需求（项目维度）
+const PLAN_MACH = [
+  { planId:"PM-01", projectCode:"xm1", date:"11/13", type:"挖机", qty:1 },
+  { planId:"PM-02", projectCode:"xm1", date:"11/13", type:"渣土车", qty:1 },
+  { planId:"PM-03", projectCode:"xm2", date:"11/13", type:"吊车", qty:1 },
+  { planId:"PM-04", projectCode:"xm3", date:"11/13", type:"挖机", qty:1 },
+];
+// 日计划当天安排的项目
+const PLAN_PROJ = ["xm1", "xm2", "xm3"];
+// 项目立项的工程量清单（名称 / 单位 / 合同数量 / 单价）
+const QTY_LIB = [
+  { qid:"Q1-01", projectCode:"xm1", name:"(调)新建HA-2 6间隔环网箱基础(5.7×1.6×1.5) 侧壁厚(m):0.25", unit:"座", totalQty:10, price:30000 },
+  { qid:"Q1-02", projectCode:"xm1", name:"(调)直线井砖砌 1.8×1.8×1.98 全开启", unit:"座", totalQty:10, price:23000 },
+  { qid:"Q1-03", projectCode:"xm1", name:"10kV 线路架设（含金具安装）", unit:"km", totalQty:3, price:86000 },
+  { qid:"Q2-01", projectCode:"xm2", name:"配电自动化终端安装调试", unit:"台", totalQty:12, price:9800 },
+  { qid:"Q2-02", projectCode:"xm2", name:"顶管施工（DN200）", unit:"米", totalQty:200, price:120 },
+  { qid:"Q3-01", projectCode:"xm3", name:"基础开挖及回填", unit:"方", totalQty:300, price:60 },
+  { qid:"Q3-02", projectCode:"xm3", name:"杆塔组立", unit:"基", totalQty:8, price:42000 },
+];
+const PROJECT_LIB = [
+  { code:"xm1", name:"园垄线10kV线路改造工程", manager:"李志强" },
+  { code:"xm2", name:"珠东线配电自动化改造", manager:"周国华" },
+  { code:"xm3", name:"高速杆迁瓦窑坪支线工程", manager:"陈立军" },
+  { code:"xm4", name:"嘉禾县农网巩固提升工程", manager:"刘德海" },
+  { code:"xm5", name:"苏仙区小区供配电改造工程", manager:"周国华" },
+  { code:"xm6", name:"10kV白露塘线迁改工程", manager:"陈立军" },
+  { code:"xm7", name:"园垄线10kV线路架设工程", manager:"刘德海" },
+  { code:"xm8", name:"湘南物流园屋顶分布式光伏", manager:"李志强" },
+];
+
+// ========== 日完工数据 ==========
+// workLog: [{wid, projectCode, days}]
+// subLog:  [{sid, projectCode, days}]
+// output:  [{projectCode, taskName, unit, price, qty}]
+function buildDemo() {
+  return {
+    status: "draft",
+    workLog: [
+      { wid:"w01", projectCode:"xm1", days:0.5 },
+      { wid:"w03", projectCode:"xm1", days:1 },
+      { wid:"w05", projectCode:"xm1", days:1 },
+      { wid:"w09", projectCode:"xm1", days:0.5 },
+      { wid:"w01", projectCode:"xm4", days:0.5 },  // 黄志远跑两个项目
+      { wid:"w02", projectCode:"xm2", days:1 },
+      { wid:"w04", projectCode:"xm2", days:1 },
+      { wid:"w06", projectCode:"xm2", days:1 },
+      { wid:"w10", projectCode:"xm2", days:1 },
+      { wid:"w07", projectCode:"xm3", days:1 },
+      { wid:"w11", projectCode:"xm3", days:0.5 },
+    ],
+    subLog: [
+      { sid:"s03", projectCode:"xm1", days:1 },
+      { sid:"s02", projectCode:"xm3", days:1 },
+    ],
+    machLog: [],   // 机械工时由用户从机械申请已安排结果中选择后录入
+    output: [],   // 完成产值由用户从立项工程量明细里选择并录入本次数量
+  };
+}
+let COMPLETIONS = { "11/13": buildDemo() };
+
+let currentDate = "11/13";
+let currentTab = "log"; // log(日点工) | mach(机械工时) | out | sub | hide
+const TAB_LIST = [
+  { k: "log", n: "日点工" },
+  { k: "mach", n: "机械工时" },
+  { k: "out", n: "完成产值" },
+  { k: "sub", n: "外协工时" },
+  { k: "hide", n: "隐蔽工程" }
+];
+function tabsHtml() {
+  return `<div class="body-tabs">${TAB_LIST.map(t =>
+    `<div class="btab ${currentTab === t.k ? "on" : ""}" onclick="switchTab('${t.k}')">${t.n}</div>`
+  ).join("")}</div>`;
+}
+function renderEmptyTab(name, hint) {
+  return `<div class="tab-empty">
+    <div class="te-t">${name}</div>
+    <div class="te-h">${hint}</div>
+    <div class="te-ph">该 Tab 内容待补充<br>先确认 tab 与占位样式</div>
+  </div>`;
+}
+
+// ========== 工具 ==========
+function workerById(id){ return WORKERS.find(w=>w.id===id); }
+function subById(id){ return SUBS.find(s=>s.id===id); }
+function projById(c){ return PROJECT_LIB.find(p=>p.code===c); }
+
+function calcTotals(data) {
+  let labor=0, laborDays=0, sub=0, headSet=new Set();
+  data.workLog.forEach(w => {
+    if (w.days>0) { laborDays += w.days; headSet.add(w.wid); }
+  });
+  data.subLog.forEach(s => {
+    const sb = subById(s.sid);
+    if (sb && s.days>0) sub += sb.price*s.days;
+  });
+  let output=0;
+  data.output.forEach(o => output += (o.price||0)*(o.qty||0));
+  return { labor, laborDays, sub, head:headSet.size, output };
+}
+
+// ========== 渲染 ==========
+function statsHtml(d) {
+  return `<div class="summary-bar">
+    <div class="dept-line"><span class="dk">当前部门：</span><span class="dv">郴州公司/项目一部</span></div>
+    <div class="sum-row">
+      <div class="item"><div class="num blue">${d.head}</div><div class="lbl">上场人数</div></div>
+      <div class="item" style="cursor:pointer;" onclick="openSummary('labor')"><div class="num orange">${d.laborDays}</div><div class="lbl">人天 ›</div></div>
+      <div class="item" style="cursor:pointer;" onclick="openSummary('sub')"><div class="num orange">¥${d.sub.toFixed(0)}</div><div class="lbl">外协费 ›</div></div>
+      <div class="item"><div class="num green">¥${d.output.toFixed(0)}</div><div class="lbl">完成产值</div></div>
+    </div>
+  </div>`;
+}
+function render() {
+  const body = document.getElementById("body");
+  const data = COMPLETIONS[currentDate];
+  let html = "";
+
+  // 日期条
+  html += `<div class="date-bar">`;
+  if (!showHistory) {
+    html += `<div class="date-pill" onclick="toggleHistory()" style="background:#f0f2f5;color:#666;"><span style="font-size:16px;">«</span><div class="sub">历史</div></div>`;
+    const today = DATES.find(d=>d.today);
+    html += `<div class="date-pill on" onclick="selectDate('${today.m}')">${today.label}<div class="sub">${today.m} ${today.day}</div></div>`;
+  } else {
+    html += `<div class="date-pill" onclick="toggleHistory()" style="background:#2b7cff;color:#fff;"><span style="font-size:16px;">»</span><div class="sub">今天</div></div>`;
+    DATES.filter(d=>d.history).forEach(d => {
+      html += `<div class="date-pill ${d.m===currentDate?'on':''}" onclick="selectDate('${d.m}')">${d.label||d.m}<div class="sub">${d.day}</div></div>`;
+    });
+  }
+  html += `</div>`;
+
+  if (!data) {
+    html += tabsHtml();
+    if (currentTab === "log") {
+      html += `<div class="tab-empty" style="padding:26px 18px 28px;">
+        <div class="te-h" style="margin-bottom:16px;">这一天还没有记工</div>
+        <button class="btn-primary" style="width:84%;margin:0 auto;display:block;" onclick="startEmpty('worker')">+ 加工人记工</button>
+      </div>`;
+    } else if (currentTab === "mach") {
+      html += `<div class="tab-empty" style="padding:26px 18px 28px;">
+        <div class="te-h" style="margin-bottom:16px;">这一天还没有机械台班</div>
+        <button class="btn-primary" style="width:84%;margin:0 auto;display:block;" onclick="startEmpty('sub')">+ 加机械记工</button>
+      </div>`;
+    } else {
+      html += renderEmptyTab(TAB_LIST.find(x => x.k === currentTab).n, "本 Tab 样式待定，先确认结构");
+    }
+    body.innerHTML = html;
+    renderBottomBar(null);
+    return;
+  }
+
+  const t = calcTotals(data);
+  html += statsHtml(t);
+
+  // 今日现场照片 + 整体备注（各 Tab 共享）
+  html += `<div style="margin:0 12px 10px;background:#fff;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-size:14px;font-weight:600;color:#222;">今日现场照片</div>
+      <div style="font-size:11px;color:#888;margin-top:2px;">整体拍一张，不需要每个人单独拍</div>
+    </div>
+    <span class="doc-tag" style="background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;" onclick="openPhoto('今日现场整体照片')">上传照片</span>
+  </div>`;
+  html += `<div style="margin:0 12px 10px;background:#fff;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:13px;font-weight:600;color:#222;margin-bottom:6px;">整体备注</div>
+    <textarea id="globalRemark" placeholder="如：今日停电配合、天气情况、特殊说明..." style="width:100%;min-height:60px;border:1px solid #e5e7eb;border-radius:8px;padding:8px;font-size:13px;resize:none;" onchange="setGlobalRemark(this.value)">${data.remark||''}</textarea>
+  </div>`;
+
+  // 分开工种的 Tab
+  html += tabsHtml();
+  if (currentTab === "log") {
+    html += renderLogTab(data);
+  } else if (currentTab === "mach") {
+    html += renderMachTab(data);
+  } else if (currentTab === "out") {
+    html += renderOutTab(data);
+  } else if (currentTab === "sub") {
+    html += renderEmptyTab("外协工时", "按外协队伍/人数与工时录入，本 Tab 样式待定");
+  } else {
+    html += renderEmptyTab("隐蔽工程", "按隐蔽部位、验收照片与工程量录入，本 Tab 样式待定");
+  }
+
+  body.innerHTML = html;
+  renderBottomBar(data);
+}
+
+// Tab1：日点工（项目维度：项目下点工，项目小计人工）
+function renderLogTab(data) {
+  let html = "";
+  const st = data.status;
+  const dis = st !== "draft";
+
+  // 点工人身份（负责人 / 队长）
+  html += `<div class="log-op-bar">
+    <div class="lo-left"><span class="lo-k">点工人</span><span class="lo-v">黄志远</span><span class="badge badge-self">现场负责人</span></div>
+    <span class="lo-tip">单人当日 ≤1 天</span>
+  </div>`;
+
+  // 按项目分组
+  const projMap = {};
+  const order = [];
+  data.workLog.forEach((w, idx) => {
+    if (!projMap[w.projectCode]) { projMap[w.projectCode] = []; order.push(w.projectCode); }
+    projMap[w.projectCode].push({ logIdx: idx, ...w });
+  });
+
+  // 每人当日合计（跨项目）
+  const pTotal = {}, pOt = {};
+  data.workLog.forEach(w => {
+    pTotal[w.wid] = (pTotal[w.wid] || 0) + (w.days || 0);
+    pOt[w.wid] = (pOt[w.wid] || 0) + (w.ot || 0);
+  });
+
+  order.forEach(code => {
+    const p = projById(code);
+    const rows = projMap[code];
+    let sDays = 0, sMoney = 0;
+    rows.forEach(r => {
+      sDays += (r.days || 0);
+      const wk = workerById(r.wid);
+      if (wk) sMoney += (wk.price || 0) * (r.days || 0);
+    });
+
+    html += `<div class="lg-group">
+      <div class="lg-head">
+        <div class="lg-title">${p ? p.name : "未关联项目"}</div>
+        <div class="lg-sum"><b>${rows.length}</b> 人 · <b>${trimNum(sDays)}</b> 人天</div>
+      </div>`;
+
+    rows.forEach(r => {
+      const w = workerById(r.wid);
+      if (!w) return;
+      let insBadge = "";
+      if (w.insurance === "ok") insBadge = `<span class="badge ins-ok">保险有效</span>`;
+      else if (w.insurance === "warn") insBadge = `<span class="badge ins-warn">7天到期</span>`;
+      else insBadge = `<span class="badge ins-expired">保险过期</span>`;
+      const over = pTotal[r.wid] > 1.001;
+
+      html += `<div class="lg-row">
+        <div class="lg-row-head">
+          <div class="lg-left">
+            <span class="lg-nm">${w.name}</span>
+            <span class="badge badge-${w.type === "自有" ? "self" : "sub"}">${w.type}</span>
+            ${insBadge}
+            <span class="lg-role">${w.role}</span>
+          </div>
+          <div class="lg-right"><span class="lg-total">今日合计 ${trimNum(pTotal[r.wid])} 天${over ? " ⚠" : ""}</span>${pOt[r.wid] ? `<span class="lg-ot">· 加班 ${trimNum(pOt[r.wid])}h</span>` : ""}</div>
+        </div>
+        <div class="day-row">
+          <div class="day-btns">
+            <button class="day-btn ${r.days === 0.5 ? "on" : ""}" onclick="setLogDays(${r.logIdx},0.5)" ${dis ? "disabled" : ""}>0.5</button>
+            <button class="day-btn ${r.days === 1 ? "on" : ""}" onclick="setLogDays(${r.logIdx},1)" ${dis ? "disabled" : ""}>1</button>
+            <button class="day-btn" onclick="customLogDays(${r.logIdx})" ${dis ? "disabled" : ""}>自定义</button>
+            <button class="day-btn ot ${r.ot ? "on" : ""}" onclick="openOt(${r.logIdx})" ${dis ? "disabled" : ""}>${r.ot ? `加班 ${r.ot}h` : "+ 加班"}</button>
+            <span class="doc-tag" style="background:#f3f4f6;color:#666;border-color:#e5e7eb;" onclick="editRemark('worklog',${r.logIdx})">${r.remark ? "📝" : "备注"}</span>
+            <button class="day-btn del" onclick="delLogRow(${r.logIdx})" ${dis ? "disabled" : ""}>✕</button>
+          </div>
+        </div>
+        ${r.remark ? `<div class="lg-rmk">📝 ${r.remark}</div>` : ""}
+      </div>`;
+    });
+
+    if (!dis) {
+      html += `<div class="lg-add" onclick="openWorkerPickerFor('${code}')">+ 本项目加工人</div>`;
+    }
+    html += `</div>`;
+  });
+
+  if (!order.length) {
+    html += `<div class="tab-empty" style="padding:26px 18px;">
+      <div class="te-h">这一天还没有点工</div>
+    </div>`;
+  }
+  if (!dis) {
+    html += `<div class="add-row" onclick="startEmpty('worker')">+ 加工人</div>`;
+  }
+  return html;
+}
+
+// Tab2：机械工时（来源：机械申请已安排的机械 + 手动新增，用户录工时）
+// 机械类型图标
+const MACH_ICONS = {
+  "挖机": '<svg viewBox="0 0 24 24"><rect x="2" y="17" width="12" height="3.5" rx="1.7" stroke="currentColor" stroke-width="1.5"/><rect x="4.5" y="10" width="5.5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M10 12l6-5" stroke="currentColor" stroke-width="1.7"/><path d="M16 7l2.5 3-2 3.5" stroke="currentColor" stroke-width="1.6"/></svg>',
+  "炮机": '<svg viewBox="0 0 24 24"><rect x="3" y="13" width="8" height="6" rx="1.2" stroke="currentColor" stroke-width="1.5"/><path d="M13 13v-7" stroke="currentColor" stroke-width="1.9"/><rect x="11" y="3" width="5" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><circle cx="5" cy="20.5" r="1.6" stroke="currentColor" stroke-width="1.4"/><circle cx="9.5" cy="20.5" r="1.6" stroke="currentColor" stroke-width="1.4"/></svg>',
+  "吊车": '<svg viewBox="0 0 24 24"><rect x="2.5" y="18.5" width="9" height="2.6" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 18.5V4" stroke="currentColor" stroke-width="1.8"/><path d="M6.5 4h10.5" stroke="currentColor" stroke-width="1.6"/><path d="M17 4v6" stroke="currentColor" stroke-width="1.3"/><path d="M15.6 12.4a1.7 1.7 0 013 0" stroke="currentColor" stroke-width="1.4"/></svg>',
+  "随车吊": '<svg viewBox="0 0 24 24"><rect x="2" y="13" width="10" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><path d="M12 13l6-5" stroke="currentColor" stroke-width="1.7"/><path d="M18 8v5" stroke="currentColor" stroke-width="1.2"/><circle cx="4.6" cy="20" r="1.5" stroke="currentColor" stroke-width="1.3"/><circle cx="9.4" cy="20" r="1.5" stroke="currentColor" stroke-width="1.3"/></svg>',
+  "渣土车": '<svg viewBox="0 0 24 24"><rect x="2" y="11.5" width="5" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M7 11.5h12l-1.6 6H7z" stroke="currentColor" stroke-width="1.5"/><circle cx="5.5" cy="19.6" r="1.7" stroke="currentColor" stroke-width="1.4"/><circle cx="14.5" cy="19.6" r="1.7" stroke="currentColor" stroke-width="1.4"/></svg>',
+  "铲车": '<svg viewBox="0 0 24 24"><rect x="8" y="11" width="7" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><path d="M8 13.5L3 16.5" stroke="currentColor" stroke-width="1.7"/><path d="M2 16.2l2.6 2.6 1.8-2.4" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="19" r="1.6" stroke="currentColor" stroke-width="1.4"/><circle cx="14" cy="19" r="1.6" stroke="currentColor" stroke-width="1.4"/></svg>'
+};
+function machIcon(type) {
+  const g = MACH_ICONS[type] || MACH_ICONS["挖机"];
+  return `<span class="mach-ico">${g}</span>`;
+}
+function renderMachTab(data) {
+  let html = "";
+  const dis = data.status !== "draft";
+  if (!data.machLog) data.machLog = [];
+  if (!data.machSkip) data.machSkip = [];
+  const list = data.machLog;
+  const plans = PLAN_MACH.filter(pl => pl.date === currentDate && !data.machSkip.includes(pl.planId));
+  const totalH = list.reduce((s, m) => s + (m.hours || 0), 0);
+
+  // 项目集合：日计划需求 + 已录入
+  const codes = [];
+  plans.forEach(pl => { if (!codes.includes(pl.projectCode)) codes.push(pl.projectCode); });
+  list.forEach(m => { if (!codes.includes(m.projectCode)) codes.push(m.projectCode); });
+
+  if (!codes.length) {
+    html += `<div class="mach-pick-card">
+      <div class="mpc-t">今天日计划没有安排机械</div>
+      <div class="mpc-s">可手动新增机械，或回日计划先提机械需求</div>
+      <button class="mpc-btn" onclick="openMachAdd()" ${dis ? "disabled" : ""}>+ 手动加机械</button>
+    </div>`;
+    if (!dis) html += `<div class="add-row" onclick="openMachAdd()">+ 加机械</div>`;
+    return html;
+  }
+
+  codes.forEach(code => {
+    const p = projById(code);
+    const projPlans = plans.filter(pl => pl.projectCode === code);
+    const projLogs = list.filter(m => m.projectCode === code);
+    const looseLogs = projLogs.filter(m => !m.planId);
+    const sH = projLogs.reduce((s, m) => s + (m.hours || 0), 0);
+
+    html += `<div class="lg-group">
+      <div class="lg-head">
+        <div class="lg-title">${p ? p.name : "未关联项目"}</div>
+        <div class="lg-head-r">
+          <div class="lg-sum">日计划 <b>${projPlans.length}</b> 台 · 已录 <b>${projLogs.length}</b> 台 · 工时 <b class="h-red">${trimNum(sH)}</b> h</div>
+          <span class="lg-del" onclick="delMachProj('${code}')" ${dis ? "" : ""}>✕</span>
+        </div>
+      </div>`;
+
+    // 日计划安排的机械：逐台让用户选择具体机械并录工时
+    projPlans.forEach(pl => {
+      const bIdx = list.findIndex(m => m.planId === pl.planId);
+      const bound = bIdx >= 0 ? list[bIdx] : null;
+      const waitOrd = MACH_ORDERS.find(o => o.date === currentDate && o.status === "wait" && o.type === pl.type && o.projectCode === code);
+      if (bound) {
+        html += machRow(bound, bIdx, dis, "日计划安排");
+      } else {
+        html += `<div class="mc-need">
+          <div class="mc-need-l">${machIcon(pl.type)}<b>${pl.type}</b>${pl.qty > 1 ? ` ×${pl.qty}` : ""}</div>
+          <div class="mc-need-r">
+            ${waitOrd
+              ? `<span class="mc-wait">待机械专员安排</span>`
+              : `<span class="mc-pick" onclick="openMachPickFor('${pl.planId}')">选择机械 ›</span>`}
+            ${dis ? "" : `<span class="mc-del" onclick="skipMachPlan('${pl.planId}')">✕</span>`}
+          </div>
+        </div>`;
+      }
+    });
+
+    // 手动新增 / 游离机械
+    looseLogs.forEach(m => {
+      const idx = list.indexOf(m);
+      html += machRow(m, idx, dis, m.from === "manual" ? "手动新增" : "机械申请");
+    });
+
+    if (!dis) {
+      html += `<div class="lg-add" onclick="openMachAdd('${code}')">+ 本项目加机械</div>`;
+    }
+    html += `</div>`;
+  });
+
+  if (!dis) {
+    html += `<div class="add-row" onclick="openMachAdd()">+ 加机械</div>`;
+  }
+  return html;
+}
+
+// 整块删除：该项目今天全部机械（日计划需求 + 已录机械）
+function delMachProj(code) {
+  const data = COMPLETIONS[currentDate];
+  if (!data.machSkip) data.machSkip = [];
+  if (!confirm("删除该项目今天的全部机械？")) return;
+  PLAN_MACH.filter(pl => pl.projectCode === code && pl.date === currentDate).forEach(pl => {
+    if (!data.machSkip.includes(pl.planId)) data.machSkip.push(pl.planId);
+  });
+  data.machLog = data.machLog.filter(m => m.projectCode !== code);
+  render();
+  toast("已删除该项目机械");
+}
+// 单条删除：这条日计划机械今天不录
+function skipMachPlan(planId) {
+  const data = COMPLETIONS[currentDate];
+  if (!data.machSkip) data.machSkip = [];
+  if (!data.machSkip.includes(planId)) data.machSkip.push(planId);
+  render();
+  toast("已删除该条机械");
+}
+
+// 一台已录工时的机械行
+function machRow(m, idx, dis, tagText) {
+  return `<div class="lg-row">
+    <div class="lg-row-head">
+      <div class="lg-left">
+        <span class="lg-nm">${machIcon(m.type)}${m.type}</span>
+        ${m.plate ? `<span class="badge plate-badge">${m.plate}</span>` : ""}
+        <span class="mc-rental">${m.rental || "租赁公司待定"}</span>
+      </div>
+      <div class="lg-right"><span class="mc-hours ${m.hours ? "" : "empty"}">${m.hours ? trimNum(m.hours) + " h" : "待录工时"}</span></div>
+    </div>
+    <div class="day-row">
+      <div class="day-btns">
+        <div class="mach-step">
+          <button class="step-btn" onclick="machStep(${idx},-0.5)" ${dis ? "disabled" : ""}>−</button>
+          <input class="step-in" type="text" inputmode="decimal" value="${m.hours ? trimNum(m.hours) : 1}" onchange="setMachHInput(${idx}, this.value)" ${dis ? "disabled" : ""}>
+          <span class="step-u">h</span>
+          <button class="step-btn" onclick="machStep(${idx},0.5)" ${dis ? "disabled" : ""}>+</button>
+        </div>
+        <button class="doc-ico" onclick="openPhoto('${m.type} ${m.plate} 机械台班单')" ${dis ? "disabled" : ""} title="上传单据">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#8b93a1" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 12V9a2 2 0 0 0-2-2h-1.6a1 1 0 0 1-.8-.4l-.7-1A1 1 0 0 0 14 5H10a1 1 0 0 0-.8.4l-.7 1A1 1 0 0 1 7.7 7H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h6"/>
+            <circle cx="13" cy="12.5" r="3"/>
+            <path d="M19.5 15.5l.8 1.7 1.7.8-1.7.8-.8 1.7-.8-1.7-1.7-.8 1.7-.8z"/>
+          </svg>
+        </button>
+        <button class="day-btn del" onclick="delMach(${idx})" ${dis ? "disabled" : ""}>✕</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function setMachHours(idx, h) {
+  COMPLETIONS[currentDate].machLog[idx].hours = h;
+  render();
+}
+// 工时步进：默认 1 小时，± 0.5 小时
+function machStep(idx, d) {
+  const m = COMPLETIONS[currentDate].machLog[idx];
+  if (!m) return;
+  const cur = typeof m.hours === "number" && m.hours > 0 ? m.hours : 1;
+  m.hours = Math.min(24, Math.max(0, Math.round((cur + d) * 2) / 2));
+  render();
+}
+function setMachHInput(idx, val) {
+  const m = COMPLETIONS[currentDate].machLog[idx];
+  if (!m) return;
+  const v = parseFloat(val);
+  if (isNaN(v) || v < 0 || v > 24) { toast("工时请填 0–24 小时"); render(); return; }
+  m.hours = Math.round(v * 100) / 100;
+  render();
+}
+function customMachHours(idx) {
+  const cur = COMPLETIONS[currentDate].machLog[idx].hours;
+  const v = prompt("输入工时（小时，如 6.5）：", cur);
+  if (v === null) return;
+  const n = parseFloat(v);
+  if (isNaN(n) || n < 0 || n > 24) { toast("请输入 0–24 之间的小时数"); return; }
+  COMPLETIONS[currentDate].machLog[idx].hours = Math.round(n * 2) / 2;
+  render();
+}
+function delMach(idx) {
+  const data = COMPLETIONS[currentDate];
+  if (data.status !== "draft") return toast("已提交的完工不能删除机械");
+  const m = data.machLog[idx];
+  if (!m) return;
+  if (!confirm(`删除「${m.type}${m.plate ? " " + m.plate : ""}」这条机械工时？`)) return;
+  data.machLog.splice(idx, 1);
+  render();
+  toast("已删除");
+}
+
+// 从机械申请已安排结果中选择
+function openMachPick() {
+  const data = COMPLETIONS[currentDate];
+  const avail = MACH_ORDERS.filter(o => o.date === currentDate && o.status === "plan" && !data.machLog.find(m => m.orderId === o.id));
+  const body = document.getElementById("machPickBody");
+  if (!avail.length) {
+    body.innerHTML = `<div style="padding:24px 16px;text-align:center;color:#98a2b3;font-size:13px;">当前日期已安排的机械已全部带出</div>`;
+  } else {
+    body.innerHTML = avail.map(o => {
+      const p = projById(o.projectCode);
+      return `<div class="mp-item" onclick="pickMachOrder('${o.id}')">
+        <div class="mp-main">
+          <div class="mp-t">${machIcon(o.type)}${o.type} <span class="badge plate-badge">${o.plate}</span></div>
+          <div class="mp-s">${o.rental} · ${p ? p.name : "未关联项目"}</div>
+        </div>
+        <span class="mp-add">选择</span>
+      </div>`;
+    }).join("");
+  }
+  document.getElementById("machPickMask").classList.add("open");
+}
+function closeMachPick() {
+  document.getElementById("machPickMask").classList.remove("open");
+}
+function pickMachOrder(id) {
+  const data = COMPLETIONS[currentDate];
+  const o = MACH_ORDERS.find(x => x.id === id);
+  if (!o) return;
+  if (data.machLog.find(m => m.orderId === o.id)) { toast("这台机械已在列表里"); return; }
+  data.machLog.push({ orderId:o.id, projectCode:o.projectCode, type:o.type, plate:o.plate, rental:o.rental, hours:0, from:"plan" });
+  closeMachPick();
+  render();
+  toast("已加入，请录入工时");
+}
+
+// 日计划需求行：选择该类型已安排的机械
+let pickPlanId = null;
+function openMachPickFor(planId) {
+  pickPlanId = planId;
+  const pl = PLAN_MACH.find(x => x.planId === planId);
+  if (!pl) return;
+  const data = COMPLETIONS[currentDate];
+  const used = data.machLog.map(m => m.orderId).filter(Boolean);
+  const avail = MACH_ORDERS.filter(o => o.date === currentDate && o.status === "plan" && o.type === pl.type && o.projectCode === pl.projectCode && !used.includes(o.id));
+  const body = document.getElementById("machPickBody");
+  document.getElementById("machPickTitle").textContent = `选择机械 · ${pl.type}`;
+  if (!avail.length) {
+    body.innerHTML = `<div style="padding:24px 16px;text-align:center;color:#98a2b3;font-size:13px;line-height:1.6;">机械申请里暂无该类型已安排的机械<br>可点「+ 本项目加机械」手动录入</div>`;
+  } else {
+    body.innerHTML = avail.map(o => {
+      const p = projById(o.projectCode);
+      return `<div class="mp-item" onclick="pickMachFor('${o.id}')">
+        <div class="mp-main">
+          <div class="mp-t">${machIcon(o.type)}${o.type} <span class="badge plate-badge">${o.plate}</span></div>
+          <div class="mp-s">${o.rental} · ${p ? p.name : "未关联项目"}</div>
+        </div>
+        <span class="mp-add">选择</span>
+      </div>`;
+    }).join("");
+  }
+  document.getElementById("machPickMask").classList.add("open");
+}
+function pickMachFor(orderId) {
+  const data = COMPLETIONS[currentDate];
+  const o = MACH_ORDERS.find(x => x.id === orderId);
+  const pl = PLAN_MACH.find(x => x.planId === pickPlanId);
+  if (!o || !pl) return;
+  if (data.machLog.find(m => m.orderId === o.id)) { toast("这台机械已被选走"); return; }
+  data.machLog.push({
+    orderId:o.id, planId:pl.planId, projectCode:pl.projectCode,
+    type:o.type, plate:o.plate, rental:o.rental, hours:1, from:"plan"
+  });
+  pickPlanId = null;
+  closeMachPick();
+  render();
+  toast("已选择机械，请录入工时");
+}
+
+// ====== 新增机械 ======
+function openMachAdd(code) {
+  const ps = document.getElementById("maProj");
+  ps.innerHTML = PROJECT_LIB.map(p => `<option value="${p.code}">${p.name}</option>`).join("");
+  if (code) ps.value = code;
+  const ts = document.getElementById("maType");
+  ts.innerHTML = MACH_TYPES.map(t => `<option>${t}</option>`).join("");
+  const rs = document.getElementById("maRental");
+  rs.innerHTML = RENTALS.map(r => `<option>${r}</option>`).join("");
+  document.getElementById("maPlate").value = "";
+  document.getElementById("maHours").value = "1";
+  document.getElementById("machAddMask").classList.add("open");
+}
+function closeMachAdd() {
+  document.getElementById("machAddMask").classList.remove("open");
+}
+function confirmMachAdd() {
+  const data = COMPLETIONS[currentDate];
+  const projectCode = document.getElementById("maProj").value;
+  const type = document.getElementById("maType").value;
+  const rental = document.getElementById("maRental").value;
+  const plate = (document.getElementById("maPlate").value || "").trim();
+  const hRaw = parseFloat(document.getElementById("maHours").value);
+  if (isNaN(hRaw) || hRaw < 0 || hRaw > 24) return toast("工时请填 0–24 小时");
+  if (!data.machLog) data.machLog = [];
+  data.machLog.push({
+    projectCode, type, rental, plate,
+    hours: Math.round(hRaw * 2) / 2, from: "manual"
+  });
+  closeMachAdd();
+  render();
+  toast("已新增机械，可继续录工时");
+}
+
+// Tab3：完成产值（项目 → 立项工程量明细 → 本次完成数量 × 单价）
+function money(n) {
+  const v = Math.round((n || 0) * 100) / 100;
+  return v.toLocaleString("zh-CN", { maximumFractionDigits: 2 });
+}
+function renderOutTab(data) {
+  let html = "";
+  const dis = data.status !== "draft";
+  if (!data.output) data.output = [];
+  const list = data.output;
+  const codes = [];
+  PLAN_PROJ.forEach(c => { if (!codes.includes(c)) codes.push(c); });
+  list.forEach(o => { if (!codes.includes(o.projectCode)) codes.push(o.projectCode); });
+
+  codes.forEach(code => {
+    const p = projById(code);
+    const rows = list.filter(o => o.projectCode === code);
+    const tot = rows.reduce((s, o) => s + (o.price || 0) * (o.qty || 0), 0);
+
+    html += `<div class="lg-group">
+      <div class="lg-head">
+        <div class="lg-title">${p ? p.name : code}</div>
+        <div class="lg-head-r">
+          <div class="lg-sum">今日产值 <b class="h-red">¥${money(tot)}</b></div>
+          ${dis ? "" : `<span class="lg-del" onclick="delOutProj('${code}')">✕</span>`}
+        </div>
+      </div>`;
+
+    if (!rows.length) {
+      html += `<div class="ov-empty">今天还没录入产值，点下面「选择工程量」补录</div>`;
+    }
+    rows.forEach(o => {
+      const idx = list.indexOf(o);
+      const amt = (o.price || 0) * (o.qty || 0);
+      html += `<div class="ov-row">
+        <div class="ov-l">
+          <div class="ov-nm">${o.name || o.taskName || "未命名工程量"}</div>
+          <div class="ov-sub">${o.unit || ""} · 单价 ¥${money(o.price)}</div>
+        </div>
+        <div class="ov-r">
+          <span class="ov-qty">${trimNum(o.qty)}</span>
+          <span class="ov-amt">¥${money(amt)}</span>
+          ${dis ? "" : `<span class="mc-del" onclick="delOut(${idx})">✕</span>`}
+        </div>
+      </div>`;
+    });
+
+    if (!dis) {
+      html += `<div class="lg-add" onclick="openQtyPick('${code}')">+ 选择工程量补录产值</div>`;
+    }
+    html += `</div>`;
+  });
+
+  if (!dis) html += `<div class="add-row" onclick="openProjPickerForOut()">+ 新增项目产值</div>`;
+  return html;
+}
+
+// 选择工程量弹层
+let qtyDraft = {}, qtyProj = null;
+function openQtyPick(code) {
+  qtyProj = code;
+  qtyDraft = {};
+  const p = projById(code);
+  document.getElementById("qtyTitle").textContent = "选择工程量 · " + (p ? p.name : "");
+  const lib = QTY_LIB.filter(q => q.projectCode === code);
+  const body = document.getElementById("qtyBody");
+  if (!lib.length) {
+    body.innerHTML = `<div class="ov-empty" style="padding:28px 16px;text-align:center;line-height:1.6;">该项目还没有立项工程量清单<br>请先在项目立项里录入工程量明细</div>`;
+  } else {
+    const done = COMPLETIONS[currentDate].output || [];
+    body.innerHTML = `<div class="qty-search-wrap"><input class="qty-search" id="qtySearch" placeholder="搜索工程量名称" oninput="filterQtyList()"></div>` + lib.map(q => {
+      const doneAmt = done.filter(o => o.projectCode === code && o.qid === q.qid)
+                         .reduce((s, o) => s + (o.price || 0) * (o.qty || 0), 0);
+      return `<div class="qty-item" data-nm="${q.name}">
+        <div class="qty-l">
+          <div class="qty-nm">${q.name}</div>
+          <div class="qty-sub">${q.unit} · 合同量 <b class="qty-hl">${trimNum(q.totalQty)}</b> · 单价 <b class="qty-hl">¥${money(q.price)}</b></div>
+          <div class="qty-sub">金额 <b class="qty-hl">¥${money(q.totalQty * q.price)}</b> · 已完成 <b class="qty-done">¥${money(doneAmt)}</b></div>
+        </div>
+        <div class="qty-r">
+          <input class="qty-in" type="text" inputmode="decimal" placeholder="本次数量" oninput="qtyCalc('${q.qid}', this.value)">
+          <div class="qty-amt" id="qamt_${q.qid}">¥0</div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+  document.getElementById("qtyMask").classList.add("open");
+}
+function filterQtyList() {
+  const el = document.getElementById("qtySearch");
+  const kw = (el ? el.value : "").trim();
+  document.querySelectorAll("#qtyBody .qty-item").forEach(item => {
+    const nm = item.getAttribute("data-nm") || "";
+    item.style.display = (!kw || nm.includes(kw)) ? "" : "none";
+  });
+}
+function qtyCalc(qid, val) {
+  const q = QTY_LIB.find(x => x.qid === qid);
+  if (!q) return;
+  const v = parseFloat(val);
+  const el = document.getElementById("qamt_" + qid);
+  if (isNaN(v) || v <= 0) {
+    delete qtyDraft[qid];
+    if (el) el.textContent = "¥0";
+    return;
+  }
+  qtyDraft[qid] = v;
+  if (el) el.textContent = "¥" + money(v * q.price);
+}
+function closeQtyPick() {
+  document.getElementById("qtyMask").classList.remove("open");
+  qtyDraft = {};
+  qtyProj = null;
+}
+function confirmQtyPick() {
+  const data = COMPLETIONS[currentDate];
+  if (!data.output) data.output = [];
+  const ids = Object.keys(qtyDraft);
+  if (!ids.length) { toast("请先填写本次完成数量"); return; }
+  ids.forEach(qid => {
+    const q = QTY_LIB.find(x => x.qid === qid);
+    if (!q) return;
+    const ex = data.output.find(o => o.projectCode === qtyProj && o.qid === qid);
+    if (ex) ex.qty = Math.round((ex.qty + qtyDraft[qid]) * 1000) / 1000;
+    else data.output.push({ projectCode: qtyProj, qid, name: q.name, unit: q.unit, price: q.price, qty: qtyDraft[qid] });
+  });
+  closeQtyPick();
+  render();
+  toast("已录入本次产值");
+}
+function delOut(idx) {
+  const data = COMPLETIONS[currentDate];
+  const o = data.output[idx];
+  if (!o) return;
+  if (!confirm(`删除「${o.name || o.taskName}」这条产值？`)) return;
+  data.output.splice(idx, 1);
+  render();
+  toast("已删除");
+}
+function delOutProj(code) {
+  const data = COMPLETIONS[currentDate];
+  if (!confirm("删除该项目今天的产值记录？")) return;
+  data.output = data.output.filter(o => o.projectCode !== code);
+  render();
+  toast("已删除该项目产值");
+}
+
+// ========== 操作 ==========
+function switchTab(t) {
+  currentTab = t;
+  render();
+  document.getElementById("body").scrollTop = 0;
+}
+function toggleHistory(){ showHistory=!showHistory; render(); }
+function selectDate(d){ currentDate=d; render(); }
+
+// ========== 工时与人工 ==========
+function trimNum(n) { return String(Math.round((n || 0) * 100) / 100); }
+function applyLogDays(idx, days) {
+  const data = COMPLETIONS[currentDate];
+  const log = data.workLog[idx];
+  if (!log) return;
+  const d = Math.max(0, Math.min(1, days));
+  const rows = data.workLog.filter(w => w.wid === log.wid);
+  log.days = d;
+  if (rows.length > 1) {
+    // 同一个人当天多个项目：剩余人天在其余项目间平均分，合计不超过 1 天
+    const others = rows.filter(w => w !== log);
+    const per = Math.round(((1 - d) / others.length) * 100) / 100;
+    others.forEach(o => { o.days = per; });
+  }
+}
+function setLogDays(idx, days){ applyLogDays(idx, days); render(); }
+
+// ========== 加班（按小时录入） ==========
+const OT_PRESETS = [1, 2, 3, 4, 6];
+let pendingOtIdx = null, pendingOtVal = 0;
+function openOt(idx) {
+  const log = COMPLETIONS[currentDate].workLog[idx];
+  if (!log) return;
+  pendingOtIdx = idx;
+  pendingOtVal = log.ot || 0;
+  const inp = document.getElementById("otInput");
+  inp.value = (pendingOtVal && OT_PRESETS.indexOf(pendingOtVal) < 0) ? pendingOtVal : "";
+  renderOtChips();
+  document.getElementById("otMask").classList.add("open");
+}
+function renderOtChips() {
+  document.getElementById("otChips").innerHTML = OT_PRESETS.map(v =>
+    `<button class="ot-chip ${pendingOtVal === v ? "on" : ""}" onclick="pickOt(${v})">${v} 小时</button>`
+  ).join("");
+}
+function pickOt(v) {
+  pendingOtVal = v;
+  document.getElementById("otInput").value = "";
+  renderOtChips();
+}
+function onOtInput() {
+  const v = parseFloat(document.getElementById("otInput").value);
+  pendingOtVal = isNaN(v) ? 0 : v;
+  renderOtChips();
+}
+function confirmOt() {
+  if (pendingOtIdx === null) return;
+  const v = pendingOtVal;
+  if (v < 0 || v > 16) return toast("加班时长请填 0–16 小时");
+  const log = COMPLETIONS[currentDate].workLog[pendingOtIdx];
+  log.ot = Math.round(v * 2) / 2;
+  closeOt();
+  render();
+  toast(log.ot ? `已记录加班 ${log.ot} 小时` : "已清除加班");
+}
+function clearOt() {
+  if (pendingOtIdx === null) return;
+  COMPLETIONS[currentDate].workLog[pendingOtIdx].ot = 0;
+  closeOt();
+  render();
+  toast("已清除加班");
+}
+function closeOt() {
+  document.getElementById("otMask").classList.remove("open");
+  pendingOtIdx = null;
+}
+function customLogDays(idx){
+  const cur = COMPLETIONS[currentDate].workLog[idx].days;
+  const v = prompt("输入天数（0–1；同一人多个项目时，其余项目自动平均分配）：", cur);
+  if (v===null) return;
+  const n = parseFloat(v);
+  if (isNaN(n)||n<0){ toast("请输入数字"); return; }
+  if (n>1){ toast("单人当天合计不能超过 1 天，超出部分请用「+ 加班」按小时录入"); return; }
+  applyLogDays(idx, n);
+  render();
+}
+function delLogRow(idx){
+  if(!confirm("确定删除这条工时？")) return;
+  COMPLETIONS[currentDate].workLog.splice(idx,1);
+  render();
+}
+
+function setSubDays(idx, days){ COMPLETIONS[currentDate].subLog[idx].days=days; render(); }
+function customSubDays(idx){
+  const cur = COMPLETIONS[currentDate].subLog[idx].days;
+  const v = prompt("输入台班数：", cur);
+  if (v===null) return;
+  const n = parseFloat(v);
+  if (isNaN(n)||n<0){ toast("请输入数字"); return; }
+  COMPLETIONS[currentDate].subLog[idx].days = n;
+  render();
+}
+function delSubRow(idx){
+  if(!confirm("确定删除这条外协？")) return;
+  COMPLETIONS[currentDate].subLog.splice(idx,1);
+  render();
+}
+
+function addOutRow(){
+  // 选项目
+  openProjPickerForOut();
+}
+
+// ========== 选人 ==========
+let pickerCtx = null;
+function openWorkerPicker(){
+  pickerCtx = { type:"worker" };
+  document.getElementById("workerSheetTitle").textContent = "选择工人";
+  document.getElementById("workerConfirmBtn").textContent = "下一步：选项目";
+  renderWorkerList();
+  document.getElementById("workerMask").classList.add("open");
+}
+// 项目维度：直接给某个项目加人
+function openWorkerPickerFor(code){
+  openWorkerPicker();
+  pickerCtx.projectCode = code;
+  const p = projById(code);
+  document.getElementById("workerSheetTitle").textContent = "选择工人 · " + (p ? p.name : "");
+  document.getElementById("workerConfirmBtn").textContent = "添加到本项目";
+}
+function openSubPicker(){
+  pickerCtx = { type:"sub" };
+  document.getElementById("workerSheetTitle").textContent = "选择外协设备";
+  renderSubList();
+  document.getElementById("workerMask").classList.add("open");
+}
+function renderWorkerList(){
+  const code = pickerCtx && pickerCtx.projectCode;
+  const cur = COMPLETIONS[currentDate].workLog.filter(w => !code || w.projectCode === code).map(w => w.wid);
+  let html = "";
+  WORKERS.forEach(w => {
+    // 不预选：全部由用户自己勾选
+    const isOn = false;
+    const already = cur.includes(w.id);
+    const dis = w.insurance==="expired";
+    let ins = "";
+    if (w.insurance==="ok") ins = `<span class="badge ins-ok">保险有效</span>`;
+    else if (w.insurance==="warn") ins = `<span class="badge ins-warn">7天到期</span>`;
+    else ins = `<span class="badge ins-expired">保险过期</span>`;
+    html += `<div class="worker-item ${dis?'disabled':''}">
+      <div><div class="worker-name">${w.name} ${ins}${already ? `<span class="badge" style="background:#f1f3f7;color:#98a2b3;border-color:#e5e7eb;">已点工</span>` : ""}</div><div class="worker-meta">${w.role} · ${w.type}</div></div>
+      <div class="check" data-id="${w.id}" ${dis?'style="opacity:.3"':''} onclick="togglePick(this)"></div>
+    </div>`;
+  });
+  document.getElementById("workerList").innerHTML = html;
+}
+function renderSubList(){
+  const cur = COMPLETIONS[currentDate].subLog.map(s=>s.sid);
+  let html = "";
+  SUBS.forEach(s => {
+    const isOn = cur.includes(s.id);
+    html += `<div class="worker-item">
+      <div><div class="worker-name">🚜 ${s.type}</div><div class="worker-meta">¥${s.price}/${s.unit}</div></div>
+      <div class="check ${isOn?'on':''}" data-id="${s.id}" onclick="togglePick(this)">${isOn?'✓':''}</div>
+    </div>`;
+  });
+  document.getElementById("workerList").innerHTML = html;
+}
+function togglePick(el){
+  if (el.classList.contains("on")){ el.classList.remove("on"); el.textContent=""; }
+  else { el.classList.add("on"); el.textContent="✓"; }
+}
+function addWorkerTo(wid, code){
+  const data = COMPLETIONS[currentDate];
+  if (data.workLog.find(w => w.wid === wid && w.projectCode === code)) return;
+  data.workLog.push({ wid, projectCode: code, days: 1 });
+  balanceWorkerDays(wid);
+}
+// 单人当日合计不超过 1 天：多项目自动平均分摊
+function balanceWorkerDays(wid){
+  const data = COMPLETIONS[currentDate];
+  const rows = data.workLog.filter(w => w.wid === wid);
+  if (rows.length <= 1) {
+    if (rows.length === 1 && rows[0].days > 1) rows[0].days = 1;
+    return;
+  }
+  const per = Math.round((1 / rows.length) * 100) / 100;
+  rows.forEach(r => { r.days = per; });
+}
+function confirmWorkerPicker(){
+  const picked = [...document.querySelectorAll("#workerList .check.on")].map(e=>e.dataset.id);
+  if (pickerCtx.type==="worker"){
+    const code = pickerCtx.projectCode;
+    closeWorkerPicker();
+    if (code){
+      picked.forEach(wid => addWorkerTo(wid, code));
+      render();
+      toast("已添加到本项目");
+    } else if (picked.length){
+      // 选完人再选项目
+      openProjPickerForBatch(picked);
+    } else {
+      toast("请先选择人员");
+    }
+  } else {
+    picked.forEach(sid => {
+      if (!COMPLETIONS[currentDate].subLog.find(s=>s.sid===sid)) {
+        COMPLETIONS[currentDate].subLog.push({ sid, projectCode:"xm1", days:1 });
+      }
+    });
+    closeWorkerPicker();
+    render();
+    toast("已添加");
+  }
+}
+function closeWorkerPicker(){
+  document.getElementById("workerMask").classList.remove("open");
+  pickerCtx = null;
+}
+
+// 给某个人加另一个项目
+function addLogProj(wid){
+  openProjPickerForWorker(wid);
+}
+
+// 项目选择：给人挂项目
+let projPickerCtx = null;
+function openProjPickerForWorker(wid){
+  projPickerCtx = { mode:"worker", wid };
+  document.getElementById("projSheetTitle").textContent = "选择项目";
+  document.getElementById("projSearch").value = "";
+  renderProjList();
+  document.getElementById("projMask").classList.add("open");
+}
+function openProjPickerForOut(){
+  projPickerCtx = { mode:"out" };
+  document.getElementById("projSheetTitle").textContent = "选择项目";
+  document.getElementById("projSearch").value = "";
+  renderProjList();
+  document.getElementById("projMask").classList.add("open");
+}
+// 选完人后再选项目（批量挂同一项目）
+function openProjPickerForBatch(wids){
+  projPickerCtx = { mode:"workerBatch", wids };
+  document.getElementById("projSheetTitle").textContent = `选择项目（${wids.length} 人）`;
+  document.getElementById("projSearch").value = "";
+  renderProjList();
+  document.getElementById("projMask").classList.add("open");
+}
+function renderProjList(){
+  const kw = (document.getElementById("projSearch").value||"").trim();
+  let list = PROJECT_LIB.filter(p=>!kw||p.name.includes(kw));
+  let html = "";
+  list.forEach(p => {
+    html += `<div class="worker-item" onclick="pickProj('${p.code}')">
+      <div><div class="worker-name">${p.name}</div><div class="worker-meta">${p.code} · ${p.manager}</div></div>
+      <div style="color:#2b7cff;font-size:14px;">选择 ›</div>
+    </div>`;
+  });
+  document.getElementById("projList").innerHTML = html;
+}
+function pickProj(code){
+  if (projPickerCtx.mode==="worker"){
+    addWorkerTo(projPickerCtx.wid, code);
+  } else if (projPickerCtx.mode==="workerBatch"){
+    projPickerCtx.wids.forEach(wid => addWorkerTo(wid, code));
+  } else if (projPickerCtx.mode==="out"){
+    const c = code;
+    closeProjPicker();
+    render();
+    openQtyPick(c);
+    return;
+  }
+  const batch = projPickerCtx.mode==="workerBatch" ? projPickerCtx.wids.length : 0;
+  closeProjPicker();
+  render();
+  if (batch) toast(`已添加 ${batch} 人到该项目`);
+}
+function closeProjPicker(){
+  document.getElementById("projMask").classList.remove("open");
+  projPickerCtx = null;
+}
+
+// ========== 底部 ==========
+function renderBottomBar(data){
+  const bar = document.getElementById("bottomBar");
+  if (!data) { bar.innerHTML = ""; return; }
+  if (data.status==="draft"){
+    bar.innerHTML = `
+      <button class="btn-secondary" onclick="toast('草稿已保存')">保存草稿</button>
+      <button class="btn-primary" onclick="submitCompletion()">提交完工</button>`;
+  } else if (data.status==="submitted"){
+    bar.innerHTML = `<button class="btn-disabled" disabled>已提交，待班组长确认</button>`;
+  } else {
+    bar.innerHTML = `<button class="btn-disabled" disabled>已确认 ✓</button>`;
+  }
+}
+function submitCompletion(){
+  COMPLETIONS[currentDate].status = "submitted";
+  render();
+  toast("已提交，等待班组长确认");
+}
+
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 1800);
+}
+
+// 照片
+function startEmpty(type){
+  if (!COMPLETIONS[currentDate]) {
+    COMPLETIONS[currentDate] = { status:"draft", workLog:[], subLog:[], output:[], machLog:[] };
+  }
+  if (type==="worker"){ currentTab="log"; render(); openWorkerPicker(); }
+  else if (type==="sub"){ currentTab="mach"; render(); openMachAdd(); }
+  else { currentTab="out"; render(); openProjPickerForOut(); }
+}
+function setGlobalRemark(v){
+  COMPLETIONS[currentDate].remark = v;
+}
+function editRemark(kind, idx){
+  const data = COMPLETIONS[currentDate];
+  let cur = "";
+  if (kind==="worklog") cur = data.workLog[idx].remark || "";
+  else if (kind==="sub") cur = data.subLog[idx].remark || "";
+  else if (kind==="out") cur = data.output[idx].remark || "";
+  const v = prompt("输入备注：", cur);
+  if (v === null) return;
+  if (kind==="worklog") data.workLog[idx].remark = v;
+  else if (kind==="sub") data.subLog[idx].remark = v;
+  else if (kind==="out") data.output[idx].remark = v;
+  render();
+}
+function openPhoto(title){
+  document.getElementById("photoTitle").textContent = title;
+  document.getElementById("photoBody").innerHTML = `
+    <div style="font-size:12px;color:#888;margin-bottom:8px">由现场负责人拍摄上传，留底备查</div>
+    <div class="photo-grid">
+      <div class="photo-ph">📷</div>
+      <div class="photo-ph">+</div>
+    </div>`;
+  document.getElementById("photoMask").classList.add("open");
+}
+function closePhotoPicker(){
+  document.getElementById("photoMask").classList.remove("open");
+}
+
+// 汇总明细
+function openSummary(type){
+  const data = COMPLETIONS[currentDate];
+  let html = "";
+  let total = 0;
+  if (type==="labor"){
+    document.getElementById("summaryTitle").textContent = "人工明细（人天）";
+    let totalDays = 0;
+    data.workLog.forEach(w => {
+      const wk = workerById(w.wid);
+      if (!wk) return;
+      const p = projById(w.projectCode);
+      totalDays += w.days;
+      html += `<div class="worker-item">
+        <div>
+          <div class="worker-name">${wk.name} <span class="badge badge-${wk.type==='自有'?'self':'sub'}">${wk.type}</span></div>
+          <div class="worker-meta">${wk.role} · ${w.days}天<br>${p?p.name:''}</div>
+        </div>
+      </div>`;
+    });
+    html += `<div style="padding:12px;text-align:right;font-size:15px;font-weight:700;background:#f8f9fb;">合计 <span style="color:#ea7a1c;">${totalDays} 人天</span></div>`;
+  } else {
+    document.getElementById("summaryTitle").textContent = "外协费明细";
+    data.subLog.forEach(s => {
+      const sb = subById(s.sid);
+      if (!sb) return;
+      const p = projById(s.projectCode);
+      const amt = sb.price * s.days;
+      total += amt;
+      html += `<div class="worker-item">
+        <div>
+          <div class="worker-name">🚜 ${sb.type}</div>
+          <div class="worker-meta">¥${sb.price}/${sb.unit} · ${s.days}台班<br>${p?p.name:''}</div>
+        </div>
+        <div style="font-weight:600;color:#ea7a1c;">¥${amt.toFixed(0)}</div>
+      </div>`;
+    });
+    html += `<div style="padding:12px;text-align:right;font-size:15px;font-weight:700;background:#f8f9fb;">合计 <span style="color:#ea7a1c;">¥${total.toFixed(0)}</span></div>`;
+  }
+  document.getElementById("summaryBody").innerHTML = html;
+  document.getElementById("summaryMask").classList.add("open");
+}
+function closeSummary(){
+  document.getElementById("summaryMask").classList.remove("open");
+}
+
+render();
+</script>
+</body>
+</html>

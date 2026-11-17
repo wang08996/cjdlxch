@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>机械申请 · 郴江电力小程序原型</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2341C7CE'/%3E%3Cpath d='M8 22h16M11 22v-4h10v4' stroke='%23fff' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  body { background: #e9ecf1; display: flex; justify-content: center; align-items: flex-start; padding: 20px 0; min-height: 100vh; }
+  .phone {
+    width: 390px; height: 820px; background: #f5f6f8;
+    border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    overflow: hidden; position: relative; display: flex; flex-direction: column;
+    border: 10px solid #1a1a1a;
+  }
+  .status-bar {
+    height: 34px; flex: none; background: #fff;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 22px; font-size: 13px; color: #000; font-weight: 600;
+  }
+  .status-bar .icons { display: flex; gap: 5px; align-items: center; font-size: 12px; }
+  .screen { flex: 1; overflow: hidden; position: relative; }
+  .view { position: absolute; inset: 0; display: flex; flex-direction: column; background: #f5f6f8; }
+
+  .navbar {
+    height: 46px; flex: none; background: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px; border-bottom: 1px solid #eee;
+  }
+  .navbar .back { font-size: 14px; color: #2b7cff; cursor: pointer; min-width: 66px; text-decoration: none; }
+  .navbar .title { font-size: 16px; font-weight: 600; color: #222; }
+  .navbar .right { min-width: 66px; text-align: right; font-size: 13px; color: #2b7cff; cursor: pointer; }
+
+  .tabs { display: flex; background: #fff; flex: none; border-bottom: 1px solid #f0f0f0; }
+  .tab { flex: 1; text-align: center; padding: 12px 0 11px; font-size: 14px; color: #666; cursor: pointer; position: relative; }
+  .tab.on { color: #2b7cff; font-weight: 600; }
+  .tab.on::after { content: ""; position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: 30px; height: 3px; border-radius: 2px; background: #2b7cff; }
+  .tab .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #e23b3b; vertical-align: 2px; margin-left: 4px; }
+
+  .pane { flex: 1; overflow-y: auto; padding-bottom: 10px; }
+  .pane.hide { display: none; }
+  .hide { display: none; }
+
+  .sec-title { padding: 14px 18px 8px; font-size: 13px; color: #999; }
+  .card { background: #fff; margin: 0 12px; border-radius: 12px; overflow: hidden; }
+  .row {
+    display: flex; align-items: center; min-height: 52px; padding: 12px 14px;
+    border-bottom: 1px solid #f2f2f2; gap: 10px; cursor: pointer;
+  }
+  .row:last-child { border-bottom: none; }
+  .row .lbl { font-size: 14px; color: #333; flex: none; min-width: 100px; }
+  .row .lbl i { color: #e23b3b; font-style: normal; margin-right: 3px; }
+  .row .val { flex: 1; min-width: 0; text-align: right; font-size: 14px; color: #222; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .val.ph { color: #bbb; font-size: 14px; }
+  .row .arr { flex: none; color: #c9cdd4; font-size: 13px; }
+  .row.nt { cursor: default; }
+  .row.nt .val { color: #999; }
+
+  .hint { padding: 10px 18px 0; font-size: 12px; color: #9aa3ad; line-height: 1.6; }
+
+  /* 照片 */
+  .photo-card { background: #fff; margin: 10px 12px 0; border-radius: 12px; padding: 12px 14px 14px; }
+  .photo-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .photo-head .t { font-size: 14px; color: #333; }
+  .photo-head .t i { color: #e23b3b; font-style: normal; }
+  .photo-head .c { font-size: 12px; color: #aaa; }
+  .photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .thumb { position: relative; height: 78px; border-radius: 8px; overflow: hidden; background: #f2f4f7; cursor: pointer; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .del {
+    position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(0,0,0,.55); color: #fff; font-size: 12px; line-height: 18px; text-align: center;
+  }
+  .add-photo {
+    border: 1px dashed #ccd3dc; border-radius: 8px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; color: #98a2b3; cursor: pointer;
+    font-size: 11px; gap: 2px; background: #fbfcfd; height: 78px;
+  }
+  .add-photo .p { font-size: 20px; line-height: 1; color: #b6bec9; }
+
+  /* 流程审批预览 */
+  .flow-card { background: #fff; margin: 10px 12px 0; border-radius: 12px; padding: 14px 14px 15px; }
+  .flow-title { font-size: 14px; font-weight: 600; color: #222; margin-bottom: 12px; }
+  .fnode { display: flex; align-items: flex-start; gap: 10px; position: relative; padding-bottom: 18px; }
+  .fnode:last-child { padding-bottom: 0; }
+  .fnode:not(:last-child)::before {
+    content: ""; position: absolute; left: 15.5px; top: 36px; bottom: 4px; width: 1px; background: #e6e9ef;
+  }
+  .fav {
+    flex: none; width: 32px; height: 32px; border-radius: 50%;
+    background: #eaf1ff; color: #2557d6; font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fnode.cur .fav { background: #2b7cff; color: #fff; }
+  .fnode.wait .fav { background: #f2f4f7; color: #a9b1bd; }
+  .fx { flex: 1; min-width: 0; }
+  .fk { font-size: 11px; color: #98a2b3; line-height: 1.35; }
+  .fn { font-size: 14px; color: #222; font-weight: 600; line-height: 1.35; margin-top: 3px; }
+  .fn .fd { font-size: 12px; color: #86909c; font-weight: 400; margin-left: 6px; }
+  .fs { flex: none; font-size: 11px; color: #98a2b3; padding-top: 10px; white-space: nowrap; }
+  .fs.cur { color: #2b7cff; font-weight: 600; }
+
+  /* 我的申请 */
+  .req-card { background: #fff; margin: 10px 12px 0; border-radius: 12px; padding: 12px 14px; border: 1.5px solid transparent; }
+  .req-card.hl { border-color: #2b7cff; box-shadow: 0 0 0 3px rgba(43,124,255,.10); }
+  .req-meta { font-size: 11px; color: #3a3f47; letter-spacing: .2px; }
+  .req-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .req-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .req-name { font-size: 14px; font-weight: 600; color: #2b7cff; line-height: 1.45; flex: 1; min-width: 0; }
+  .badge { flex: none; font-size: 11px; padding: 2px 8px; border-radius: 9px; line-height: 16px; white-space: nowrap; }
+  .b-wait { background: #fef3c7; color: #b45309; }
+  .b-plan { background: #dbeafe; color: #1d4ed8; }
+  .b-on { background: #dcfce7; color: #15803d; }
+  .b-done { background: #f1f2f4; color: #6b7280; }
+  .b-rej { background: #fee2e2; color: #b91c1c; }
+  .req-mach { font-size: 13px; color: #2b7cff; margin-top: 6px; font-weight: 500; }
+  .req-mach .k { color: #aaa; font-weight: 400; }
+  .req-line { font-size: 12px; color: #777; margin-top: 5px; line-height: 1.6; }
+  .req-line span { color: #aaa; }
+  .asg { margin-top: 9px; background: #f6f9fd; border-radius: 8px; padding: 8px 10px; }
+  .asg .ah { font-size: 11px; color: #8a94a6; margin-bottom: 4px; }
+  .asg .a { font-size: 12px; color: #333; line-height: 1.85; display: flex; gap: 6px; }
+  .asg .a b { font-weight: 600; color: #1d4ed8; flex: none; }
+  .asg .a .p { flex: none; color: #333; font-variant-numeric: tabular-nums; }
+  .asg .a .s { flex: 1; min-width: 0; color: #777; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wait-tip { margin-top: 9px; font-size: 12px; color: #98a2b3; background: #fafbfc; border-radius: 8px; padding: 8px 10px; line-height: 1.6; }
+  .rej-tip { margin-top: 9px; font-size: 12px; color: #b91c1c; background: #fef2f2; border-radius: 8px; padding: 8px 10px; line-height: 1.6; }
+  .req-card { cursor: pointer; transition: background .12s; }
+  .req-card:active { background: #fbfcfe; }
+  .req-ops { display: flex; justify-content: flex-end; margin-top: 10px; }
+  .btn-del {
+    height: 32px; padding: 0 18px; border-radius: 16px; font-size: 13px;
+    border: 1px solid #f3d3d3; background: #fff; color: #e04545; cursor: pointer;
+  }
+  .btn-del:active { background: #fdf1f1; }
+  .del-box { padding: 4px 16px 0; font-size: 14px; color: #444; line-height: 1.7; }
+  .del-ops { display: flex; gap: 10px; }
+  .del-ops button {
+    flex: 1; height: 46px; border-radius: 23px; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .del-ops .cancel { border: 1px solid #dbe1ea; background: #fff; color: #5b6472; }
+  .del-ops .ok { border: 0; background: #e04545; color: #fff; }
+
+  /* 申请详情（只读） */
+  .d-card { background: #fff; margin: 10px 12px 0; border-radius: 12px; padding: 12px 14px; }
+  .d-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .d-no { font-size: 11px; color: #3a3f47; }
+  .d-name { font-size: 15px; font-weight: 600; color: #2b7cff; line-height: 1.45; margin-top: 8px; }
+  .d-row { display: flex; align-items: flex-start; gap: 8px; padding: 9px 0; border-bottom: 1px solid #f4f6f8; }
+  .d-row:last-child { border-bottom: 0; padding-bottom: 2px; }
+  .d-row .k { flex: none; width: 104px; font-size: 13px; color: #9aa3af; white-space: nowrap; }
+  .d-row.asg-row .k { width: 62px; color: #1d4ed8; font-weight: 600; }
+  .d-row .v { flex: 1; min-width: 0; font-size: 14px; color: #333; line-height: 1.5; word-break: break-all; }
+  .d-row .v.strong { color: #222; font-weight: 500; }
+  .d-sec { font-size: 13px; color: #98a2b3; margin: 14px 12px 0; }
+  .d-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .d-photo { height: 74px; border-radius: 8px; overflow: hidden; background: #f2f4f7; }
+  .d-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .d-empty { font-size: 12px; color: #aab2bd; margin-top: 8px; }
+  .btn-ghost {
+    width: 100%; height: 46px; border-radius: 23px; border: 1px solid #dbe1ea;
+    background: #fff; color: #5b6472; font-size: 15px; font-weight: 500; cursor: pointer;
+  }
+
+  .bottom-bar {
+    flex: none; padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+    background: #fff; border-top: 1px solid #eee;
+  }
+  .btn-primary {
+    width: 100%; height: 50px; border: none; border-radius: 25px;
+    background: #2b7cff; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer;
+  }
+  .btn-primary:active { background: #1f6ae0; }
+  .bottom-bar .tip { font-size: 11px; color: #a8b0bb; text-align: center; margin-top: 7px; }
+
+  /* 浮层 */
+  .mask { position: absolute; inset: 0; background: rgba(0,0,0,.4); z-index: 50; display: none; }
+  .mask.active { display: block; }
+  .card-sheet {
+    position: absolute; left: 14px; right: 14px; bottom: 14px;
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.28);
+    z-index: 62; display: none; flex-direction: column;
+    max-height: 76%; overflow: hidden;
+  }
+  .card-sheet.active { display: flex; animation: sheetUp .2s ease-out; }
+  @keyframes sheetUp { from { transform: translateY(26px); } to { transform: none; } }
+  .card-sheet .cs-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 16px 12px; flex: none; }
+  .card-sheet .cs-head .t { font-size: 17px; font-weight: 600; color: #222; }
+  .card-sheet .cs-head .x { font-size: 14px; color: #2b7cff; cursor: pointer; padding: 4px 6px; }
+  .card-sheet .cs-search { padding: 0 16px 10px; flex: none; }
+  .card-sheet .cs-search input {
+    width: 100%; height: 40px; border: none; background: #f3f5f8;
+    border-radius: 10px; padding: 0 12px; font-size: 14px; box-sizing: border-box; outline: none;
+  }
+  .card-sheet .cs-list { overflow-y: auto; padding: 0 10px 8px; }
+  .card-sheet .cs-foot { padding: 10px 16px 16px; flex: none; }
+
+  .pick-item {
+    display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-radius: 10px;
+    cursor: pointer; border: 1px solid transparent; background: #fafbfc; margin-bottom: 6px;
+  }
+  .pick-item.on { background: #eef4ff; border-color: #c8ddff; }
+  .pick-item .txt { flex: 1; min-width: 0; }
+  .pick-item .n { font-size: 14px; color: #222; font-weight: 500; line-height: 1.45; }
+  .pick-item .d { font-size: 11px; color: #999; margin-top: 3px; }
+  .pick-item .tick {
+    flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #ddd;
+    background: #fff; color: #fff; font-size: 12px; line-height: 16px; text-align: center;
+  }
+  .pick-item.on .tick { border-color: #2b7cff; background: #2b7cff; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 9px 14px; border-radius: 8px; border: 1px solid #eceff3; background: #fafbfc;
+    font-size: 13px; color: #555; cursor: pointer;
+  }
+  .chip.on { background: #eef4ff; border-color: #2b7cff; color: #2b7cff; font-weight: 600; }
+  #dateChips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  #dateChips .chip { padding: 9px 0; text-align: center; font-size: 13px; white-space: nowrap; }
+  #dateChips .chip.other { grid-column: span 2; border-style: dashed; color: #2b7cff; }
+
+  /* 机械台账 */
+  .mach-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 12px; margin-bottom: 6px; border-radius: 10px;
+    background: #fafbfc; border: 1px solid #eceff3;
+  }
+  .mach-row.on { background: #eef4ff; border-color: #c8ddff; }
+  .mach-row .mn { font-size: 15px; font-weight: 600; color: #222; }
+  .mach-row .mh { font-size: 11px; color: #999; margin-top: 2px; }
+  .stepper { display: flex; align-items: center; gap: 8px; flex: none; }
+  .st-btn {
+    width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; cursor: pointer; user-select: none;
+  }
+  .st-minus { background: #fff; border: 1px solid #e5e7eb; color: #bbb; }
+  .mach-row.on .st-minus { border-color: #c8ddff; color: #2b7cff; }
+  .st-plus { background: #2b7cff; color: #fff; }
+  .st-num { min-width: 26px; text-align: center; font-size: 17px; font-weight: 600; color: #999; }
+  .mach-row.on .st-num { color: #2b7cff; }
+  .mach-sum { font-size: 12px; color: #888; text-align: center; margin: 4px 0 8px; }
+
+  .toast {
+    position: absolute; left: 50%; bottom: 90px; transform: translateX(-50%);
+    background: rgba(0,0,0,.78); color: #fff; padding: 9px 16px; border-radius: 8px;
+    font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 90; max-width: 80%;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="#000"><rect x="0" y="7" width="3" height="4"/><rect x="4" y="5" width="3" height="6"/><rect x="8" y="2.5" width="3" height="8.5"/><rect x="12" y="0" width="3" height="11"/></svg>
+        <span>100%</span>
+        <svg width="22" height="11" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="20" height="11" rx="2.5" fill="none" stroke="#000"/><rect x="2" y="2" width="17" height="8" rx="1" fill="#000"/></svg>
+      </div>
+    </div>
+
+    <div class="screen">
+      <section class="view">
+        <div class="navbar">
+          <a class="back" id="navBack" href="../site.html">‹ 现场管理</a>
+          <div class="title" id="navTitle">机械申请</div>
+          <div class="right"></div>
+        </div>
+
+        <div class="tabs" id="tabs">
+          <div class="tab on" id="tabApply" onclick="switchTab('apply')">申请机械</div>
+          <div class="tab" id="tabList" onclick="switchTab('list')">我的申请<span class="dot" id="tabDot" style="display:none;"></span></div>
+        </div>
+
+        <!-- ========== 申请机械 ========== -->
+        <div class="pane" id="paneApply">
+          <div class="sec-title">申请信息</div>
+          <div class="card">
+            <div class="row nt">
+              <div class="lbl">申请人</div>
+              <div class="val" id="vApplicant">张三</div>
+            </div>
+            <div class="row" onclick="openDept()">
+              <div class="lbl"><i>*</i>申请部门</div>
+              <div class="val" id="vDept">郴州公司/项目一部</div>
+              <div class="arr">›</div>
+            </div>
+            <div class="row" onclick="openProject()">
+              <div class="lbl"><i>*</i>所属项目</div>
+              <div class="val ph" id="vProject">请选择项目</div>
+              <div class="arr">›</div>
+            </div>
+            <div class="row" onclick="openMach()">
+              <div class="lbl"><i>*</i>机械类型及数量</div>
+              <div class="val ph" id="vMach">请选择机械</div>
+              <div class="arr">›</div>
+            </div>
+            <div class="row" id="rowAddr" onclick="openAddr()">
+              <div class="lbl">用机地点</div>
+              <div class="val ph" id="vAddr">选填，选项目后自动带出</div>
+              <div class="arr">›</div>
+            </div>
+            <div class="row" onclick="openTime('from')">
+              <div class="lbl"><i>*</i>用机时间</div>
+              <div class="val ph" id="vFrom">请选择日期和时段</div>
+              <div class="arr">›</div>
+            </div>
+            <div class="row" onclick="openReason()">
+              <div class="lbl">用机事由</div>
+              <div class="val ph" id="vReason">选填，简要说明用途</div>
+              <div class="arr">›</div>
+            </div>
+          </div>
+
+          <div class="photo-card">
+            <div class="photo-head">
+              <div class="t">现场照片 / 附件</div>
+              <div class="c" id="photoCount">0 / 3</div>
+            </div>
+            <div class="photo-grid" id="photoGrid"></div>
+            <div class="hint" style="padding:8px 0 0;">可拍照或从相册选择，最多 3 张，用于说明场地和进出场条件</div>
+          </div>
+
+          <div class="flow-card">
+            <div class="flow-title">流程审批预览</div>
+            <div class="fnode">
+              <div class="fav">李</div>
+              <div class="fx">
+                <div class="fk">发起人</div>
+                <div class="fn">张三<span class="fd" id="fDept">郴州公司/项目一部</span></div>
+              </div>
+              <div class="fs">发起</div>
+            </div>
+            <div class="fnode cur">
+              <div class="fav">机</div>
+              <div class="fx">
+                <div class="fk">下一步</div>
+                <div class="fn">张伟<span class="fd">机械管理中心 · 机械专员</span></div>
+              </div>
+              <div class="fs cur">待处理</div>
+            </div>
+            <div class="fnode wait">
+              <div class="fav">完</div>
+              <div class="fx">
+                <div class="fk">最后一步</div>
+                <div class="fn">安排完成<span class="fd">查看租赁公司、车牌</span></div>
+              </div>
+              <div class="fs">待完成</div>
+            </div>
+          </div>
+
+          <div class="hint">提交后由机械专员统一安排机械，安排完成后可在「我的申请」查看租赁公司与车牌。</div>
+        </div>
+
+        <!-- ========== 我的申请 ========== -->
+        <div class="pane hide" id="paneList">
+          <div id="reqList"></div>
+        </div>
+
+        <!-- ========== 申请详情（只读） ========== -->
+        <div class="pane hide" id="paneDetail"></div>
+
+        <div class="bottom-bar" id="bottomBar">
+          <button class="btn-primary" onclick="submitReq()">提交申请</button>
+          <div class="tip">带 * 为必填项，机械专员将在 2 小时内响应</div>
+        </div>
+      </section>
+
+      <!-- 部门 -->
+      <div class="mask" id="deptMask" onclick="closeSheet('deptMask','deptSheet')"></div>
+      <div class="card-sheet" id="deptSheet">
+        <div class="cs-head"><div class="t">申请部门</div><div class="x" onclick="closeSheet('deptMask','deptSheet')">关闭</div></div>
+        <div class="cs-list" id="deptList"></div>
+      </div>
+
+      <!-- 项目 -->
+      <div class="mask" id="projMask" onclick="closeSheet('projMask','projSheet')"></div>
+      <div class="card-sheet" id="projSheet">
+        <div class="cs-head"><div class="t">选择项目</div><div class="x" onclick="closeSheet('projMask','projSheet')">关闭</div></div>
+        <div class="cs-search"><input id="projSearch" placeholder="搜索项目名称 / 编号" oninput="renderProjects()"></div>
+        <div class="cs-list" id="projList"></div>
+      </div>
+
+      <!-- 地点 -->
+      <div class="mask" id="addrMask" onclick="closeSheet('addrMask','addrSheet')"></div>
+      <div class="card-sheet" id="addrSheet" style="max-height:56%;">
+        <div class="cs-head"><div class="t">用机地点</div><div class="x" onclick="closeSheet('addrMask','addrSheet')">关闭</div></div>
+        <div style="padding:0 16px;flex:1;overflow-y:auto;">
+          <textarea id="addrInput" rows="3" placeholder="请填写详细地点，如：××村××组 12 号杆位"
+            style="width:100%;border:1px solid #e6e9ee;border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.6;resize:none;outline:none;font-family:inherit;"></textarea>
+        </div>
+        <div class="cs-foot"><button class="btn-primary" onclick="confirmAddr()">确定</button></div>
+      </div>
+
+      <!-- 时间 -->
+      <div class="mask" id="timeMask" onclick="closeSheet('timeMask','timeSheet')"></div>
+      <div class="card-sheet" id="timeSheet" style="max-height:64%;">
+        <div class="cs-head"><div class="t" id="timeTitle">用机开始</div><div class="x" onclick="closeSheet('timeMask','timeSheet')">关闭</div></div>
+        <div style="padding:0 16px 6px;overflow-y:auto;">
+          <div style="font-size:13px;color:#888;margin-bottom:8px;">日期</div>
+          <div class="chips" id="dateChips"></div>
+          <div style="font-size:13px;color:#888;margin:14px 0 8px;">时间</div>
+          <div class="chips" id="slotChips"></div>
+          <input type="date" id="datePick" onchange="pickOtherDate(this.value)"
+            style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
+        </div>
+        <div class="cs-foot"><button class="btn-primary" onclick="confirmTime()">确定</button></div>
+      </div>
+
+      <!-- 机械 -->
+      <div class="mask" id="machMask" onclick="closeSheet('machMask','machSheet')"></div>
+      <div class="card-sheet" id="machSheet" style="max-height:78%;">
+        <div class="cs-head"><div class="t">选择机械（可多选）</div><div class="x" onclick="closeSheet('machMask','machSheet')">关闭</div></div>
+        <div style="padding:0 16px 6px;font-size:12px;color:#888;">点 ＋ / － 确定每类机械的台数</div>
+        <div class="cs-list" id="machList" style="padding:6px 16px 4px;"></div>
+        <div style="padding:0 16px 16px;">
+          <div class="mach-sum" id="machSum">还没有选择机械</div>
+          <button class="btn-primary" onclick="confirmMach()">确定</button>
+        </div>
+      </div>
+
+      <!-- 事由 -->
+      <div class="mask" id="reasonMask" onclick="closeSheet('reasonMask','reasonSheet')"></div>
+      <div class="card-sheet" id="reasonSheet" style="max-height:56%;">
+        <div class="cs-head"><div class="t">用机事由</div><div class="x" onclick="closeSheet('reasonMask','reasonSheet')">关闭</div></div>
+        <div style="padding:0 16px;flex:1;overflow-y:auto;">
+          <textarea id="reasonInput" rows="4" maxlength="140" placeholder="如：配合立杆吊装、土方外运，需在停电时段完成"
+            style="width:100%;border:1px solid #e6e9ee;border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.6;resize:none;outline:none;font-family:inherit;"></textarea>
+          <div style="text-align:right;font-size:11px;color:#aaa;margin-top:6px;" id="reasonCount">0 / 140</div>
+        </div>
+        <div class="cs-foot"><button class="btn-primary" onclick="confirmReason()">确定</button></div>
+      </div>
+
+      <!-- 删除确认 -->
+      <div class="mask" id="delMask" onclick="closeSheet('delMask','delSheet')"></div>
+      <div class="card-sheet" id="delSheet">
+        <div class="cs-head"><div class="t">删除申请</div><div class="x" onclick="closeSheet('delMask','delSheet')">关闭</div></div>
+        <div class="del-box" id="delText">确定删除这条机械申请？删除后不可恢复。</div>
+        <div class="cs-foot del-ops">
+          <button class="cancel" onclick="closeSheet('delMask','delSheet')">取消</button>
+          <button class="ok" onclick="confirmDelete()">删除</button>
+        </div>
+      </div>
+
+      <!-- 图片选择 -->
+      <input type="file" id="photoInput" accept="image/*" multiple style="display:none;">
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
+
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+
+<script>
+// ====== 基础数据 ======
+const ME = { name: "张三", dept: "郴州公司/项目一部" };
+const DEPTS = [
+  "郴州公司/项目一部",
+  "郴州公司/项目二部",
+  "郴州公司/综合管理部",
+  "郴州公司/运维检修中心"
+];
+const PROJECT_LIB = [
+  { code: "XM2026-018", name: "郴州市湘南物流园屋顶分布式光伏及充电桩项目", manager: "王建国", addr: "郴州市北湖区湘南国际物流园 3 号厂区屋顶" },
+  { code: "XM2026-023", name: "高速杆迁瓦窑坪项目", manager: "李志强", addr: "郴州市苏仙区瓦窑坪村 220kV 线路走廊" },
+  { code: "XM2026-031", name: "苏仙区小区供配电改造工程", manager: "周国华", addr: "郴州市苏仙区苏仙岭街道 5 个老旧小区" },
+  { code: "XM2026-035", name: "10kV 白露塘线迁改工程", manager: "陈立军", addr: "郴州市北湖区白露塘镇镇区主干道" },
+  { code: "XM2026-041", name: "园垄线 10kV 线路架设工程", manager: "刘德海", addr: "郴州市北湖区园垄村至铜坑村沿线" },
+  { code: "XM2026-042", name: "珠东线电缆通道改造", manager: "杨小波", addr: "郴州市苏仙区珠东街 3 号电缆通道" },
+  { code: "XM2026-045", name: "嘉禾县工业园区双电源工程", manager: "周志远", addr: "郴州市嘉禾县工业园区西区变电站" },
+  { code: "XM2026-048", name: "北湖区10kV增容改造", manager: "黄国平", addr: "郴州市北湖区下湄桥街道 8 号台区" },
+  { code: "XM2026-052", name: "汝城风电送出线路工程", manager: "曹建华", addr: "郴州市汝城县暖水镇风场升压站" },
+  { code: "XM2026-055", name: "宜章台区改造项目", manager: "李晓东", addr: "郴州市宜章县玉溪镇 12 个台区" },
+  { code: "XM2026-058", name: "临武变电站扩建配套工程", manager: "王勇", addr: "郴州市临武县武水镇变电站" },
+  { code: "XM2026-061", name: "安仁农网巩固提升工程", manager: "张伟", addr: "郴州市安仁县永乐江镇沿线村组" }
+];
+const MACHINE_TYPES = ["挖机", "炮机", "吊车", "随车吊", "渣土车", "铲车"];
+const MACHINE_HINTS = {
+  "挖机": "土方开挖、基坑",
+  "炮机": "破除混凝土 / 岩石",
+  "吊车": "立杆、吊装",
+  "随车吊": "运输 + 吊装",
+  "渣土车": "土方外运",
+  "铲车": "场地平整、装料"
+};
+const MACH_ORD = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
+const STATUS = {
+  wait: { name: "待安排", cls: "b-wait" },
+  part: { name: "部分安排", cls: "b-wait" },
+  plan: { name: "已安排", cls: "b-plan" },
+  on:   { name: "已进场", cls: "b-on" },
+  done: { name: "已完成", cls: "b-done" },
+  rej:  { name: "已驳回", cls: "b-rej" }
+};
+
+// ====== 已有申请（mock）======
+let REQS = [
+  {
+    no: "JX-20261117-001", project: "珠东线电缆通道改造", code: "XM2026-042",
+    addr: "郴州市苏仙区珠东街 3 号电缆通道",
+    from: "2026-11-19 08:00", to: "2026-11-19 17:00",
+    machines: { "炮机": 1, "渣土车": 2 }, reason: "破除原混凝土基础并清运渣土",
+    photos: 0, status: "wait", created: "2026-11-17 09:12", assigns: []
+  },
+  {
+    no: "JX-20261116-003", project: "园垄线 10kV 线路架设工程", code: "XM2026-041",
+    addr: "郴州市北湖区园垄村至铜坑村沿线",
+    from: "2026-11-18 08:00", to: "2026-11-18 18:00",
+    machines: { "挖机": 2, "吊车": 1 }, reason: "配合立杆吊装、杆坑开挖",
+    photos: 0, status: "plan", created: "2026-11-16 16:40",
+    assigns: [
+      { type: "挖机①", plate: "湘L·E6666", rental: "顺达机械", driver: "何师傅" },
+      { type: "挖机②", plate: "湘L·E7777", rental: "顺达机械", driver: "李师傅" },
+      { type: "吊车", plate: "湘L·D8888", rental: "宏达吊装", driver: "王师傅" }
+    ]
+  },
+  {
+    no: "JX-20261115-002", project: "高速杆迁瓦窑坪项目", code: "XM2026-023",
+    addr: "郴州市苏仙区瓦窑坪村 220kV 线路走廊",
+    from: "2026-11-17 07:30", to: "2026-11-17 16:00",
+    machines: { "随车吊": 1 }, reason: "材料二次转运并配合组塔",
+    photos: 0, status: "on", created: "2026-11-15 15:20",
+    assigns: [
+      { type: "随车吊", plate: "湘L·H2333", rental: "顺发设备", driver: "陈师傅" }
+    ]
+  },
+  {
+    no: "JX-20261112-004", project: "苏仙区小区供配电改造工程", code: "XM2026-031",
+    addr: "郴州市苏仙区苏仙岭街道 5 个老旧小区",
+    from: "2026-11-14 08:00", to: "2026-11-14 18:00",
+    machines: { "挖机": 1, "铲车": 1 }, reason: "电缆沟开挖、场地平整",
+    photos: 0, status: "done", created: "2026-11-12 10:05",
+    assigns: [
+      { type: "挖机", plate: "湘L·E6666", rental: "顺达机械", driver: "何师傅" },
+      { type: "铲车", plate: "湘L·M1122", rental: "顺达机械", driver: "周师傅" }
+    ]
+  },
+  {
+    no: "JX-20261110-001", project: "北湖区10kV增容改造", code: "XM2026-048",
+    addr: "郴州市北湖区下湄桥街道 8 号台区",
+    from: "2026-11-11 08:00", to: "2026-11-11 12:00",
+    machines: { "吊车": 1 }, reason: "变压器吊装就位",
+    photos: 0, status: "rej", created: "2026-11-10 17:30",
+    assigns: [], reject: "当日吊车已全部派出，建议改约 11/13 上午"
+  }
+];
+
+// ====== 表单状态 ======
+const TAB_SLOT = ["06:00", "08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00"];
+let form = blankForm();
+function blankForm() {
+  return { dept: ME.dept, code: "", project: "", addr: "", from: "", to: "", machines: {}, reason: "", photos: [] };
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.classList.remove("show"), 1600);
+}
+function openSheet(mask, sheet) { document.getElementById(mask).classList.add("active"); document.getElementById(sheet).classList.add("active"); }
+function closeSheet(mask, sheet) { document.getElementById(mask).classList.remove("active"); document.getElementById(sheet).classList.remove("active"); }
+
+// ====== Tab ======
+function switchTab(k) {
+  const apply = k === "apply";
+  document.getElementById("paneApply").classList.toggle("hide", !apply);
+  document.getElementById("paneList").classList.toggle("hide", apply);
+  document.getElementById("tabApply").classList.toggle("on", apply);
+  document.getElementById("tabList").classList.toggle("on", !apply);
+  const bar = document.getElementById("bottomBar");
+  bar.innerHTML = apply
+    ? `<button class="btn-primary" onclick="submitReq()">提交申请</button>
+       <div class="tip">带 * 为必填项，机械专员将在 2 小时内响应</div>`
+    : `<button class="btn-primary" onclick="switchTab('apply')">＋ 发起机械申请</button>
+       <div class="tip">已安排的机械会显示租赁公司和车牌</div>`;
+  if (!apply) renderReqs();
+}
+
+// ====== 部门 ======
+function openDept() {
+  document.getElementById("deptList").innerHTML = DEPTS.map(d =>
+    `<div class="pick-item ${d === form.dept ? "on" : ""}" onclick="pickDept('${d}')">
+      <div class="txt"><div class="n">${d}</div></div><div class="tick">✓</div>
+    </div>`).join("");
+  openSheet("deptMask", "deptSheet");
+}
+function pickDept(d) {
+  form.dept = d;
+  document.getElementById("vDept").textContent = d;
+  document.getElementById("vDept").classList.remove("ph");
+  document.getElementById("fDept").textContent = d;
+  closeSheet("deptMask", "deptSheet");
+}
+
+// ====== 项目 ======
+function openProject() {
+  document.getElementById("projSearch").value = "";
+  renderProjects();
+  openSheet("projMask", "projSheet");
+}
+function renderProjects() {
+  const kw = (document.getElementById("projSearch").value || "").trim();
+  const list = PROJECT_LIB.filter(p => !kw || p.name.indexOf(kw) >= 0 || p.code.indexOf(kw) >= 0);
+  document.getElementById("projList").innerHTML = list.length
+    ? list.map(p => `<div class="pick-item ${p.code === form.code ? "on" : ""}" onclick="pickProject('${p.code}')">
+        <div class="txt"><div class="n">${p.name}</div><div class="d">${p.code} · 负责人 ${p.manager}</div></div>
+        <div class="tick">✓</div>
+      </div>`).join("")
+    : `<div style="padding:30px 0;text-align:center;color:#aaa;font-size:13px;">没有匹配的项目</div>`;
+}
+function pickProject(code) {
+  const p = PROJECT_LIB.find(x => x.code === code);
+  form.code = p.code;
+  form.project = p.name;
+  form.addr = p.addr;
+  const vp = document.getElementById("vProject");
+  vp.textContent = p.name;
+  vp.classList.remove("ph");
+  const va = document.getElementById("vAddr");
+  va.textContent = p.addr;
+  va.classList.remove("ph");
+  closeSheet("projMask", "projSheet");
+}
+
+// ====== 地点 ======
+function openAddr() {
+  document.getElementById("addrInput").value = form.addr || "";
+  openSheet("addrMask", "addrSheet");
+}
+function confirmAddr() {
+  const v = document.getElementById("addrInput").value.trim();
+  form.addr = v;
+  const el = document.getElementById("vAddr");
+  if (v) {
+    el.textContent = v;
+    el.classList.remove("ph");
+  } else {
+    el.textContent = "选填，选项目后自动带出";
+    el.classList.add("ph");
+  }
+  closeSheet("addrMask", "addrSheet");
+}
+
+// ====== 时间 ======
+let timeCtx = { key: "from", date: "", slot: "" };
+function todayStr(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + (offset || 0));
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function openTime(key) {
+  timeCtx.key = key;
+  const cur = form[key];
+  timeCtx.date = cur ? cur.slice(0, 10) : todayStr(1);
+  timeCtx.slot = cur ? cur.slice(11, 16) : "08:00";
+  document.getElementById("timeTitle").textContent = "用机时间";
+  const dp = document.getElementById("datePick");
+  dp.min = todayStr(0);
+  dp.value = timeCtx.date;
+  renderTimeChips();
+  openSheet("timeMask", "timeSheet");
+}
+function renderTimeChips() {
+  const rel = ["今天", "明天", "后天", "大后天"];
+  const ds = [0, 1, 2, 3].map(o => todayStr(o));
+  if (timeCtx.date && ds.indexOf(timeCtx.date) < 0) ds.push(timeCtx.date);
+  const md = s => s.slice(5, 7) + "/" + s.slice(8, 10);
+  document.getElementById("dateChips").innerHTML = ds.map((s, i) =>
+    `<div class="chip ${s === timeCtx.date ? "on" : ""}" onclick="pickDate('${s}')">${rel[i] ? rel[i] + " " + md(s) : md(s)}</div>`
+  ).join("") + `<div class="chip other" onclick="openDatePicker()">其他日期…</div>`;
+  document.getElementById("slotChips").innerHTML = TAB_SLOT.map(s =>
+    `<div class="chip ${s === timeCtx.slot ? "on" : ""}" onclick="pickSlot('${s}')">${s}</div>`).join("");
+}
+function pickDate(d) { timeCtx.date = d; renderTimeChips(); }
+function pickSlot(s) { timeCtx.slot = s; renderTimeChips(); }
+function openDatePicker() {
+  const dp = document.getElementById("datePick");
+  if (dp.showPicker) { try { dp.showPicker(); return; } catch (e) {} }
+  dp.click();
+}
+function pickOtherDate(v) {
+  if (!v) return;
+  timeCtx.date = v;
+  renderTimeChips();
+}
+function confirmTime() {
+  if (!timeCtx.date || !timeCtx.slot) return toast("请选择日期和时段");
+  form[timeCtx.key] = timeCtx.date + " " + timeCtx.slot;
+  const el = document.getElementById("vFrom");
+  el.textContent = fmtDT(form[timeCtx.key]);
+  el.classList.remove("ph");
+  closeSheet("timeMask", "timeSheet");
+}
+function fmtDT(s) {
+  if (!s) return "";
+  const m = s.slice(5, 7).replace(/^0/, "");
+  const d = s.slice(8, 10).replace(/^0/, "");
+  return m + "月" + d + "日 " + s.slice(11, 16);
+}
+const WK = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+function fmtDTW(s) {
+  if (!s) return "";
+  const d = new Date(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
+  const m = s.slice(5, 7).replace(/^0/, "");
+  const day = s.slice(8, 10).replace(/^0/, "");
+  return m + "月" + day + "日 " + WK[d.getDay()] + " " + s.slice(11, 16);
+}
+
+// ====== 机械 ======
+let machQty = {};
+function openMach() {
+  machQty = {};
+  MACHINE_TYPES.forEach(n => machQty[n] = form.machines[n] || 0);
+  renderMach();
+  openSheet("machMask", "machSheet");
+}
+function stepMach(i, d) {
+  const n = MACHINE_TYPES[i];
+  machQty[n] = Math.max(0, Math.min(20, (machQty[n] || 0) + d));
+  renderMach();
+}
+function renderMach() {
+  document.getElementById("machList").innerHTML = MACHINE_TYPES.map((n, i) => {
+    const q = machQty[n] || 0, on = q > 0;
+    return `<div class="mach-row ${on ? "on" : ""}">
+      <div style="min-width:0;">
+        <div class="mn">${n}</div>
+        <div class="mh">${MACHINE_HINTS[n]}</div>
+      </div>
+      <div class="stepper">
+        <div class="st-btn st-minus" onclick="stepMach(${i},-1)">－</div>
+        <div class="st-num">${q}</div>
+        <div class="st-btn st-plus" onclick="stepMach(${i},1)">＋</div>
+      </div>
+    </div>`;
+  }).join("");
+  const total = MACHINE_TYPES.reduce((a, n) => a + (machQty[n] || 0), 0);
+  const txt = MACHINE_TYPES.filter(n => machQty[n] > 0).map(n => n + machQty[n] + "台").join("、");
+  document.getElementById("machSum").textContent = total ? `已选 ${total} 台：${txt}` : "还没有选择机械";
+}
+function machText(machines) {
+  const list = MACHINE_TYPES.filter(n => machines[n] > 0).map(n => n + machines[n] + "台");
+  Object.keys(machines || {}).forEach(n => {
+    if (MACHINE_TYPES.indexOf(n) < 0 && machines[n] > 0) list.push(n + machines[n] + "台");
+  });
+  return list.join("、");
+}
+function confirmMach() {
+  const next = {};
+  MACHINE_TYPES.forEach(n => { if (machQty[n] > 0) next[n] = machQty[n]; });
+  form.machines = next;
+  const el = document.getElementById("vMach");
+  const txt = machText(next);
+  el.textContent = txt || "请选择机械";
+  el.classList.toggle("ph", !txt);
+  closeSheet("machMask", "machSheet");
+}
+
+// ====== 事由 ======
+function openReason() {
+  document.getElementById("reasonInput").value = form.reason;
+  document.getElementById("reasonCount").textContent = form.reason.length + " / 140";
+  openSheet("reasonMask", "reasonSheet");
+}
+document.addEventListener("input", e => {
+  if (e.target && e.target.id === "reasonInput") {
+    document.getElementById("reasonCount").textContent = e.target.value.length + " / 140";
+  }
+});
+function confirmReason() {
+  const v = document.getElementById("reasonInput").value.trim();
+  form.reason = v;
+  const el = document.getElementById("vReason");
+  el.textContent = v || "选填，简要说明用途";
+  el.classList.toggle("ph", !v);
+  closeSheet("reasonMask", "reasonSheet");
+}
+
+// ====== 照片 ======
+function renderPhotos() {
+  const g = document.getElementById("photoGrid");
+  const cells = form.photos.map((p, i) =>
+    `<div class="thumb" onclick="previewPhoto(${i})"><img src="${p}"><div class="del" onclick="delPhoto(event,${i})">×</div></div>`).join("");
+  const add = form.photos.length < 3
+    ? `<div class="add-photo" onclick="openPhoto()"><div class="p">＋</div><div>拍照 / 相册</div></div>`
+    : "";
+  g.innerHTML = cells + add;
+  document.getElementById("photoCount").textContent = form.photos.length + " / 3";
+}
+function openPhoto() {
+  // 手机端优先调起相机选择；桌面端走文件选择
+  const cam = document.getElementById("cameraInput");
+  const file = document.getElementById("photoInput");
+  const isMobile = /Android|iPhone|iPad|Mobile/.test(navigator.userAgent);
+  (isMobile ? cam : file).click();
+}
+function bindPhotoInputs() {
+  ["photoInput", "cameraInput"].forEach(id => {
+    document.getElementById(id).addEventListener("change", function () {
+      const files = Array.from(this.files || []);
+      const room = 3 - form.photos.length;
+      files.slice(0, room).forEach(f => {
+        const r = new FileReader();
+        r.onload = ev => {
+          if (form.photos.length < 3) { form.photos.push(ev.target.result); renderPhotos(); }
+        };
+        r.readAsDataURL(f);
+      });
+      if (files.length > room) toast("最多 3 张，已只保留前 " + room + " 张");
+      this.value = "";
+    });
+  });
+}
+function delPhoto(e, i) { e.stopPropagation(); form.photos.splice(i, 1); renderPhotos(); }
+function previewPhoto(i) { toast("查看照片大图（原型演示）"); }
+
+// ====== 提交 ======
+function submitReq() {
+  if (!form.code) return toast("请选择所属项目");
+  if (!form.from) return toast("请选择用机时间");
+  const total = MACHINE_TYPES.reduce((a, n) => a + (form.machines[n] || 0), 0);
+  if (!total) return toast("请至少选择一种机械并确定台数");
+
+  const now = new Date();
+  const stamp = "" + now.getFullYear() + String(now.getMonth() + 1).padStart(2, "0") + String(now.getDate()).padStart(2, "0");
+  const seq = String(REQS.length + 1).padStart(3, "0");
+  const req = {
+    no: "JX-" + stamp + "-" + seq,
+    project: form.project, code: form.code, addr: form.addr,
+    applicant: ME.name, dept: form.dept,
+    from: form.from, to: "",
+    machines: JSON.parse(JSON.stringify(form.machines)),
+    reason: form.reason, photos: form.photos.length, photosList: form.photos.slice(),
+    status: "wait", created: fmtNow(), assigns: []
+  };
+  REQS.unshift(req);
+
+  const dept = form.dept;
+  form = blankForm();
+  form.dept = dept;
+  resetFormUI();
+
+  switchTab("list");
+  renderReqs(req.no);
+  toast("已提交，等待机械专员安排");
+}
+function fmtNow() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function resetFormUI() {
+  document.getElementById("vDept").textContent = form.dept;
+  document.getElementById("vDept").classList.remove("ph");
+  const setPh = (id, txt) => { const el = document.getElementById(id); el.textContent = txt; el.classList.add("ph"); };
+  setPh("vProject", "请选择项目");
+  setPh("vAddr", "选填，选项目后自动带出");
+  setPh("vFrom", "请选择日期和时段");
+  setPh("vMach", "请选择机械");
+  setPh("vReason", "选填，简要说明用途");
+  renderPhotos();
+}
+
+// ====== 我的申请 ======
+function renderReqs(hlNo) {
+  const list = document.getElementById("reqList");
+  list.innerHTML = REQS.map(r => reqCard(r, r.no === hlNo)).join("") +
+    `<div style="height:6px;"></div>`;
+  const waitN = REQS.filter(r => r.status === "wait" || r.status === "part").length;
+  const dot = document.getElementById("tabDot");
+  dot.style.display = waitN ? "inline-block" : "none";
+}
+
+// ====== 删除申请 ======
+let pendingDelNo = null;
+function askDelete(e, no) {
+  e.stopPropagation();
+  const r = REQS.find(x => x.no === no);
+  if (!r) return;
+  if (r.status !== "wait") return toast("已安排的申请不能删除，请联系机械专员");
+  pendingDelNo = no;
+  document.getElementById("delText").innerHTML =
+    `确定删除「${r.project}」这条申请？<br><span style="color:#98a2b3;font-size:12px;">单号 ${r.no}，删除后不可恢复。</span>`;
+  openSheet("delMask", "delSheet");
+}
+function confirmDelete() {
+  if (!pendingDelNo) return;
+  const no = pendingDelNo;
+  pendingDelNo = null;
+  REQS = REQS.filter(r => r.no !== no);
+  closeSheet("delMask", "delSheet");
+  renderReqs();
+  toast("已删除");
+}
+function reqCard(r, hl) {
+  const st = STATUS[r.status] || STATUS.wait;
+  const asg = (r.assigns && r.assigns.length)
+    ? `<div class="asg"><div class="ah">安排信息（机械专员）</div>
+        ${r.assigns.map(a => `<div class="a"><b>${a.type}</b><span class="p">${a.plate}</span><span class="s">${a.rental}</span></div>`).join("")}
+      </div>` : "";
+  const rej = r.reject ? `<div class="rej-tip">驳回原因：${r.reject}</div>` : "";
+  const del = r.status === "wait"
+    ? `<div class="req-ops"><button class="btn-del" onclick="askDelete(event,'${r.no}')">删除</button></div>`
+    : "";
+  const timeLine = r.from
+    ? `<div class="req-line"><span>用机：</span>${fmtDTW(r.from)}</div>`
+    : "";
+  const meta = `${r.no} · ${String(r.created || "").slice(5)}`;
+  return `<div class="req-card ${hl ? "hl" : ""}" onclick="openDetail('${r.no}')">
+    <div class="req-head">
+      <div class="req-meta">${meta}</div>
+      <div class="badge ${st.cls}">${st.name}</div>
+    </div>
+    <div class="req-name">${r.project}</div>
+    <div class="req-line"><span>申请人：</span>${r.applicant || ME.name} · ${r.dept || ME.dept}</div>
+    ${timeLine}
+    <div class="req-line"><span>地点：</span>${r.addr || "待定（由机械专员确认）"}</div>
+    <div class="req-mach"><span class="k">机械：</span>${machText(r.machines)}</div>
+    ${asg}${rej}${del}
+  </div>`;
+}
+
+// ====== 申请详情（只读） ======
+function detailFlow(r) {
+  const done = ["plan", "on", "done"].indexOf(r.status) >= 0;
+  const rejected = r.status === "rej";
+  const node = (cls, badge, key, name, desc, stTxt, stCls) => `
+    <div class="fnode ${cls}">
+      <div class="fav">${badge}</div>
+      <div class="fx"><div class="fk">${key}</div><div class="fn">${name}<span class="fd">${desc}</span></div></div>
+      <div class="fs ${stCls || ""}">${stTxt}</div>
+    </div>`;
+  const node2 = rejected
+    ? node("wait", "机", "机械专员", "张伟", "机械管理中心 · 机械专员", "已驳回", "")
+    : node(done ? "" : "cur", "机", "下一步", "张伟", "机械管理中心 · 机械专员", done ? "已完成" : "待处理", done ? "" : "cur");
+  const node3 = rejected ? "" :
+    node(done ? "" : "wait", "完", "最后一步", "安排完成",
+      done ? "已安排机械，通知申请人" : "查看租赁公司、车牌",
+      done ? "已完成" : "待完成", "");
+  return `<div class="flow-card" style="margin:10px 12px 0;">
+    <div class="flow-title">流程审批预览</div>
+    ${node("", "李", "发起人", r.applicant || ME.name, r.dept || ME.dept, "已提交", "")}
+    ${node2}${node3}
+  </div>`;
+}
+function detailBody(r) {
+  const st = STATUS[r.status] || STATUS.wait;
+  const photos = (r.photosList && r.photosList.length)
+    ? `<div class="d-photos">${r.photosList.map(p => `<div class="d-photo"><img src="${p}"></div>`).join("")}</div>`
+    : `<div class="d-empty">未上传照片 / 附件</div>`;
+  const asg = (r.assigns && r.assigns.length)
+    ? `${r.assigns.map(a => `<div class="d-row asg-row"><div class="k">${a.type}</div><div class="v">${a.plate} <span style="color:#98a2b3;">· ${a.rental}</span></div></div>`).join("")}`
+    : (r.status === "rej" ? "" : `<div class="d-empty">等待机械专员安排</div>`);
+  return `
+    <div class="d-card">
+      <div class="d-head">
+        <div class="d-no">${r.no} · ${String(r.created || "").slice(5)}</div>
+        <div class="badge ${st.cls}">${st.name}</div>
+      </div>
+      <div class="d-name">${r.project}</div>
+    </div>
+
+    <div class="d-card">
+      <div class="d-row"><div class="k">申请人</div><div class="v strong">${r.applicant || ME.name}</div></div>
+      <div class="d-row"><div class="k">申请部门</div><div class="v">${r.dept || ME.dept}</div></div>
+      <div class="d-row"><div class="k">所属项目</div><div class="v">${r.project}${r.code ? "（" + r.code + "）" : ""}</div></div>
+      <div class="d-row"><div class="k">机械类型及数量</div><div class="v strong">${machText(r.machines)}</div></div>
+      <div class="d-row"><div class="k">用机时间</div><div class="v">${r.from ? fmtDTW(r.from) : "待定"}</div></div>
+      <div class="d-row"><div class="k">用机地点</div><div class="v">${r.addr || "待定（由机械专员确认）"}</div></div>
+      <div class="d-row"><div class="k">用机事由</div><div class="v">${r.reason || "—"}</div></div>
+    </div>
+
+    <div class="d-card">
+      <div class="d-row" style="border-bottom:0;padding-top:0;"><div class="k">现场照片</div><div class="v" style="color:#98a2b3;font-size:13px;">${(r.photosList && r.photosList.length) ? r.photosList.length + " 张" : "无"}</div></div>
+      ${photos}
+    </div>
+
+    <div class="d-card">
+      <div class="d-head" style="margin-bottom:6px;"><div class="d-no" style="color:#86909c;">安排信息（机械专员）</div></div>
+      ${asg}
+      ${r.reject ? `<div class="rej-tip">驳回原因：${r.reject}</div>` : ""}
+    </div>
+
+    ${detailFlow(r)}
+    <div style="height:8px;"></div>`;
+}
+function openDetail(no) {
+  const r = REQS.find(x => x.no === no);
+  if (!r) return;
+  document.getElementById("paneApply").classList.add("hide");
+  document.getElementById("paneList").classList.add("hide");
+  const pane = document.getElementById("paneDetail");
+  pane.innerHTML = detailBody(r);
+  pane.classList.remove("hide");
+  pane.scrollTop = 0;
+  document.getElementById("tabs").classList.add("hide");
+  const nb = document.getElementById("navBack");
+  nb.textContent = "‹ 我的申请";
+  nb.removeAttribute("href");
+  nb.onclick = function (e) { e.preventDefault(); closeDetail(); return false; };
+  document.getElementById("navTitle").textContent = "申请详情";
+  document.getElementById("bottomBar").innerHTML =
+    `<button class="btn-ghost" onclick="closeDetail()">返回我的申请</button>
+     <div class="tip">本条申请为只读详情，如需修改请联系机械专员</div>`;
+}
+function closeDetail() {
+  document.getElementById("paneDetail").classList.add("hide");
+  document.getElementById("tabs").classList.remove("hide");
+  const nb = document.getElementById("navBack");
+  nb.textContent = "‹ 现场管理";
+  nb.href = "../site.html";
+  document.getElementById("navTitle").textContent = "机械申请";
+  switchTab("list");
+}
+
+// 初始化
+bindPhotoInputs();
+renderPhotos();
+renderReqs();
+</script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>现场管理 - 郴江电力管理系统</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; background:#e9ecf1; }
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+
+  .phone {
+    width:375px; height:812px; background:#f4f6f9; border-radius:36px; overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.18); position:relative; display:flex; flex-direction:column;
+  }
+  .statusbar {
+    height:44px; background:#fff; display:flex; align-items:center; justify-content:space-between;
+    padding:0 22px; font-size:14px; font-weight:600; color:#000; flex-shrink:0;
+  }
+  .statusbar .right { display:flex; align-items:center; gap:6px; font-size:12px; }
+
+  .navbar {
+    height:44px; background:#fff; display:flex; align-items:center; justify-content:center;
+    border-bottom:1px solid #f0f0f0; flex-shrink:0;
+  }
+  .navbar .title { font-size:17px; font-weight:600; color:#222; }
+
+  .content { flex:1; overflow-y:auto; padding-bottom:70px; }
+
+  /* 应用入口 */
+  .section-title { font-size:15px; font-weight:600; color:#222; margin:14px 16px 10px; }
+  .app-row {
+    background:#fff; margin:0 12px; border-radius:8px; padding:16px 4px 14px;
+    display:grid; grid-template-columns:repeat(4,1fr); row-gap:16px;
+  }
+  .app-item { display:flex; flex-direction:column; align-items:center; cursor:pointer; text-decoration:none; color:inherit; }
+  .app-icon {
+    width:46px; height:46px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    margin-bottom:6px; color:#fff;
+  }
+  .app-icon svg { width:24px; height:24px; }
+  .app-label { font-size:12px; color:#333; }
+  .ic-blue { background:linear-gradient(135deg,#4A90E2,#2B7CDB); }
+  .ic-orange { background:linear-gradient(135deg,#F5A962,#E8743C); }
+  .ic-green { background:linear-gradient(135deg,#5DC98A,#3BAF6F); }
+  .ic-purple { background:linear-gradient(135deg,#A78BFA,#7C3AED); }
+
+  /* 我的项目 */
+  .proj-head {
+    display:flex; justify-content:space-between; align-items:center;
+    margin:18px 16px 10px;
+  }
+  .proj-head .title { font-size:15px; font-weight:600; color:#222; }
+  .proj-head .more { font-size:12px; color:#999; cursor:pointer; }
+
+  .proj-list { background:#fff; margin:0 12px; border-radius:8px; }
+  .proj-item {
+    display:flex; align-items:center; padding:14px; border-bottom:1px solid #f2f2f2; cursor:pointer;
+  }
+  .proj-item:last-child { border-bottom:none; }
+  .proj-avatar {
+    width:42px; height:42px; border-radius:8px; flex-shrink:0; margin-right:12px;
+    display:flex; align-items:center; justify-content:center;
+    background:#E8F1FB; color:#2B7CDB; font-size:16px; font-weight:600;
+  }
+  .proj-info { flex:1; min-width:0; }
+  .proj-name { font-size:14px; color:#222; font-weight:500; line-height:1.4; }
+  .proj-tags { margin-top:5px; font-size:11px; color:#999; }
+  .proj-tags span { margin-right:8px; }
+
+  /* 底部Tab栏 */
+  .tabbar {
+    position:absolute; left:0; right:0; bottom:0; height:62px; background:#fff;
+    border-top:1px solid #eee; display:flex; padding-bottom:6px;
+  }
+  .tab-item {
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-size:11px; color:#888; cursor:pointer; position:relative; text-decoration:none;
+  }
+  .tab-item.active { color:#2B7CDB; }
+  .tab-item svg { width:22px; height:22px; margin-bottom:3px; }
+  .tab-badge {
+    position:absolute; top:4px; right:calc(50% - 18px); background:#E74C3C; color:#fff;
+    font-size:10px; min-width:16px; height:16px; line-height:16px; border-radius:8px;
+    text-align:center; padding:0 4px;
+  }
+
+  .toast {
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    background:rgba(0,0,0,.75); color:#fff; padding:10px 18px; border-radius:6px;
+    font-size:13px; opacity:0; pointer-events:none; transition:opacity .25s; z-index:99;
+  }
+  .toast.show { opacity:1; }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="statusbar">
+      <span>9:41 AM</span>
+      <div class="right">
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="#000"><rect x="0" y="7" width="3" height="4"/><rect x="4" y="5" width="3" height="6"/><rect x="8" y="2.5" width="3" height="8.5"/><rect x="12" y="0" width="3" height="11"/></svg>
+        <span>100%</span>
+        <svg width="22" height="11" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="20" height="11" rx="2.5" fill="none" stroke="#000"/><rect x="2" y="2" width="17" height="8" rx="1" fill="#000"/></svg>
+      </div>
+    </div>
+
+    <div class="navbar"><div class="title">现场管理</div></div>
+
+    <div class="content">
+      <div class="section-title">应 用</div>
+      <div class="app-row">
+        <a class="app-item" href="现场管理/周计划.html">
+          <div class="app-icon ic-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="14" x2="12" y2="14"/></svg>
+          </div>
+          <div class="app-label">周计划</div>
+        </a>
+        <a class="app-item" href="现场管理/日计划.html">
+          <div class="app-icon ic-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="4" y="5" width="16" height="15" rx="2"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="9" y1="3" x2="9" y2="7"/><line x1="15" y1="3" x2="15" y2="7"/><path d="M8 15l2 2 4-4"/></svg>
+          </div>
+          <div class="app-label">日计划</div>
+        </a>
+        <a class="app-item" href="现场管理/日完工.html">
+          <div class="app-icon ic-orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div class="app-label">日完工</div>
+        </a>
+        <div class="app-item" onclick="toast('劳务人员')">
+          <div class="app-icon ic-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="16" cy="10" r="2"/><path d="M3 20c0-3 2.5-5.5 6-5.5s6 2.5 6 5.5"/><path d="M15 14.5c2.5.5 4 2.5 4 5.5"/></svg>
+          </div>
+          <div class="app-label">劳务人员</div>
+        </div>
+      </div>
+
+      <div class="proj-head">
+        <div class="title">我的项目</div>
+        <div class="more" onclick="toast('更多项目')">更多 &gt;</div>
+      </div>
+      <div class="proj-list">
+        <div class="proj-item" onclick="toast('进入项目：云麓华府')">
+          <div class="proj-avatar">云</div>
+          <div class="proj-info">
+            <div class="proj-name">云麓华府住宅小区一期总承包工程</div>
+            <div class="proj-tags"><span>常用</span><span>|</span><span>在建</span><span>|</span><span>参与</span><span>|</span><span>房屋建筑</span></div>
+          </div>
+        </div>
+        <div class="proj-item" onclick="toast('进入项目：滨江新区')">
+          <div class="proj-avatar">滨</div>
+          <div class="proj-info">
+            <div class="proj-name">滨江新区市政道路及配套管网工程</div>
+            <div class="proj-tags"><span>常用</span><span>|</span><span>在建</span><span>|</span><span>参与</span><span>|</span><span>市政公用</span></div>
+          </div>
+        </div>
+        <div class="proj-item" onclick="toast('进入项目：城北万象')">
+          <div class="proj-avatar">城</div>
+          <div class="proj-info">
+            <div class="proj-name">城北万象商业广场机电安装工程</div>
+            <div class="proj-tags"><span>常用</span><span>|</span><span>在建</span><span>|</span><span>参与</span><span>|</span><span>机电安装</span></div>
+          </div>
+        </div>
+        <div class="proj-item" onclick="toast('进入项目：国际大酒店')">
+          <div class="proj-avatar">国</div>
+          <div class="proj-info">
+            <div class="proj-name">国际大酒店室内装饰装修工程</div>
+            <div class="proj-tags"><span>常用</span><span>|</span><span>在建</span><span>|</span><span>参与</span><span>|</span><span>装饰装修</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a class="tab-item" href="workbench.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1v-9z"/></svg>
+        工作台
+      </a>
+      <a class="tab-item" href="approval.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+        审批
+        <span class="tab-badge">12</span>
+      </a>
+      <a class="tab-item active" href="site.html">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="#fff"/></svg>
+        现场管理
+      </a>
+      <a class="tab-item" href="profile.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+        我的
+      </a>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+<script>
+  function toast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 1000);
+  }
+</script>
+</body>
+</html>
