@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>分包日报 - 郴江电力</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%232b7cff'/%3E%3Cpath d='M6 8h12M6 12h12M6 16h8' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; background:#e9ecf1; }
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+  .phone { width:390px; height:820px; background:#f5f6f8; border-radius:36px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.18); position:relative; display:flex; flex-direction:column; }
+  .statusbar { height:44px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:14px; font-weight:600; flex-shrink:0; }
+  .statusbar .right { display:flex; align-items:center; gap:6px; font-size:12px; }
+  .navbar { height:48px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 12px; border-bottom:1px solid #f0f0f0; flex-shrink:0; }
+  .navbar .back { font-size:15px; color:#2b7cff; padding:8px 4px; cursor:pointer; }
+  .navbar .title { font-size:17px; font-weight:600; color:#222; }
+  .navbar .right { min-width:58px; text-align:right; font-size:13px; color:#2b7cff; cursor:pointer; }
+
+  .tabs { display:flex; background:#fff; flex-shrink:0; border-bottom:1px solid #f0f0f0; }
+  .tab { flex:1; text-align:center; padding:12px 0 11px; font-size:14px; color:#666; cursor:pointer; position:relative; }
+  .tab.on { color:#2b7cff; font-weight:600; }
+  .tab.on::after { content:""; position:absolute; left:50%; transform:translateX(-50%); bottom:0; width:30px; height:3px; border-radius:2px; background:#2b7cff; }
+
+  .pane { flex:1; min-height:0; overflow-y:auto; padding-bottom:16px; background:#f5f6f8; }
+  .pane.hide { display:none; }
+
+  .sec-title { padding:14px 18px 8px; font-size:12px; color:#98a2b3; }
+  .card { background:#fff; margin:0 12px; border-radius:12px; overflow:hidden; }
+  .row { display:flex; align-items:center; min-height:50px; padding:11px 14px; border-bottom:1px solid #f4f5f7; gap:10px; }
+  .row:last-child { border-bottom:none; }
+  .row.tap { cursor:pointer; }
+  .row .lbl { font-size:13px; color:#66707c; flex:none; width:84px; }
+  .row .lbl i { color:#dc2626; font-style:normal; margin-right:2px; }
+  .row .val { flex:1; min-width:0; text-align:right; font-size:14px; color:#222; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .row .val.ph { color:#b6bfcc; }
+  .row .arr { flex:none; color:#c9cdd4; font-size:13px; }
+  .inp { flex:1; min-width:0; border:0; outline:none; font-size:14px; color:#222; background:transparent; font-family:inherit; text-align:right; }
+
+  /* 天气 chips */
+  .wchips { display:flex; flex-wrap:wrap; gap:8px; padding:12px 14px; }
+  .wchip { font-size:12px; padding:6px 13px; border-radius:14px; border:1px solid #e5e7eb; color:#66707c; background:#f7f9fc; cursor:pointer; }
+  .wchip.on { background:#eef4ff; color:#2b7cff; border-color:#c8ddff; font-weight:600; }
+
+  .issue-box { padding:11px 14px 14px; }
+  .f-area { width:100%; min-height:96px; border:1px solid #e8ecf3; border-radius:8px; padding:9px 10px; font-size:13px; color:#333; line-height:1.6; resize:vertical; outline:none; background:#fbfcfe; font-family:inherit; }
+  .f-area::placeholder { color:#b6bfcc; }
+  .to-zg { display:flex; justify-content:flex-end; margin-top:8px; }
+  .btn-mini { height:30px; padding:0 12px; border-radius:15px; border:1px solid #ffd6a3; background:#fff7ef; color:#c2410c; font-size:12px; cursor:pointer; }
+
+  .photo-card { background:#fff; margin:10px 12px 0; border-radius:12px; padding:12px 14px 14px; }
+  .photo-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .photo-head .t { font-size:13px; color:#66707c; }
+  .photo-head .c { font-size:11px; color:#98a2b3; }
+  .photo-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .thumb { position:relative; height:74px; border-radius:8px; background:#eef2f8; display:flex; align-items:center; justify-content:center; font-size:11px; color:#8895a7; }
+  .thumb .del { position:absolute; top:-5px; right:-5px; width:17px; height:17px; line-height:17px; text-align:center; border-radius:50%; background:#dc2626; color:#fff; font-size:10px; }
+  .add-photo { border:1px dashed #ccd3dc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#2b7cff; cursor:pointer; font-size:22px; font-weight:300; background:#fbfcfd; height:74px; }
+
+  /* 完成产值 */
+  .out-row { padding:12px 14px; border-bottom:1px solid #f4f5f7; }
+  .out-row:last-child { border-bottom:0; }
+  .out-nm { font-size:13px; color:#3a3f47; line-height:1.5; word-break:break-word; }
+  .out-sub { display:flex; align-items:center; gap:8px; margin-top:8px; font-size:11px; color:#98a2b3; }
+  .out-sub > span:first-child { flex:1; min-width:0; line-height:1.5; }
+  .out-qin { width:58px; flex:0 0 58px; height:30px; border:1px solid #e5e7eb; border-radius:8px; text-align:center; font-size:13px; color:#222; outline:none; background:#fbfcfe; font-family:inherit; }
+  .out-amt { margin-left:auto; flex:0 0 auto; white-space:nowrap; font-size:13px; color:#e5342b; font-weight:700; }
+  .out-del { color:#b6bfcc; font-size:11px; margin-left:4px; flex:0 0 auto; white-space:nowrap; cursor:pointer; }
+  .out-sum { display:flex; justify-content:space-between; align-items:center; padding:12px 14px; font-size:13px; color:#66707c; background:#fbfcfe; }
+  .out-sum b { color:#e5342b; font-size:16px; }
+  .add-row { margin:10px 12px; padding:12px; text-align:center; font-size:13px; color:#2b7cff; border:1px dashed #c8ddff; border-radius:10px; cursor:pointer; background:#fff; }
+  .submit-bar { padding:16px 12px 6px; }
+  .btn-main { width:100%; height:46px; border:0; border-radius:23px; background:#2b7cff; color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn-ghost-wide { width:100%; height:46px; border:1px solid #2b7cff; border-radius:23px; background:#fff; color:#2b7cff; font-size:15px; font-weight:600; cursor:pointer; }
+
+  /* 列表 */
+  .search-wrap { background:#fff; padding:10px 12px 12px; border-bottom:1px solid #f0f0f0; }
+  .search { width:100%; height:36px; border:1px solid #e5e7eb; border-radius:18px; padding:0 14px; font-size:13px; background:#f7f9fc; outline:none; color:#222; }
+  .search::placeholder { color:#a7b0bd; }
+  .chips { display:flex; gap:8px; margin-top:10px; overflow-x:auto; padding-bottom:2px; }
+  .chips::-webkit-scrollbar { display:none; }
+  .fchip { flex:none; font-size:12px; color:#66707c; background:#f2f4f8; border-radius:12px; padding:5px 12px; cursor:pointer; border:1px solid transparent; }
+  .fchip.on { background:#eef4ff; color:#2b7cff; border-color:#c8ddff; font-weight:600; }
+  .list-head { font-size:11px; color:#98a2b3; padding:10px 14px 6px; }
+
+  .r-card { background:#fff; margin:0 12px 10px; border-radius:12px; padding:13px 14px; cursor:pointer; }
+  .r-top { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .badge { flex:none; font-size:10px; font-weight:600; padding:2px 8px; border-radius:9px; line-height:16px; white-space:nowrap; }
+  .b-date { background:#f2f4f8; color:#66707c; }
+  .b-weather { background:#eef4ff; color:#1d4ed8; }
+  .b-draft { background:#fef3c7; color:#b45309; }
+  .b-submitted { background:#dcfce7; color:#15803d; }
+  .b-src { background:#f0f6ff; color:#2b7cff; }
+  .r-no { margin-left:auto; font-size:10px; color:#98a2b3; }
+  .r-proj { font-size:13px; color:#66707c; margin-top:9px; }
+  .r-work { font-size:13px; color:#222; line-height:1.6; margin-top:5px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .r-issue { font-size:12px; color:#c2410c; background:#fff7ef; border-radius:8px; padding:6px 8px; margin-top:8px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .r-foot { display:flex; justify-content:space-between; align-items:center; margin-top:9px; font-size:11px; color:#a7b0bd; }
+  .r-foot b { color:#e5342b; font-weight:700; font-size:12px; }
+  .empty { margin:44px 12px; text-align:center; font-size:13px; color:#a7b0bd; line-height:1.9; }
+
+  /* 弹层 */
+  .mask { position:absolute; inset:0; background:rgba(0,0,0,.45); z-index:50; display:none; align-items:flex-end; }
+  .mask.open { display:flex; }
+  .sheet { background:#fff; width:100%; max-height:86%; border-radius:16px 16px 0 0; display:flex; flex-direction:column; }
+  .sheet-head { padding:14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0f0f0; flex-shrink:0; }
+  .sheet-title { font-size:16px; font-weight:600; color:#222; }
+  .sheet-close { color:#888; font-size:14px; cursor:pointer; }
+  .sheet-body { flex:1; min-height:0; overflow-y:auto; padding:12px 16px 16px; }
+  .sheet-foot { flex-shrink:0; padding:12px 16px; border-top:1px solid #f0f0f0; display:flex; gap:10px; }
+  .btn-primary { flex:1; height:46px; border:none; border-radius:10px; background:#2b7cff; color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn-secondary { flex:1; height:46px; border:1px solid #2b7cff; border-radius:10px; background:#fff; color:#2b7cff; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn-danger { flex:1; height:46px; border:1px solid #fca5a5; border-radius:10px; background:#fff; color:#dc2626; font-size:15px; font-weight:600; cursor:pointer; }
+
+  .pk-item { display:flex; align-items:flex-start; padding:12px 4px; border-bottom:1px solid #f4f5f7; font-size:14px; color:#222; cursor:pointer; }
+  .pk-item.on { color:#2b7cff; font-weight:600; }
+  .pk-main { flex:1; min-width:0; }
+  .pk-sub { font-size:11px; color:#98a2b3; margin-top:4px; line-height:1.5; }
+  .pk-ck { flex:none; margin-left:8px; color:#2b7cff; font-size:13px; align-self:center; }
+  .pk-search { padding:10px 0 8px; }
+  .pk-search input { width:100%; height:34px; border:1px solid #e5e7eb; border-radius:17px; padding:0 12px; font-size:13px; outline:none; background:#f7f9fc; font-family:inherit; }
+  /* 选择工程量（与日完工一致） */
+  .qty-search-wrap { padding:10px 14px 8px; }
+  .qty-search { width:100%; height:34px; border:1px solid #dbe1ea; border-radius:8px; padding:0 12px; font-size:13px; outline:none; box-sizing:border-box; background:#f8fafc; font-family:inherit; }
+  .qty-item { display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid #f1f3f7; }
+  .qty-l { flex:1; min-width:0; }
+  .qty-nm { font-size:13px; color:#3a3f47; line-height:1.45; word-break:break-word; }
+  .qty-sub { font-size:11px; color:#98a2b3; margin-top:3px; }
+  .qty-r { flex:none; width:104px; text-align:right; }
+  .qty-in { width:100%; height:32px; border:1px solid #dbe1ea; border-radius:8px; text-align:center; font-size:13px; color:#3a3f47; outline:none; box-sizing:border-box; font-family:inherit; }
+  .qty-amt { font-size:12px; color:#e5342b; font-weight:600; margin-top:4px; }
+  .qty-hl { color:#e5342b; font-weight:700; }
+  .qty-done { color:#16a34a; font-weight:700; }
+  .ov-empty { font-size:13px; color:#98a2b3; text-align:center; line-height:1.8; }
+
+  /* 详情 */
+  .d-row { display:flex; gap:10px; padding:9px 0; border-bottom:1px solid #f4f5f7; font-size:13px; }
+  .d-row:last-child { border-bottom:0; }
+  .d-row .k { flex:none; width:74px; color:#98a2b3; }
+  .d-row .v { flex:1; min-width:0; color:#333; line-height:1.6; word-break:break-word; }
+  .d-sec { font-size:12px; font-weight:600; color:#98a2b3; margin:16px 0 4px; }
+  .d-sec:first-child { margin-top:0; }
+  .reply-box { background:#f8fbf9; border:1px solid #d9ecdf; border-radius:10px; padding:10px 12px; font-size:13px; color:#3a4a3f; line-height:1.6; }
+  .issue-box2 { background:#fff7ef; border:1px solid #ffe0bf; border-radius:10px; padding:10px 12px; font-size:13px; color:#8a4b12; line-height:1.6; }
+  .wait-box { background:#f8fafc; border:1px solid #eef1f5; border-radius:10px; padding:10px 12px; font-size:12px; color:#98a2b3; line-height:1.6; }
+  .d-out-row { display:flex; justify-content:space-between; gap:10px; padding:9px 0; border-bottom:1px solid #f4f5f7; font-size:12px; color:#66707c; }
+  .d-out-row .nm { flex:1; min-width:0; color:#3a3f47; line-height:1.5; }
+  .d-out-row .amt { flex:none; color:#e5342b; font-weight:700; }
+  .d-photo { padding:10px 0 12px; border-bottom:1px solid #f4f5f7; }
+  .d-photo-t { font-size:13px; color:#98a2b3; margin-bottom:8px; display:flex; justify-content:space-between; align-items:baseline; }
+  .d-photo-t .c { font-size:11px; color:#a7b0bd; font-weight:400; }
+
+  #toast { position:absolute; left:50%; bottom:96px; transform:translateX(-50%) translateY(8px); background:rgba(30,34,40,.92); color:#fff; font-size:12px; padding:8px 14px; border-radius:16px; opacity:0; transition:.22s; pointer-events:none; z-index:90; max-width:300px; text-align:center; line-height:1.5; }
+  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span class="right">信号 Wi-Fi 100%</span></div>
+
+  <div class="navbar">
+    <div class="back" onclick="goBack()">‹ 现场管理</div>
+    <div class="title">分包日报</div>
+    <div class="right" id="navRight"></div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="pane hide" id="paneForm"></div>
+  <div class="pane" id="paneList"></div>
+  <div class="pane hide" id="paneMine"></div>
+
+  <!-- 详情 -->
+  <div class="mask" id="detailMask">
+    <div class="sheet">
+      <div class="sheet-head"><div class="sheet-title">日报详情</div><div class="sheet-close" onclick="closeMask('detailMask')">关闭</div></div>
+      <div class="sheet-body" id="detailBody"></div>
+      <div class="sheet-foot" id="detailFoot"></div>
+    </div>
+  </div>
+
+  <!-- 项目选择 -->
+  <div class="mask" id="projMask">
+    <div class="sheet">
+      <div class="sheet-head"><div class="sheet-title">选择项目</div><div class="sheet-close" onclick="closeMask('projMask')">关闭</div></div>
+      <div class="sheet-body">
+        <div class="pk-search"><input id="projKw" placeholder="搜索项目名称 / 项目经理" oninput="renderProjList()"></div>
+        <div id="projList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 工程量选择 -->
+  <div class="mask" id="qtyMask">
+    <div class="sheet" style="max-height:80%;">
+      <div class="sheet-head"><div class="sheet-title" id="qtyTitle">选择工程量</div><div class="sheet-close" onclick="closeQtyPick()">关闭</div></div>
+      <div class="sheet-body" id="qtyList"></div>
+      <div class="sheet-foot">
+        <button class="btn-secondary" onclick="closeQtyPick()">取消</button>
+        <button class="btn-primary" onclick="confirmQtyPick()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认 / 删除 -->
+  <div class="mask" id="cfmMask">
+    <div class="sheet" style="max-height:60%;">
+      <div class="sheet-head"><div class="sheet-title" id="cfmTitle">提示</div><div class="sheet-close" onclick="closeMask('cfmMask')">关闭</div></div>
+      <div class="sheet-body"><div style="font-size:13px; color:#4a5159; line-height:1.75;" id="cfmDesc"></div></div>
+      <div class="sheet-foot">
+        <button class="btn-secondary" onclick="closeMask('cfmMask')">取消</button>
+        <button class="btn-primary" id="cfmOk">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+</div>
+<script>
+// ========== 基础 ==========
+const ME = "黄志远";
+const MY_DEPT = "工程部";
+const WEATHERS = ["晴", "多云", "阴", "小雨", "中雨", "大雨", "暴雨", "高温", "大风"];
+
+const PROJECTS = [
+  { code: "xm1", name: "园垄线10kV线路改造工程", manager: "李志强" },
+  { code: "xm2", name: "珠东线配电自动化改造", manager: "周国华" },
+  { code: "xm3", name: "高速杆迁瓦窑坪支线工程", manager: "陈立军" },
+  { code: "xm4", name: "嘉禾县农网巩固提升工程", manager: "刘建国" },
+  { code: "xm5", name: "苏仙区小区供配电改造工程", manager: "张强" }
+];
+
+// 项目立项工程量清单（名称 / 单位 / 合同量 / 单价）
+const BOQ = [
+  { qid: "Q1-01", projectCode: "xm1", name: "(调)新建HA-2 6间隔环网箱基础(5.7×1.6×1.5) 侧壁厚(m):0.25", unit: "座", totalQty: 10, price: 30000 },
+  { qid: "Q1-02", projectCode: "xm1", name: "(调)直线井砖砌 1.8×1.8×1.98 全开启", unit: "座", totalQty: 10, price: 23000 },
+  { qid: "Q1-03", projectCode: "xm1", name: "10kV 线路架设（含金具安装）", unit: "km", totalQty: 3, price: 86000 },
+  { qid: "Q2-01", projectCode: "xm2", name: "配电自动化终端安装调试", unit: "台", totalQty: 12, price: 9800 },
+  { qid: "Q2-02", projectCode: "xm2", name: "顶管施工（DN200）", unit: "米", totalQty: 200, price: 120 },
+  { qid: "Q3-01", projectCode: "xm3", name: "基础开挖及回填", unit: "方", totalQty: 300, price: 60 },
+  { qid: "Q3-02", projectCode: "xm3", name: "杆塔组立", unit: "基", totalQty: 8, price: 42000 },
+  { qid: "Q4-01", projectCode: "xm4", name: "10kV 线路改造（含立杆）", unit: "km", totalQty: 5, price: 78000 },
+  { qid: "Q4-02", projectCode: "xm4", name: "配变安装（400kVA）", unit: "台", totalQty: 6, price: 32000 },
+  { qid: "Q5-01", projectCode: "xm5", name: "小区配电房改造", unit: "座", totalQty: 4, price: 56000 },
+  { qid: "Q5-02", projectCode: "xm5", name: "电缆敷设（YJV22-4×95）", unit: "米", totalQty: 1200, price: 85 }
+];
+
+function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove("show"), 1900);
+}
+function goBack() { location.href = "../site.html"; }
+function closeMask(id) { document.getElementById(id).classList.remove("open"); }
+
+// ========== Tab & 主渲染 ==========
+function switchTab(t) {
+  if (curTab === "form" && t !== "form") {
+    syncFormInputs();
+    if (editingId !== null) {
+      editingId = null;
+      form = { date: todayStr(), weather: "", proj: "", work: "", issue: "", photos: 0, outputs: [] };
+    }
+  }
+  curTab = t;
+  document.getElementById("paneForm").className = "pane" + (t === "form" ? "" : " hide");
+  document.getElementById("paneList").className = "pane hide";
+  document.getElementById("paneMine").className = "pane" + (t === "mine" ? "" : " hide");
+  render();
+}
+function render() {
+  const tabsEl = document.getElementById("tabs");
+  tabsEl.innerHTML = `
+    <div class="tab ${curTab === "form" ? "on" : ""}" onclick="switchTab('form')">创建日报</div>
+    <div class="tab ${curTab === "mine" ? "on" : ""}" onclick="switchTab('mine')">我的日报</div>`;
+  tabsEl.style.display = "flex";
+  const nr = document.getElementById("navRight");
+  nr.textContent = "";
+  nr.onclick = null;
+  if (curTab === "form") renderForm();
+  else renderMine();
+}
+function openForm() {
+  editingId = null;
+  form = { date: todayStr(), weather: "", proj: "", work: "", issue: "", photos: 0, outputs: [] };
+  switchTab("form");
+}
+
+// ========== 列表 ==========
+function matchKw(r) {
+  const el = document.getElementById("kw");
+  const kw = (el ? el.value : "").trim().toLowerCase();
+  if (!kw) return true;
+  return (r.work + " " + projName(r.proj) + " " + (r.issue || "") + " " + (r.reporter || "") + " " + r.no).toLowerCase().indexOf(kw) >= 0;
+}
+function filterRows() {
+  const [ws, we] = thisWeekRange();
+  const today = todayStr();
+  return RECORDS.filter(r => {
+    if (!matchKw(r)) return false;
+    if (flt === "today") return r.date === today;
+    if (flt === "week") return r.date >= ws && r.date <= we;
+    if (flt === "draft") return r.status === "draft";
+    return true;
+  });
+}
+function setFlt(f) {
+  flt = f;
+  document.querySelectorAll(".fchip").forEach(el => el.classList.toggle("on", el.dataset.f === f));
+  renderListInto("paneMine");
+}
+function cardHtml(r) {
+  const st = r.status === "draft" ? { t: "待完善", c: "b-draft" } : { t: "已提交", c: "b-submitted" };
+  const tot = outTotal(r.outputs);
+  return `<div class="r-card" onclick="openDetail(${r.id})">
+    <div class="r-top">
+      <span class="badge b-date">${dateBadge(r.date)}</span>
+      ${r.weather ? `<span class="badge b-weather">${r.weather}</span>` : ""}
+      <span class="badge ${st.c}">${st.t}</span>
+      ${r.source === "completion" ? `<span class="badge b-src">来自日完工</span>` : ""}
+      <span class="r-no">${r.no}</span>
+    </div>
+    <div class="r-proj">${projName(r.proj)}</div>
+    <div class="r-work">${r.work}</div>
+    ${r.issue ? `<div class="r-issue">安全质量问题：${r.issue}</div>` : ""}
+    <div class="r-foot"><span>完成产值 <b>${tot ? money(tot) : "—"}</b></span><span>附件 ${r.photos} · ${r.reporter}</span></div>
+  </div>`;
+}
+function filterBar() {
+  const [ws, we] = thisWeekRange();
+  const today = todayStr();
+  const nAll = RECORDS.length;
+  const nToday = RECORDS.filter(r => r.date === today).length;
+  const nWeek = RECORDS.filter(r => r.date >= ws && r.date <= we).length;
+  const nDraft = RECORDS.filter(r => r.status === "draft").length;
+  const c = (k, n, label) => `<span class="fchip ${flt === k ? "on" : ""}" data-f="${k}" onclick="setFlt('${k}')">${label} ${n}</span>`;
+  return `<div class="search-wrap">
+      <input class="search" id="kw" placeholder="搜索施工内容 / 项目 / 填报人 / 编号" oninput="renderListInto('paneMine')">
+      <div class="chips">${c("all", nAll, "全部")}${c("today", nToday, "今天")}${c("week", nWeek, "本周")}${c("draft", nDraft, "待完善")}</div>
+    </div>`;
+}
+function renderListInto(id) {
+  const box = document.getElementById(id);
+  if (!box) return;
+  const rows = filterRows();
+  const isMine = id === "paneMine";
+  if (isMine) {
+    const mineRows = rows.filter(r => r.reporter === ME);
+    box.innerHTML = filterBar() + `<div class="list-head">我填报的日报 ${mineRows.length} 条</div>` +
+      (mineRows.length ? mineRows.map(cardHtml).join("") : `<div class="empty">暂无我填报的日报</div>`);
+  } else {
+    box.innerHTML = filterBar() + `<div class="list-head">共 ${rows.length} 条日报</div>` +
+      (rows.length ? rows.map(cardHtml).join("") : `<div class="empty">没有匹配的日报</div>`);
+  }
+}
+function renderList() { renderListInto("paneList"); }
+function renderMine() { renderListInto("paneMine"); }
+
+// ========== 详情 ==========
+function openDetail(id) {
+  const r = RECORDS.find(x => x.id === id);
+  if (!r) return;
+  detailId = id;
+  const st = r.status === "draft" ? { t: "待完善", c: "b-draft" } : { t: "已提交", c: "b-submitted" };
+  const tot = outTotal(r.outputs);
+  let outHtml = "";
+  if (r.outputs && r.outputs.length) {
+    r.outputs.forEach(o => {
+      outHtml += `<div class="d-out-row">
+        <span class="nm">${o.name}<br><span style="color:#98a2b3">${o.qty} ${o.unit} × ${money(o.price)}</span></span>
+        <span class="amt">${money((o.price || 0) * (o.qty || 0))}</span>
+      </div>`;
+    });
+    outHtml += `<div class="d-out-row" style="border-bottom:0;font-weight:600"><span class="nm" style="color:#66707c">当日合计</span><span class="amt">${money(tot)}</span></div>`;
+  } else {
+    outHtml = `<div class="wait-box">当日未填报完成产值</div>`;
+  }
+
+  document.getElementById("detailBody").innerHTML = `
+    <div class="r-top" style="margin-bottom:12px;">
+      <span class="badge b-date">${dateBadge(r.date)}</span>
+      ${r.weather ? `<span class="badge b-weather">${r.weather}</span>` : ""}
+      <span class="badge ${st.c}">${st.t}</span>
+      ${r.source === "completion" ? `<span class="badge b-src">来自日完工</span>` : ""}
+      <span class="r-no">${r.no}</span>
+    </div>
+    <div class="d-sec">基本信息</div>
+    <div class="d-row"><span class="k">项目</span><span class="v">${projName(r.proj)}</span></div>
+    <div class="d-row"><span class="k">填报人</span><span class="v">${r.reporter} · ${r.dept}</span></div>
+    <div class="d-row"><span class="k">天气</span><span class="v">${r.weather || "未填写"}</span></div>
+    <div class="d-row"><span class="k">填报时间</span><span class="v">${r.createdAt}</span></div>
+    <div class="d-sec">施工内容</div>
+    <div class="reply-box">${r.work}</div>
+    <div class="d-sec">安全质量问题</div>
+    ${r.issue ? `<div class="issue-box2">${r.issue}</div>
+      <div class="to-zg"><button class="btn-mini" onclick="toZg(${r.id})">转整改单</button></div>`
+      : `<div class="wait-box">当日未记录安全质量问题</div>`}
+    <div class="d-photo">
+      <div class="d-photo-t">附件 <span class="c">${r.photos} 个</span></div>
+      <div class="photo-grid" id="detailPhotoGrid"></div>
+    </div>
+    <div class="d-sec">完成产值</div>
+    ${outHtml}`;
+
+  const g = document.getElementById("detailPhotoGrid");
+  let ps = "";
+  for (let i = 0; i < r.photos; i++) ps += `<div class="thumb">附件 ${i + 1}</div>`;
+  if (g) g.innerHTML = ps || `<div class="ph-none" style="font-size:12px;color:#b6bfcc;">无附件</div>`;
+
+  const mine = r.reporter === ME;
+  const footEl = document.getElementById("detailFoot");
+  if (mine) {
+    footEl.style.display = "flex";
+    footEl.innerHTML =
+      `<button class="btn-secondary" style="height:42px;font-size:14px;" onclick="editRecord(${r.id})">编辑</button>
+       <button class="btn-secondary" style="height:42px;font-size:14px;border-color:#fca5a5;color:#dc2626;" onclick="askDelete(${r.id})">删除</button>`;
+  } else {
+    footEl.style.display = "none";
+    footEl.innerHTML = "";
+  }
+  document.getElementById("detailMask").classList.add("open");
+}
+function todayStr() { const d = new Date(); return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+function shiftDate(n) { const d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+function shortDate(s) { if (!s) return "—"; const p = s.split("-"); return (+p[1]) + "/" + (+p[2]); }
+function weekTxt(s) { const d = new Date(s.replace(/-/g, "/")); return "周" + "日一二三四五六"[d.getDay()]; }
+function dateBadge(s) { return shortDate(s) + " " + weekTxt(s); }
+function nowText() { const d = new Date(); return todayStr() + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes()); }
+function money(n) { return "¥" + Math.round(n || 0).toLocaleString("en-US"); }
+function moneyNoSign(n) { return Math.round(n || 0).toLocaleString("en-US"); }
+function projOf(code) { return PROJECTS.find(p => p.code === code); }
+function projName(code) { const p = projOf(code); return p ? p.name : "—"; }
+function boqOf(code) { return BOQ.filter(b => b.projectCode === code); }
+function outTotal(list) { return (list || []).reduce((s, o) => s + (o.price || 0) * (o.qty || 0), 0); }
+function thisWeekRange() {
+  const d = new Date(); const w = (d.getDay() + 6) % 7;  // 周一=0
+  const start = new Date(d); start.setDate(d.getDate() - w);
+  const end = new Date(start); end.setDate(start.getDate() + 6);
+  const f = x => x.getFullYear() + "-" + pad2(x.getMonth() + 1) + "-" + pad2(x.getDate());
+  return [f(start), f(end)];
+}
+
+// ========== 数据 ==========
+let RECORDS = [
+  {
+    id: 1, no: "RB-20261118-001", date: shiftDate(0), weather: "晴", reporter: ME, dept: MY_DEPT,
+    proj: "xm1", photos: 4, status: "submitted", source: "manual", createdAt: shiftDate(0) + " 17:40",
+    work: "上午完成 HA-2 环网箱基础开挖及垫层浇筑（5.7×1.6×1.5）；下午完成直线井砖砌 1 座，钢筋绑扎验收通过，现场无隐患。",
+    issue: "",
+    outputs: [{ qid: "Q1-01", name: "(调)新建HA-2 6间隔环网箱基础(5.7×1.6×1.5) 侧壁厚(m):0.25", unit: "座", price: 30000, qty: 1 }]
+  },
+  {
+    id: 2, no: "RB-20261118-002", date: shiftDate(0), weather: "", reporter: ME, dept: MY_DEPT,
+    proj: "xm2", photos: 2, status: "draft", source: "completion", createdAt: shiftDate(0) + " 18:05",
+    work: "配电自动化终端安装调试 3 台；DN200 顶管施工 42 米，管线走向复核无误。",
+    issue: "",
+    outputs: [
+      { qid: "Q2-01", name: "配电自动化终端安装调试", unit: "台", price: 9800, qty: 3 },
+      { qid: "Q2-02", name: "顶管施工（DN200）", unit: "米", price: 120, qty: 42 }
+    ]
+  },
+  {
+    id: 3, no: "RB-20261117-003", date: shiftDate(-1), weather: "多云", reporter: ME, dept: MY_DEPT,
+    proj: "xm3", photos: 2, status: "submitted", source: "manual", createdAt: shiftDate(-1) + " 18:10",
+    work: "杆塔组立 2 基，横担安装完成；基础开挖及回填 60 方。",
+    issue: "3# 杆基坑边坡未设围挡，外来人员可随意进入，已要求立即整改。",
+    outputs: [
+      { qid: "Q3-01", name: "基础开挖及回填", unit: "方", price: 60, qty: 60 },
+      { qid: "Q3-02", name: "杆塔组立", unit: "基", price: 42000, qty: 2 }
+    ]
+  },
+  {
+    id: 4, no: "RB-20261116-004", date: shiftDate(-2), weather: "小雨", reporter: ME, dept: MY_DEPT,
+    proj: "xm4", photos: 3, status: "submitted", source: "manual", createdAt: shiftDate(-2) + " 18:25",
+    work: "10kV 白露塘线段改造 0.8km，配变 400kVA 安装 1 台，雨天停工约 1 小时。",
+    issue: "",
+    outputs: [
+      { qid: "Q4-01", name: "10kV 线路改造（含立杆）", unit: "km", price: 78000, qty: 0.8 },
+      { qid: "Q4-02", name: "配变安装（400kVA）", unit: "台", price: 32000, qty: 1 }
+    ]
+  },
+  {
+    id: 5, no: "RB-20261112-005", date: shiftDate(-6), weather: "晴", reporter: ME, dept: MY_DEPT,
+    proj: "xm5", photos: 1, status: "submitted", source: "manual", createdAt: shiftDate(-6) + " 17:55",
+    work: "小区配电房土建改造 1 座，电缆敷设 180 米。",
+    issue: "作业人员安全带低挂高用，现场已纠正。",
+    outputs: [
+      { qid: "Q5-01", name: "小区配电房改造", unit: "座", price: 56000, qty: 1 },
+      { qid: "Q5-02", name: "电缆敷设（YJV22-4×95）", unit: "米", price: 85, qty: 180 }
+    ]
+  },
+  {
+    id: 6, no: "RB-20261114-006", date: shiftDate(-4), weather: "高温", reporter: ME, dept: MY_DEPT,
+    proj: "xm1", photos: 0, status: "submitted", source: "completion", createdAt: shiftDate(-4) + " 18:20",
+    work: "10kV 线路架设 0.6km，含金具安装；调整作息避开高温时段。",
+    issue: "",
+    outputs: [{ qid: "Q1-03", name: "10kV 线路架设（含金具安装）", unit: "km", price: 86000, qty: 0.6 }]
+  }
+];
+
+// ========== 状态 ==========
+let curTab = "form";      // form | mine
+let flt = "all";          // all | today | week | draft
+let editingId = null;
+let detailId = null;
+let form = { date: todayStr(), weather: "", proj: "", work: "", issue: "", photos: 0, outputs: [] };
+let qtyDraft = {};        // 工程量选择弹层：本次数量暂存
+
+// ========== 录入表单 ==========
+function syncFormInputs() {
+  const d = document.getElementById("fDate");
+  const w = document.getElementById("fWork");
+  const i = document.getElementById("fIssue");
+  if (d) form.date = d.value;
+  if (w) form.work = w.value;
+  if (i) form.issue = i.value;
+}
+function renderForm() {
+  const p = projOf(form.proj);
+  const isEdit = editingId !== null;
+  const outs = form.outputs || [];
+  const total = outTotal(outs);
+  const outRows = outs.map((o, idx) => {
+    const b = BOQ.find(x => x.qid === o.qid);
+    return `<div class="out-row">
+      <div class="out-nm">${o.name}</div>
+      <div class="out-sub">
+        <span>${o.unit} · 单价 ${money(o.price)}${b ? " · 合同量 " + b.totalQty : ""}</span>
+        <input class="out-qin" type="text" inputmode="decimal" value="${o.qty}" onchange="setQty(${idx}, this.value)">
+        <span class="out-amt">${money((o.price || 0) * (o.qty || 0))}</span>
+        <span class="out-del" onclick="delOut(${idx})">删除</span>
+      </div>
+    </div>`;
+  }).join("");
+
+  document.getElementById("paneForm").innerHTML = `
+    ${isEdit ? `<div class="sec-title" style="color:#2b7cff;">正在编辑 ${(RECORDS.find(r => r.id === editingId) || {}).no || ""}，保存后覆盖原记录</div>` : ""}
+    <div class="sec-title">基本信息</div>
+    <div class="card">
+      <div class="row">
+        <span class="lbl"><i>*</i>填报日期</span>
+        <input class="inp" type="date" id="fDate" value="${form.date}" onchange="form.date=this.value">
+      </div>
+      <div class="row">
+        <span class="lbl">填报人</span>
+        <span class="val">${ME}</span>
+      </div>
+      <div class="row">
+        <span class="lbl">填报部门</span>
+        <span class="val">${MY_DEPT}</span>
+      </div>
+      <div class="row tap" onclick="openProjPick()">
+        <span class="lbl"><i>*</i>所属项目</span>
+        <span class="val ${p ? "" : "ph"}">${p ? p.name : "请选择项目"}</span>
+        <span class="arr">›</span>
+      </div>
+    </div>
+
+    <div class="sec-title">天气<i style="color:#dc2626;font-style:normal"> *</i></div>
+    <div class="card">
+      <div class="wchips">
+        ${WEATHERS.map(w => `<span class="wchip ${form.weather === w ? "on" : ""}" onclick="setWeather('${w}')">${w}</span>`).join("")}
+      </div>
+    </div>
+
+    <div class="sec-title">施工内容<i style="color:#dc2626;font-style:normal"> *</i></div>
+    <div class="card">
+      <div class="issue-box">
+        <textarea class="f-area" id="fWork" placeholder="记录当日施工部位、工序、完成工程量与验收情况">${form.work}</textarea>
+      </div>
+    </div>
+
+    <div class="sec-title">安全质量问题（可选）</div>
+    <div class="card">
+      <div class="issue-box">
+        <textarea class="f-area" id="fIssue" style="min-height:74px" placeholder="记录发现的安全、质量隐患及处置情况">${form.issue}</textarea>
+        <div class="to-zg"><button class="btn-mini" onclick="toZg()">转整改单</button></div>
+      </div>
+    </div>
+
+    <div class="photo-card">
+      <div class="photo-head">
+        <div class="t">附件</div>
+        <div class="c">${form.photos}/9 个</div>
+      </div>
+      <div class="photo-grid" id="formPhotos"></div>
+    </div>
+
+    <div class="sec-title">完成产值（立项工程量清单）</div>
+    <div class="card">
+      ${outs.length ? outRows : `<div style="padding:16px 14px;font-size:12px;color:#a7b0bd;">尚未选择工程量</div>`}
+      <div style="padding:10px 14px 12px;"><div class="add-row" style="margin:0;" onclick="openQtyPick()">+ 选择工程量</div></div>
+      <div class="out-sum"><span>当日合计</span><b>${money(total)}</b></div>
+    </div>
+
+    <div class="submit-bar">
+      <button class="btn-main" onclick="submitForm()">${isEdit ? "保存修改" : "提交日报"}</button>
+      ${form.weather ? "" : `<div style="text-align:center;font-size:11px;color:#98a2b3;margin-top:9px;">未选天气将保存为「待完善」草稿</div>`}
+    </div>`;
+  renderFormPhotos();
+}
+function renderFormPhotos() {
+  const g = document.getElementById("formPhotos");
+  if (!g) return;
+  let s = "";
+  for (let i = 0; i < form.photos; i++) {
+    s += `<div class="thumb">附件 ${i + 1}<span class="del" onclick="delFormPhoto()">✕</span></div>`;
+  }
+  if (form.photos < 9) s += `<div class="add-photo" onclick="addFormPhoto()">+</div>`;
+  g.innerHTML = s;
+}
+function setWeather(w) { syncFormInputs(); form.weather = w; renderForm(); }
+function addFormPhoto() {
+  syncFormInputs();
+  if (form.photos >= 9) { toast("最多 9 个附件"); return; }
+  form.photos++; renderFormPhotos(); toast("已添加 1 个附件（演示）");
+}
+function delFormPhoto() { syncFormInputs(); if (form.photos > 0) { form.photos--; renderFormPhotos(); } }
+
+// ========== 完成产值 ==========
+function setQty(idx, val) {
+  const o = form.outputs[idx];
+  if (!o) return;
+  let q = parseFloat(String(val).replace(/[^\d.]/g, ""));
+  if (isNaN(q) || q < 0) q = 0;
+  const b = BOQ.find(x => x.qid === o.qid);
+  if (b && q > b.totalQty) {
+    toast("数量不能超过合同量 " + b.totalQty + " " + b.unit);
+    q = b.totalQty;
+  }
+  o.qty = q;
+  renderForm();
+}
+function delOut(idx) { syncFormInputs(); form.outputs.splice(idx, 1); renderForm(); toast("已移除该工程量"); }
+function openQtyPick() {
+  syncFormInputs();
+  if (!form.proj) { toast("请先选择所属项目"); return; }
+  qtyDraft = {};
+  const p = projOf(form.proj);
+  document.getElementById("qtyTitle").textContent = "选择工程量 · " + (p ? p.name : "");
+  const lib = boqOf(form.proj);
+  const body = document.getElementById("qtyList");
+  if (!lib.length) {
+    body.innerHTML = `<div class="ov-empty" style="padding:28px 16px;">该项目还没有立项工程量清单<br>请先在项目立项里录入工程量明细</div>`;
+  } else {
+    body.innerHTML = `<div class="qty-search-wrap"><input class="qty-search" id="qtyKw" placeholder="搜索工程量名称" oninput="filterQtyList()"></div>` + lib.map(q => {
+      const doneQty = (form.outputs || []).filter(o => o.qid === q.qid).reduce((s, o) => s + (o.qty || 0), 0);
+      const leftQty = Math.max(0, q.totalQty - doneQty);
+      return `<div class="qty-item" data-nm="${q.name}">
+        <div class="qty-l">
+          <div class="qty-nm">${q.name}</div>
+          <div class="qty-sub">${q.unit} · 合同量 <b class="qty-hl">${q.totalQty}</b> · 单价 <b class="qty-hl">${moneyNoSign(q.price)} 元</b></div>
+          <div class="qty-sub">已填报 <b class="qty-done">${doneQty} ${q.unit}</b> · 剩余 <b class="qty-hl">${leftQty} ${q.unit}</b></div>
+        </div>
+        <div class="qty-r">
+          <input class="qty-in" type="text" inputmode="decimal" placeholder="本次数量" oninput="qtyCalc('${q.qid}', this.value)">
+          <div class="qty-amt" id="qamt_${q.qid}">0</div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+  document.getElementById("qtyMask").classList.add("open");
+}
+function filterQtyList() {
+  const el = document.getElementById("qtyKw");
+  const kw = (el ? el.value : "").trim();
+  document.querySelectorAll("#qtyList .qty-item").forEach(item => {
+    const nm = item.getAttribute("data-nm") || "";
+    item.style.display = (!kw || nm.indexOf(kw) >= 0) ? "" : "none";
+  });
+}
+function qtyCalc(qid, val) {
+  const b = BOQ.find(x => x.qid === qid);
+  if (!b) return;
+  const v = parseFloat(String(val).replace(/[^\d.]/g, ""));
+  const el = document.getElementById("qamt_" + qid);
+  if (isNaN(v) || v <= 0) {
+    delete qtyDraft[qid];
+    if (el) el.textContent = "0";
+    return;
+  }
+  qtyDraft[qid] = v;
+  if (el) el.textContent = moneyNoSign(v * b.price);
+}
+function closeQtyPick() {
+  closeMask("qtyMask");
+  qtyDraft = {};
+}
+function confirmQtyPick() {
+  const ids = Object.keys(qtyDraft);
+  if (!ids.length) { toast("请先填写本次数量"); return; }
+  for (let i = 0; i < ids.length; i++) {
+    const b = BOQ.find(x => x.qid === ids[i]);
+    if (!b) continue;
+    const ex = (form.outputs || []).find(o => o.qid === ids[i]);
+    const cur = ex ? (ex.qty || 0) : 0;
+    if (cur + qtyDraft[ids[i]] > b.totalQty) {
+      toast(b.name.substring(0, 10) + "…累计超过合同量 " + b.totalQty + " " + b.unit);
+      return;
+    }
+  }
+  ids.forEach(qid => {
+    const b = BOQ.find(x => x.qid === qid);
+    if (!b) return;
+    const ex = (form.outputs || []).find(o => o.qid === qid);
+    if (ex) ex.qty = Math.round((ex.qty + qtyDraft[qid]) * 1000) / 1000;
+    else form.outputs.push({ qid: b.qid, name: b.name, unit: b.unit, price: b.price, qty: qtyDraft[qid] });
+  });
+  closeQtyPick();
+  renderForm();
+  toast("已录入本次工程量");
+}
+
+// ========== 项目选择 ==========
+function openProjPick() {
+  syncFormInputs();
+  document.getElementById("projKw").value = "";
+  renderProjList();
+  document.getElementById("projMask").classList.add("open");
+}
+function renderProjList() {
+  const kw = (document.getElementById("projKw").value || "").trim().toLowerCase();
+  const rows = PROJECTS.filter(p => !kw || (p.name + " " + p.manager).toLowerCase().indexOf(kw) >= 0);
+  document.getElementById("projList").innerHTML = rows.length ? rows.map(p => `
+    <div class="pk-item ${form.proj === p.code ? "on" : ""}" data-code="${p.code}" onclick="pickProj(this.dataset.code)">
+      <div class="pk-main">
+        ${p.name}
+        <div class="pk-sub">项目经理 ${p.manager}</div>
+      </div>
+      ${form.proj === p.code ? `<span class="pk-ck">已选</span>` : ""}
+    </div>`).join("") : `<div class="empty" style="margin:24px 0;">没有匹配的项目</div>`;
+}
+function pickProj(code) {
+  syncFormInputs();
+  if (form.proj !== code) { form.outputs = []; form.photos = form.photos; }
+  form.proj = code;
+  closeMask("projMask");
+  renderForm();
+  if (form.outputs.length === 0) toast("项目已切换，工程量需重新选择");
+}
+
+// ========== 提交 / 编辑 / 删除 ==========
+function makeNo(date, extra) {
+  const ymd = date.replace(/-/g, "");
+  const n = RECORDS.filter(r => r.no.indexOf("RB-" + ymd) === 0).length + 1 + (extra || 0);
+  return "RB-" + ymd + "-" + String(n).padStart(3, "0");
+}
+function submitForm() {
+  syncFormInputs();
+  if (!form.date) { toast("请选择填报日期"); return; }
+  if (!form.proj) { toast("请选择所属项目"); return; }
+  if (!(form.work || "").trim()) { toast("请填写施工内容"); return; }
+  const dup = RECORDS.find(r => r.date === form.date && r.proj === form.proj && r.id !== editingId);
+  if (dup) { toast("该项目当天已有日报 " + dup.no + "，请直接编辑该条"); return; }
+  const status = form.weather ? "submitted" : "draft";
+  const outputs = form.outputs.map(o => ({ qid: o.qid, name: o.name, unit: o.unit, price: o.price, qty: o.qty }));
+
+  if (editingId === null) {
+    const id = RECORDS.reduce((m, r) => Math.max(m, r.id), 0) + 1;
+    RECORDS.unshift({
+      id: id, no: makeNo(form.date), date: form.date, weather: form.weather, reporter: ME, dept: MY_DEPT,
+      proj: form.proj, photos: form.photos, status: status, source: "manual", createdAt: nowText(),
+      work: form.work.trim(), issue: (form.issue || "").trim(), outputs: outputs
+    });
+    toast(status === "draft" ? "已保存为「待完善」草稿" : "日报已提交");
+  } else {
+    const r = RECORDS.find(x => x.id === editingId);
+    r.date = form.date; r.weather = form.weather; r.proj = form.proj; r.photos = form.photos;
+    r.status = status; r.work = form.work.trim(); r.issue = (form.issue || "").trim(); r.outputs = outputs;
+    toast("日报已更新");
+  }
+  editingId = null;
+  form = { date: todayStr(), weather: "", proj: "", work: "", issue: "", photos: 0, outputs: [] };
+  switchTab("mine");
+}
+function editRecord(id) {
+  const r = RECORDS.find(x => x.id === id);
+  if (!r) return;
+  editingId = id;
+  form = { date: r.date, weather: r.weather, proj: r.proj, work: r.work, issue: r.issue,
+    photos: r.photos, outputs: (r.outputs || []).map(o => ({ qid: o.qid, name: o.name, unit: o.unit, price: o.price, qty: o.qty })) };
+  closeMask("detailMask");
+  switchTab("form");
+}
+function askDelete(id) {
+  const r = RECORDS.find(x => x.id === id);
+  if (!r) return;
+  detailId = id;
+  document.getElementById("cfmTitle").textContent = "删除日报";
+  document.getElementById("cfmDesc").innerHTML =
+    `确定删除 <b>${r.no}</b>？<br>${projName(r.proj)} · ${dateBadge(r.date)}<br>删除后不可恢复。`;
+  const ok = document.getElementById("cfmOk");
+  ok.textContent = "删除";
+  ok.className = "btn-danger";
+  ok.onclick = function () { doDelete(); };
+  document.getElementById("cfmMask").classList.add("open");
+}
+function doDelete() {
+  RECORDS = RECORDS.filter(r => r.id !== detailId);
+  closeMask("cfmMask");
+  closeMask("detailMask");
+  render();
+  toast("日报已删除");
+}
+
+// ========== 转整改单 ==========
+function toZg(id) {
+  const r = id ? RECORDS.find(x => x.id === id) : null;
+  const proj = r ? r.proj : form.proj;
+  const issueEl = document.getElementById("fIssue");
+  const issue = r ? r.issue : ((issueEl ? issueEl.value : form.issue) || "");
+  if (!proj) { toast("请先选择所属项目"); return; }
+  if (!issue.trim()) { toast("请先填写安全质量问题"); return; }
+  location.href = "整改单.html?proj=" + encodeURIComponent(proj) + "&issue=" + encodeURIComponent(issue.trim());
+}
+
+// ========== 日完工自动生成的日报 ==========
+function loadAutoReports() {
+  let added = 0;
+  const newItems = [];
+  try {
+    const raw = localStorage.getItem("cj_daily_reports_v1");
+    if (!raw) return 0;
+    const list = JSON.parse(raw) || [];
+    list.forEach(item => {
+      const exist = RECORDS.find(r => r.date === item.date && r.proj === item.proj);
+      if (exist) {
+        exist.work = item.work || exist.work;
+        exist.outputs = item.outputs || exist.outputs;
+        exist.photos = item.photos || exist.photos;
+        exist.source = "completion";
+        if (exist.status === "submitted" && !exist.weather) exist.status = "draft";
+      } else {
+        newItems.push({
+          id: 1000 + added, no: makeNo(item.date, added), date: item.date, weather: "", reporter: ME, dept: MY_DEPT,
+          proj: item.proj, photos: item.photos || 0, status: "draft", source: "completion",
+          createdAt: nowText(), work: item.work || "（日完工自动生成，待补充施工内容）", issue: "",
+          outputs: item.outputs || []
+        });
+        added++;
+      }
+    });
+    if (newItems.length) RECORDS = newItems.concat(RECORDS);
+    localStorage.removeItem("cj_daily_reports_v1");
+  } catch (e) { }
+  return added;
+}
+
+// ========== 启动 ==========
+switchTab("form");
+const autoAdded = loadAutoReports();
+if (autoAdded > 0) { render(); toast("已根据日完工自动生成 " + autoAdded + " 条日报"); }
+</script>
+</body>
+</html>

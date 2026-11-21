@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>劳务准入 · 郴江电力小程序原型</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2341C7CE'/%3E%3Cpath d='M16 8v16M8 16h16' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  body { background: #e9ecf1; display: flex; justify-content: center; align-items: flex-start; padding: 20px 0; min-height: 100vh; }
+  .phone {
+    width: 390px; height: 820px; background: #f5f6f8;
+    border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    overflow: hidden; position: relative; display: flex; flex-direction: column;
+    border: 10px solid #1a1a1a;
+  }
+  .status-bar {
+    height: 34px; flex: none; background: #fff;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 22px; font-size: 13px; color: #000; font-weight: 600;
+  }
+  .status-bar .icons { display: flex; gap: 5px; align-items: center; font-size: 12px; }
+  .screen { flex: 1; overflow: hidden; position: relative; }
+  .view { position: absolute; inset: 0; display: flex; flex-direction: column; background: #f5f6f8; }
+
+  .navbar {
+    height: 46px; flex: none; background: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px; border-bottom: 1px solid #eee;
+  }
+  .navbar .back { font-size: 14px; color: #2b7cff; cursor: pointer; min-width: 66px; text-decoration: none; }
+  .navbar .title { font-size: 16px; font-weight: 600; color: #222; }
+  .navbar .right { min-width: 66px; text-align: right; font-size: 13px; color: #2b7cff; cursor: pointer; }
+
+  .tabs { display: flex; background: #fff; flex: none; border-bottom: 1px solid #f0f0f0; }
+  .tab { flex: 1; text-align: center; padding: 12px 0 11px; font-size: 14px; color: #666; cursor: pointer; position: relative; }
+  .tab.on { color: #2b7cff; font-weight: 600; }
+  .tab.on::after { content: ""; position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: 30px; height: 3px; border-radius: 2px; background: #2b7cff; }
+  .tab .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #e23b3b; vertical-align: 2px; margin-left: 4px; }
+
+  .pane { flex: 1; overflow-y: auto; padding-bottom: 12px; }
+  .pane.hide { display: none; }
+  .hide { display: none; }
+
+  .sec-title { padding: 14px 18px 8px; font-size: 13px; color: #999; }
+  .card { background: #fff; margin: 0 12px; border-radius: 12px; overflow: hidden; }
+  .row {
+    display: flex; align-items: center; min-height: 52px; padding: 12px 14px;
+    border-bottom: 1px solid #f2f2f2; gap: 10px; cursor: pointer;
+  }
+  .row:last-child { border-bottom: none; }
+  .row .lbl { font-size: 14px; color: #333; flex: none; min-width: 96px; }
+  .row .lbl i { color: #e23b3b; font-style: normal; margin-right: 3px; }
+  .row .val { flex: 1; min-width: 0; text-align: right; font-size: 14px; color: #222; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .val.ph { color: #bbb; }
+  .row .arr { flex: none; color: #c9cdd4; font-size: 13px; }
+  .row.nt { cursor: default; }
+  .row.nt .val { color: #999; }
+  .row .inp { flex: 1; min-width: 0; border: none; outline: none; text-align: right; font-size: 14px; color: #222; background: transparent; font-family: inherit; }
+  .row .inp::placeholder { color: #bbb; }
+  .row.err { background: #fff6f6; }
+
+  .type-row { padding: 12px 14px; border-bottom: 1px solid #f2f2f2; }
+  .type-row .lbl { font-size: 14px; color: #333; margin-bottom: 10px; }
+  .type-row .lbl i { color: #e23b3b; font-style: normal; margin-right: 3px; }
+  .type-chips { display: flex; gap: 8px; }
+  .t-chip {
+    flex: 1; text-align: center; padding: 9px 0; border-radius: 8px; font-size: 14px;
+    background: #f5f6f8; color: #555; cursor: pointer; border: 1px solid transparent;
+  }
+  .t-chip.on { background: #eef4ff; border-color: #2b7cff; color: #2b7cff; font-weight: 600; }
+
+  .hint { padding: 10px 18px 0; font-size: 12px; color: #9aa3ad; line-height: 1.6; }
+  .sub-tip { padding: 8px 14px 0; font-size: 12px; color: #98a2b3; }
+
+  /* 附件 */
+  .photo-card { background: #fff; margin: 10px 12px 0; border-radius: 12px; padding: 12px 14px 14px; }
+  .photo-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .photo-head .t { font-size: 14px; color: #333; }
+  .photo-head .c { font-size: 12px; color: #aaa; }
+  .photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .thumb { position: relative; height: 74px; border-radius: 8px; overflow: hidden; background: #f2f4f7; cursor: pointer; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb .del { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; font-size: 12px; line-height: 18px; text-align: center; }
+  .add-photo {
+    border: 1px dashed #ccd3dc; border-radius: 8px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; color: #98a2b3; cursor: pointer;
+    font-size: 11px; gap: 2px; background: #fbfcfd; height: 74px;
+  }
+  .add-photo .p { font-size: 20px; line-height: 1; color: #b6bec9; }
+  .photo-hint { padding: 8px 0 0; font-size: 11px; color: #a8b0bb; }
+
+  /* 流程预览 */
+  .flow-card { background: #fff; margin: 10px 12px 0; border-radius: 12px; padding: 14px; }
+  .flow-title { font-size: 14px; font-weight: 600; color: #222; margin-bottom: 12px; }
+  .fnode { display: flex; align-items: flex-start; gap: 10px; position: relative; padding-bottom: 18px; }
+  .fnode:last-child { padding-bottom: 0; }
+  .fnode:not(:last-child)::before { content: ""; position: absolute; left: 15.5px; top: 36px; bottom: 4px; width: 1px; background: #e6e9ef; }
+  .fav { flex: none; width: 32px; height: 32px; border-radius: 50%; background: #eaf1ff; color: #2557d6; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+  .fnode.cur .fav { background: #2b7cff; color: #fff; }
+  .fnode.wait .fav { background: #f2f4f7; color: #a9b1bd; }
+  .fx { flex: 1; min-width: 0; }
+  .fk { font-size: 11px; color: #98a2b3; line-height: 1.35; }
+  .fn { font-size: 14px; color: #222; font-weight: 600; line-height: 1.35; margin-top: 3px; }
+  .fn .fd { font-size: 12px; color: #86909c; font-weight: 400; margin-left: 6px; }
+  .fs { flex: none; font-size: 11px; color: #98a2b3; padding-top: 10px; white-space: nowrap; }
+  .fs.cur { color: #2b7cff; font-weight: 600; }
+
+  /* 列表 */
+  .list-head { display: flex; gap: 8px; padding: 10px 12px 0; }
+  .list-search { flex: 1; height: 38px; border: none; background: #f2f3f5; border-radius: 19px; padding: 0 14px; font-size: 13px; outline: none; box-sizing: border-box; }
+  .filters { display: flex; gap: 8px; padding: 10px 12px 2px; flex-wrap: wrap; }
+  .f-chip { padding: 7px 14px; border-radius: 16px; background: #f2f3f5; font-size: 13px; color: #555; cursor: pointer; flex: none; white-space: nowrap; }
+  .f-chip.on { background: #2b7cff; color: #fff; }
+
+  .req-card { background: #fff; margin: 10px 12px 0; border-radius: 12px; padding: 12px 14px; cursor: pointer; }
+  .req-top { display: flex; align-items: center; gap: 8px; }
+  .req-name { font-size: 15px; font-weight: 600; color: #222; }
+  .tag-self { font-size: 10px; background: #dbeafe; color: #1d4ed8; padding: 1px 6px; border-radius: 4px; }
+  .tag-out { font-size: 10px; background: #fef3c7; color: #92400e; padding: 1px 6px; border-radius: 4px; }
+  .tag-temp { font-size: 10px; background: #f1f2f4; color: #6b7280; padding: 1px 6px; border-radius: 4px; }
+  .badge { margin-left: auto; flex: none; font-size: 11px; padding: 2px 8px; border-radius: 9px; line-height: 16px; white-space: nowrap; }
+  .b-wait { background: #fef3c7; color: #b45309; }
+  .b-doing { background: #dbeafe; color: #1d4ed8; }
+  .b-pass { background: #dcfce7; color: #15803d; }
+  .b-rej { background: #fee2e2; color: #b91c1c; }
+  .req-line { font-size: 12px; color: #777; margin-top: 6px; line-height: 1.6; }
+  .req-line2 { font-size: 11px; color: #a0a8b3; margin-top: 4px; }
+  .rej-tip { margin-top: 9px; font-size: 12px; color: #b91c1c; background: #fef2f2; border-radius: 8px; padding: 8px 10px; line-height: 1.6; }
+  .pass-tip { margin-top: 9px; font-size: 12px; color: #15803d; background: #f0fdf4; border-radius: 8px; padding: 8px 10px; line-height: 1.6; }
+  .empty { padding: 40px 0; text-align: center; font-size: 13px; color: #a8b0bb; }
+
+  /* 详情 */
+  .d-card { background: #fff; margin: 10px 12px 0; border-radius: 12px; padding: 12px 14px; }
+  .d-head { display: flex; justify-content: space-between; align-items: center; }
+  .d-no { font-size: 11px; color: #3a3f47; }
+  .d-name { font-size: 16px; font-weight: 600; color: #222; margin-top: 8px; }
+  .d-row { display: flex; gap: 8px; padding: 9px 0; border-bottom: 1px solid #f4f6f8; }
+  .d-row:last-child { border-bottom: 0; padding-bottom: 2px; }
+  .d-row .k { flex: none; width: 92px; font-size: 13px; color: #9aa3af; }
+  .d-row .v { flex: 1; min-width: 0; font-size: 14px; color: #333; line-height: 1.5; word-break: break-all; }
+  .d-sec { font-size: 13px; color: #98a2b3; margin: 14px 18px 0; }
+  .tl { background: #fff; margin: 10px 12px 0; border-radius: 12px; padding: 14px; }
+  .tl-item { position: relative; padding-left: 22px; padding-bottom: 16px; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-item::before { content: ""; position: absolute; left: 3px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: #2b7cff; }
+  .tl-item.wait::before { background: #d4d8de; }
+  .tl-item:not(:last-child)::after { content: ""; position: absolute; left: 6.5px; top: 14px; bottom: 2px; width: 1px; background: #e6e9ef; }
+  .tl-t { font-size: 14px; color: #222; font-weight: 600; }
+  .tl-s { font-size: 11px; color: #98a2b3; margin-top: 3px; line-height: 1.6; }
+
+  .bottom-bar { flex: none; padding: 10px 12px calc(12px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #eee; }
+  .bottom-bar.hide { display: none; }
+  .btn-primary { width: 100%; height: 50px; border: none; border-radius: 25px; background: #2b7cff; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
+  .btn-primary:active { background: #1f6ae0; }
+  .bottom-bar .tip { font-size: 11px; color: #a8b0bb; text-align: center; margin-top: 7px; }
+  .btn-ghost { width: 100%; height: 46px; border-radius: 23px; border: 1px solid #dbe1ea; background: #fff; color: #5b6472; font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 10px; }
+
+  /* 浮层 */
+  .mask { position: absolute; inset: 0; background: rgba(0,0,0,.4); z-index: 50; display: none; }
+  .mask.active { display: block; }
+  .card-sheet {
+    position: absolute; left: 14px; right: 14px; bottom: 14px; background: #fff; border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.28); z-index: 62; display: none; flex-direction: column;
+    max-height: 76%; overflow: hidden;
+  }
+  .card-sheet.active { display: flex; animation: sheetUp .2s ease-out; }
+  @keyframes sheetUp { from { transform: translateY(26px); } to { transform: none; } }
+  .cs-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 16px 12px; flex: none; }
+  .cs-head .t { font-size: 17px; font-weight: 600; color: #222; }
+  .cs-head .x { font-size: 14px; color: #2b7cff; cursor: pointer; padding: 4px 6px; }
+  .cs-search { padding: 0 16px 10px; flex: none; }
+  .cs-search input { width: 100%; height: 40px; border: none; background: #f3f5f8; border-radius: 10px; padding: 0 12px; font-size: 14px; box-sizing: border-box; outline: none; }
+  .cs-list { overflow-y: auto; padding: 0 10px 8px; }
+  .cs-foot { padding: 10px 16px 16px; flex: none; }
+  .pick-item { display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-radius: 10px; cursor: pointer; border: 1px solid transparent; background: #fafbfc; margin-bottom: 6px; }
+  .pick-item.on { background: #eef4ff; border-color: #c8ddff; }
+  .pick-item .txt { flex: 1; min-width: 0; }
+  .pick-item .n { font-size: 14px; color: #222; font-weight: 500; line-height: 1.45; }
+  .pick-item .d { font-size: 11px; color: #999; margin-top: 3px; }
+  .pick-item .tick { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #ddd; background: #fff; color: #fff; font-size: 12px; line-height: 16px; text-align: center; }
+  .pick-item.on .tick { border-color: #2b7cff; background: #2b7cff; }
+
+  .toast { position: absolute; left: 50%; bottom: 90px; transform: translateX(-50%); background: rgba(0,0,0,.78); color: #fff; padding: 9px 16px; border-radius: 8px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 90; max-width: 80%; text-align: center; line-height: 1.5; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="#000"><rect x="0" y="7" width="3" height="4"/><rect x="4" y="5" width="3" height="6"/><rect x="8" y="2.5" width="3" height="8.5"/><rect x="12" y="0" width="3" height="11"/></svg>
+        <span>100%</span>
+        <svg width="22" height="11" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="20" height="11" rx="2.5" fill="none" stroke="#000"/><rect x="2" y="2" width="17" height="8" rx="1" fill="#000"/></svg>
+      </div>
+    </div>
+
+    <div class="screen">
+      <section class="view">
+        <div class="navbar">
+          <a class="back" href="../site.html">‹ 现场管理</a>
+          <div class="title" id="navTitle">劳务准入</div>
+          <div class="right"></div>
+        </div>
+
+        <div class="tabs" id="tabs">
+          <div class="tab on" id="tabApply" onclick="switchTab('apply')">准入申请</div>
+          <div class="tab" id="tabList" onclick="switchTab('list')">申请历史<span class="dot" id="tabDot" style="display:none;"></span></div>
+        </div>
+
+        <!-- ========== 准入申请 ========== -->
+        <div class="pane" id="paneApply">
+          <div class="sec-title">人员信息</div>
+          <div class="card">
+            <div class="row nt"><div class="lbl">申请人</div><div class="val" id="vApplicant">张三</div></div>
+            <div class="row" onclick="openPick('dept')">
+              <div class="lbl"><i>*</i>所属区域公司</div>
+              <div class="val" id="vDept">郴州公司/项目一部</div>
+              <div class="arr">›</div>
+            </div>
+            <div class="row"><div class="lbl"><i>*</i>姓名</div><input class="inp" id="fName" placeholder="请输入人员姓名"></div>
+            <div class="row"><div class="lbl"><i>*</i>手机号</div><input class="inp" id="fPhone" inputmode="numeric" maxlength="11" placeholder="11 位手机号"></div>
+            <div class="row"><div class="lbl"><i>*</i>身份证号</div><input class="inp" id="fIdCard" maxlength="18" placeholder="18 位身份证号"></div>
+            <div class="row" onclick="openPick('trade')">
+              <div class="lbl"><i>*</i>工种</div>
+              <div class="val ph" id="vTrade">请选择工种</div>
+              <div class="arr">›</div>
+            </div>
+            <div class="type-row">
+              <div class="lbl"><i>*</i>类型</div>
+              <div class="type-chips">
+                <div class="t-chip on" data-t="自有" onclick="setType(this)">自有</div>
+                <div class="t-chip" data-t="外包" onclick="setType(this)">外包</div>
+                <div class="t-chip" data-t="临时工" onclick="setType(this)">临时工</div>
+              </div>
+            </div>
+            <div class="row" onclick="openPick('team')">
+              <div class="lbl" id="lblTeam"><i style="display:none;" id="starTeam">*</i>所属施工队</div>
+              <div class="val ph" id="vTeam">请选择所属施工队</div>
+              <div class="arr">›</div>
+            </div>
+            <div class="sub-tip hide" id="teamCompany"></div>
+          </div>
+          <div class="hint" id="teamHint">外包 / 临时工 必选施工队；自有人员可选填。</div>
+
+          <div class="sec-title">银行卡信息（用于劳务结算打款）</div>
+          <div class="card">
+            <div class="row"><div class="lbl"><i>*</i>户名</div><input class="inp" id="fBankName" placeholder="默认同姓名"></div>
+            <div class="row"><div class="lbl"><i>*</i>银行账号</div><input class="inp" id="fBankCard" inputmode="numeric" maxlength="23" placeholder="16–19 位银行卡号"></div>
+            <div class="row"><div class="lbl"><i>*</i>开户行</div><input class="inp" id="fBank" placeholder="如：中国农业银行郴州苏仙支行"></div>
+          </div>
+
+          <div class="photo-card">
+            <div class="photo-head">
+              <div class="t">附件（身份证 / 保险单）</div>
+              <div class="c" id="photoCount">0 / 3</div>
+            </div>
+            <div class="photo-grid" id="photoGrid"></div>
+            <div class="photo-hint">选填，最多 3 张；可拍照或从相册选择</div>
+            <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+          </div>
+
+          <div class="sec-title">备注</div>
+          <div class="card">
+            <div class="row" style="align-items:flex-start;">
+              <textarea id="fRemark" rows="3" maxlength="140" placeholder="选填，说明来源、技能、特殊约定" style="flex:1;border:none;outline:none;font-size:14px;color:#222;font-family:inherit;resize:none;line-height:1.6;"></textarea>
+            </div>
+          </div>
+
+          <div class="flow-card">
+            <div class="flow-title">流程审批预览</div>
+            <div class="fnode">
+              <div class="fav">张</div>
+              <div class="fx"><div class="fk">发起人</div><div class="fn">张三<span class="fd" id="fFlowDept">郴州公司/项目一部</span></div></div>
+              <div class="fs">发起</div>
+            </div>
+            <div class="fnode cur">
+              <div class="fav">劳</div>
+              <div class="fx"><div class="fk">下一步</div><div class="fn">王敏<span class="fd">劳务管理 · 劳务专员</span></div></div>
+              <div class="fs cur">待处理</div>
+            </div>
+            <div class="fnode wait">
+              <div class="fav">库</div>
+              <div class="fx"><div class="fk">最后一步</div><div class="fn">审核通过 · 进劳务库<span class="fd">生成 LW 编号</span></div></div>
+              <div class="fs">待完成</div>
+            </div>
+          </div>
+          <div class="hint">提交后由劳务专员审核，通过后自动进入「劳务库」，生成 LW 编号，可在周计划 / 日计划里被选人。</div>
+        </div>
+
+        <!-- ========== 申请历史 ========== -->
+        <div class="pane hide" id="paneList">
+          <div style="padding:12px 12px 0;">
+            <input class="list-search" id="listKw" placeholder="搜索姓名 / 手机号" oninput="renderList()">
+          </div>
+          <div class="filters" id="listFilters">
+            <div class="f-chip on" data-f="all" onclick="setFilter(this)">全部</div>
+            <div class="f-chip" data-f="wait" onclick="setFilter(this)">待审核</div>
+            <div class="f-chip" data-f="pass" onclick="setFilter(this)">已通过</div>
+            <div class="f-chip" data-f="rej" onclick="setFilter(this)">已驳回</div>
+          </div>
+          <div id="reqList"></div>
+        </div>
+
+        <!-- ========== 申请详情 ========== -->
+        <div class="pane hide" id="paneDetail"></div>
+
+        <div class="bottom-bar" id="bottomBar">
+          <button class="btn-primary" onclick="submitApply()">提交申请</button>
+          <div class="tip">带 * 为必填项，劳务专员一般 1 个工作日内处理</div>
+        </div>
+      </section>
+
+      <!-- 通用选择浮层 -->
+      <div class="mask" id="pickMask" onclick="closePick()"></div>
+      <div class="card-sheet" id="pickSheet">
+        <div class="cs-head"><div class="t" id="pickTitle">选择</div><div class="x" onclick="closePick()">关闭</div></div>
+        <div class="cs-search"><input id="pickKw" placeholder="搜索" oninput="renderPickList()"></div>
+        <div class="cs-list" id="pickList"></div>
+      </div>
+
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+
+<script>
+// ============ 常量 ============
+const DEPTS = ["郴州公司/项目一部", "郴州公司/项目二部", "郴州公司/运维部", "常德分公司/项目一部"];
+const TRADES = ["现场负责人","队长","技工","副工","电工","焊工","高处作业工","起重司索","挖掘机手","汽车驾驶员","普工","安全员"];
+const TEAMS = [
+  { name:"顺达劳务·一班", company:"湖南顺达劳务有限公司", leader:"张强", type:"外包" },
+  { name:"宏达建筑·二班", company:"郴州宏达建筑劳务有限公司", leader:"唐良辉", type:"外包" },
+  { name:"众力劳务·三班", company:"湘南众力劳务有限公司", leader:"黄勇", type:"外包" },
+  { name:"项目一部自有队", company:"郴江电力（自有）", leader:"刘建国", type:"自有" }
+];
+const BANKS = ["中国农业银行郴州苏仙支行","中国工商银行郴州分行","中国建设银行郴州支行","中国银行郴州分行","交通银行郴州分行","中国邮政储蓄银行郴州分行","招商银行郴州分行","湖南省农村商业银行郴州支行"];
+
+// ============ 演示数据 ============
+let REQS = [
+  { id:"ZR-20261120-01", name:"王小明", phone:"13807352668", idCard:"431003199204153318", dept:"郴州公司/项目一部",
+    trade:"技工", type:"外包", team:"顺达劳务·一班", company:"湖南顺达劳务有限公司",
+    bankName:"王小明", bankCard:"6228480430218836", bank:"中国农业银行郴州苏仙支行",
+    status:"wait", submitAt:"2026-11-20 09:12", auditor:"王敏" },
+  { id:"ZR-20261119-03", name:"赵伟", phone:"13507358712", idCard:"431003198806204416", dept:"郴州公司/项目二部",
+    trade:"电工", type:"自有", team:"项目一部自有队", company:"郴江电力（自有）",
+    bankName:"赵伟", bankCard:"6222021408001234", bank:"中国工商银行郴州分行",
+    status:"doing", submitAt:"2026-11-19 15:40", auditor:"王敏" },
+  { id:"ZR-20261118-07", name:"陈小兵", phone:"15007351234", idCard:"431003199305167735", dept:"郴州公司/项目一部",
+    trade:"副工", type:"外包", team:"宏达建筑·二班", company:"郴州宏达建筑劳务有限公司",
+    bankName:"陈小兵", bankCard:"6214830211447788", bank:"招商银行郴州分行",
+    status:"pass", submitAt:"2026-11-18 10:26", auditor:"王敏", lwNo:"LW-0032", passAt:"2026-11-18 16:05" },
+  { id:"ZR-20261117-02", name:"李铁牛", phone:"13707356611", idCard:"431003198209084417", dept:"郴州公司/项目一部",
+    trade:"副工", type:"临时工", team:"众力劳务·三班", company:"湘南众力劳务有限公司",
+    bankName:"李铁牛", bankCard:"6217001980022456", bank:"中国建设银行郴州支行",
+    status:"rej", submitAt:"2026-11-17 09:05", auditor:"王敏",
+    reject:"身份证姓名与证件照片不一致，请核对后重新提交" },
+  { id:"ZR-20261116-05", name:"周正权", phone:"18607359902", idCard:"431003199001156615", dept:"郴州公司/项目一部",
+    trade:"技工", type:"外包", team:"顺达劳务·一班", company:"湖南顺达劳务有限公司",
+    bankName:"周正权", bankCard:"6212261408013344", bank:"中国工商银行郴州分行",
+    status:"pass", submitAt:"2026-11-16 14:18", auditor:"王敏", lwNo:"LW-0031", passAt:"2026-11-16 17:30" }
+];
+
+// ============ 工具 ============
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+let toastTimer = null;
+function toast(msg){
+  const el = $("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2000);
+}
+
+const STATUS = {
+  wait:  { txt:"待审核", cls:"b-wait" },
+  doing: { txt:"审核中", cls:"b-doing" },
+  pass:  { txt:"已通过", cls:"b-pass" },
+  rej:   { txt:"已驳回", cls:"b-rej" }
+};
+
+// ============ 表单状态 ============
+const form = { dept:"郴州公司/项目一部", trade:"", type:"自有", team:"", bank:"", photos:[] };
+let pickKind = null;
+let curFilter = "all";
+let curDetail = null;
+
+function switchTab(k){
+  const apply = k === "apply";
+  $("tabApply").classList.toggle("on", apply);
+  $("tabList").classList.toggle("on", !apply);
+  $("paneApply").classList.toggle("hide", !apply);
+  $("paneList").classList.toggle("hide", apply);
+  $("paneDetail").classList.add("hide");
+  $("bottomBar").classList.toggle("hide", !apply);
+  $("navTitle").textContent = apply ? "劳务准入" : "劳务准入";
+}
+
+function setType(el){
+  document.querySelectorAll("#paneApply .t-chip").forEach(o => o.classList.remove("on"));
+  el.classList.add("on");
+  form.type = el.dataset.t;
+  const must = form.type !== "自有";
+  $("starTeam").style.display = must ? "inline" : "none";
+  $("vTeam").classList.toggle("ph", !form.team);
+  $("teamHint").textContent = must ? "外包 / 临时工 必须选择所属施工队，劳务公司随队带出。" : "自有人员可选填施工队。";
+}
+
+// ============ 通用选择浮层 ============
+function openPick(kind){
+  pickKind = kind;
+  $("pickKw").value = "";
+  const titles = { dept:"所属区域公司", trade:"选择工种", team:"所属施工队", bank:"开户行" };
+  $("pickTitle").textContent = titles[kind];
+  $("pickKw").placeholder = kind === "dept" ? "搜索部门" : (kind === "trade" ? "搜索工种" : (kind === "team" ? "搜索施工队" : "搜索银行"));
+  renderPickList();
+  $("pickMask").classList.add("active");
+  $("pickSheet").classList.add("active");
+}
+function closePick(){
+  $("pickMask").classList.remove("active");
+  $("pickSheet").classList.remove("active");
+  pickKind = null;
+}
+function renderPickList(){
+  const kw = ($("pickKw").value || "").trim();
+  let items = [];
+  if (pickKind === "dept") {
+    items = DEPTS.map(d => ({ key:d, n:d, d:"" }));
+    if (kw) items = items.filter(i => i.n.includes(kw));
+  } else if (pickKind === "trade") {
+    items = TRADES.map(t => ({ key:t, n:t, d:"" }));
+    if (kw) items = items.filter(i => i.n.includes(kw));
+  } else if (pickKind === "team") {
+    items = TEAMS.map(t => ({ key:t.name, n:t.name, d:t.company + " · 队长 " + t.leader }));
+    if (kw) items = items.filter(i => i.n.includes(kw) || i.d.includes(kw));
+  }
+  const cur = pickKind === "dept" ? form.dept : (pickKind === "trade" ? form.trade : form.team);
+  if (!items.length) {
+    $("pickList").innerHTML = `<div class="empty">没有匹配结果</div>`;
+    return;
+  }
+  $("pickList").innerHTML = items.map(i => `
+    <div class="pick-item ${i.key === cur ? "on" : ""}" data-k="${esc(i.key)}">
+      <div class="txt"><div class="n">${esc(i.n)}</div>${i.d ? `<div class="d">${esc(i.d)}</div>` : ""}</div>
+      <div class="tick">${i.key === cur ? "✓" : ""}</div>
+    </div>`).join("");
+  $("pickList").querySelectorAll(".pick-item").forEach(el => {
+    el.addEventListener("click", () => choosePick(el.dataset.k));
+  });
+}
+function choosePick(val){
+  if (pickKind === "dept") {
+    form.dept = val; $("vDept").textContent = val; $("fFlowDept").textContent = val;
+  } else if (pickKind === "trade") {
+    form.trade = val; $("vTrade").textContent = val; $("vTrade").classList.remove("ph");
+  } else if (pickKind === "team") {
+    form.team = val;
+    $("vTeam").textContent = val;
+    $("vTeam").classList.remove("ph");
+    const t = TEAMS.find(x => x.name === val);
+    if (t) {
+      $("teamCompany").textContent = "劳务公司：" + t.company + "　队长 " + t.leader;
+      $("teamCompany").classList.remove("hide");
+    }
+  }
+  closePick();
+}
+
+// ============ 附件 ============
+function renderPhotos(){
+  const grid = $("photoGrid");
+  $("photoCount").textContent = form.photos.length + " / 3";
+  let html = form.photos.map((src, i) => `<div class="thumb"><img src="${src}"><div class="del" data-i="${i}">×</div></div>`).join("");
+  if (form.photos.length < 3) html += `<div class="add-photo" id="addPhoto"><div class="p">＋</div><div>添加</div></div>`;
+  grid.innerHTML = html;
+  const add = $("addPhoto");
+  if (add) add.addEventListener("click", () => $("fileInput").click());
+  grid.querySelectorAll(".del").forEach(el => {
+    el.addEventListener("click", e => {
+      e.stopPropagation();
+      form.photos.splice(Number(el.dataset.i), 1);
+      renderPhotos();
+    });
+  });
+}
+$("fileInput").addEventListener("change", e => {
+  const files = Array.from(e.target.files || []);
+  files.forEach(f => {
+    if (form.photos.length >= 3) { toast("附件最多 3 张"); return; }
+    const r = new FileReader();
+    r.onload = ev => { form.photos.push(ev.target.result); renderPhotos(); };
+    r.readAsDataURL(f);
+  });
+  e.target.value = "";
+});
+
+// ============ 校验与提交 ============
+function idOk(v){
+  if (!/^\d{17}[\dXx]$/.test(v)) return false;
+  const w = [7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2];
+  const c = ["1","0","X","9","8","7","6","5","4","3","2"];
+  let s = 0;
+  for (let i = 0; i < 17; i++) s += Number(v[i]) * w[i];
+  return c[s % 11] === v[17].toUpperCase();
+}
+
+function submitApply(){
+  const name = $("fName").value.trim();
+  const phone = $("fPhone").value.trim();
+  const idc = $("fIdCard").value.trim();
+  const bankName = $("fBankName").value.trim() || name;
+  const card = $("fBankCard").value.replace(/\s/g, "");
+
+  if (!name) return toast("请填写姓名");
+  if (!/^1[3-9]\d{9}$/.test(phone)) return toast("请填写正确的 11 位手机号");
+  if (!idOk(idc)) return toast("身份证号格式或校验位不正确，请核对");
+  if (!form.trade) return toast("请选择工种");
+  if (form.type !== "自有" && !form.team) return toast("外包 / 临时工请选择所属施工队");
+  if (!bankName) return toast("请填写银行卡户名");
+  if (!/^\d{16,19}$/.test(card)) return toast("银行卡号应为 16–19 位数字");
+  const bank = $("fBank").value.trim();
+
+  const dup = REQS.find(r => r.idCard && r.idCard.toUpperCase() === idc.toUpperCase());
+  if (dup) {
+    const st = STATUS[dup.status].txt;
+    return toast(`该人员已在劳务库（编号 ${dup.lwNo || "待生成"}，状态：${dup.status === "pass" ? "在用" : st}），不允许重复申请`);
+  }
+
+  const team = TEAMS.find(t => t.name === form.team);
+  const now = new Date();
+  const ym = now.getFullYear();
+  const seq = String(REQS.length + 1).padStart(2, "0");
+  REQS.unshift({
+    id:`ZR-${ym}1120-${seq}`, name, phone, idCard:idc, dept:form.dept,
+    trade:form.trade, type:form.type, team:form.team || "",
+    company:team ? team.company : "",
+    bankName, bankCard:card, bank,
+    status:"wait", submitAt:"2026-11-20 09:41", auditor:"王敏"
+  });
+  toast("申请已提交，等待劳务专员审核");
+  resetForm();
+  renderList();
+  setTimeout(() => switchTab("list"), 500);
+}
+
+function resetForm(){
+  form.trade = ""; form.type = "自有"; form.team = ""; form.photos = [];
+  $("fName").value = ""; $("fPhone").value = ""; $("fIdCard").value = "";
+  $("fBankName").value = ""; $("fBankCard").value = ""; $("fBank").value = ""; $("fRemark").value = "";
+  $("vTrade").textContent = "请选择工种"; $("vTrade").classList.add("ph");
+  $("vTeam").textContent = "请选择所属施工队"; $("vTeam").classList.add("ph");
+ 
+  $("teamCompany").classList.add("hide");
+  $("starTeam").style.display = "none";
+  document.querySelectorAll("#paneApply .t-chip").forEach((o, k) => o.classList.toggle("on", k === 0));
+  renderPhotos();
+}
+
+// ============ 申请历史 ============
+function setFilter(el){
+  document.querySelectorAll("#listFilters .f-chip").forEach(o => o.classList.remove("on"));
+  el.classList.add("on");
+  curFilter = el.dataset.f;
+  renderList();
+}
+
+function renderList(){
+  const kw = ($("listKw").value || "").trim();
+  let arr = REQS.slice();
+  if (curFilter === "wait") arr = arr.filter(r => r.status === "wait" || r.status === "doing");
+  if (curFilter === "pass") arr = arr.filter(r => r.status === "pass");
+  if (curFilter === "rej") arr = arr.filter(r => r.status === "rej");
+  if (kw) arr = arr.filter(r => r.name.includes(kw) || r.phone.includes(kw));
+  const waitCount = REQS.filter(r => r.status === "doing").length;
+  $("tabDot").style.display = waitCount ? "inline-block" : "none";
+
+  if (!arr.length) {
+    $("reqList").innerHTML = `<div class="empty">没有匹配的申请<br>换个关键词或筛选条件试试</div>`;
+    return;
+  }
+  $("reqList").innerHTML = arr.map(r => {
+    const st = STATUS[r.status];
+    const typeCls = r.type === "自有" ? "tag-self" : (r.type === "外包" ? "tag-out" : "tag-temp");
+    const phoneMask = r.phone.replace(/(\d{3})\d{4}(\d{3})/, "$1****$2");
+    let extra = "";
+    if (r.status === "rej" && r.reject) extra = `<div class="rej-tip">驳回原因：${esc(r.reject)}</div>`;
+    if (r.status === "pass") extra = `<div class="pass-tip">已进劳务库 · ${esc(r.lwNo || "")}　准入 ${esc(r.passAt || "")}</div>`;
+    return `<div class="req-card" data-id="${esc(r.id)}">
+      <div class="req-top">
+        <div class="req-name">${esc(r.name)}</div>
+        <span class="${typeCls}">${esc(r.type)}</span>
+        <span class="badge ${st.cls}">${st.txt}</span>
+      </div>
+      <div class="req-line">${esc(r.trade)} · ${phoneMask} · ${esc(r.dept)}</div>
+      <div class="req-line2">提交 ${esc(r.submitAt)}　审核人 ${esc(r.auditor)}　单号 ${esc(r.id)}</div>
+      ${extra}
+    </div>`;
+  }).join("");
+  $("reqList").querySelectorAll(".req-card").forEach(el => {
+    el.addEventListener("click", () => openDetail(el.dataset.id));
+  });
+}
+
+// ============ 详情 ============
+function openDetail(id){
+  const r = REQS.find(x => x.id === id);
+  if (!r) return;
+  curDetail = r;
+  const st = STATUS[r.status];
+  const typeCls = r.type === "自有" ? "tag-self" : (r.type === "外包" ? "tag-out" : "tag-temp");
+  let foot = "";
+  if (r.status === "wait") foot = `<button class="btn-ghost" onclick="withdraw()">撤回申请</button>`;
+  if (r.status === "rej") foot = `<button class="btn-ghost" onclick="reApply()">修改重提</button>`;
+  if (r.status === "pass") foot = `<button class="btn-ghost" onclick="toast('原型演示：跳转劳务库该人员详情')">查看劳务档案</button>`;
+
+  const tl = [
+    { t:"提交准入申请", s:`${r.submitAt} · 申请人 张三`, wait:false },
+    { t:r.status === "wait" ? "等待劳务专员受理" : "劳务专员受理", s:`审核人 ${r.auditor}`, wait:r.status === "wait" },
+    { t: r.status === "pass" ? "审核通过 · 已进劳务库" : (r.status === "rej" ? "审核驳回" : "等待审核结论"),
+      s: r.status === "pass" ? `${r.passAt} · 劳务编号 ${r.lwNo}` : (r.status === "rej" ? esc(r.reject) : "—"),
+      wait: r.status !== "pass" && r.status !== "rej" }
+  ];
+
+  $("paneDetail").innerHTML = `
+    <div class="d-card">
+      <div class="d-head"><span class="d-no">${esc(r.id)}</span><span class="badge ${st.cls}">${st.txt}</span></div>
+      <div class="d-name">${esc(r.name)}<span class="${typeCls}" style="margin-left:8px;">${esc(r.type)}</span></div>
+      <div style="margin-top:10px;">
+        <div class="d-row"><div class="k">所属区域公司</div><div class="v">${esc(r.dept)}</div></div>
+        <div class="d-row"><div class="k">手机号</div><div class="v">${esc(r.phone)}</div></div>
+        <div class="d-row"><div class="k">身份证号</div><div class="v">${esc(r.idCard.slice(0,6))}********${esc(r.idCard.slice(-4))}</div></div>
+        <div class="d-row"><div class="k">工种</div><div class="v">${esc(r.trade)}</div></div>
+        <div class="d-row"><div class="k">所属施工队</div><div class="v">${esc(r.team || "—")}${r.company ? `<br><span style="font-size:12px;color:#98a2b3;">劳务公司：${esc(r.company)}</span>` : ""}</div></div>
+      </div>
+    </div>
+    <div class="d-sec">银行卡信息</div>
+    <div class="d-card">
+      <div class="d-row"><div class="k">户名</div><div class="v">${esc(r.bankName)}</div></div>
+      <div class="d-row"><div class="k">银行账号</div><div class="v">${esc(r.bankCard)}</div></div>
+      <div class="d-row"><div class="k">开户行</div><div class="v">${esc(r.bank)}</div></div>
+    </div>
+    <div class="d-sec">审批记录</div>
+    <div class="tl">
+      ${tl.map(i => `<div class="tl-item ${i.wait ? "wait" : ""}"><div class="tl-t">${i.t}</div><div class="tl-s">${i.s}</div></div>`).join("")}
+    </div>
+    <div style="padding:14px 12px 4px;">${foot}</div>
+  `;
+
+  $("paneApply").classList.add("hide");
+  $("paneList").classList.add("hide");
+  $("paneDetail").classList.remove("hide");
+  $("bottomBar").classList.add("hide");
+  $("tabs").classList.add("hide");
+  $("navTitle").textContent = "申请详情";
+  $("paneDetail").scrollTop = 0;
+  backToList = true;
+  document.querySelector(".navbar .back").onclick = e => { e.preventDefault(); closeDetail(); };
+}
+let backToList = false;
+function closeDetail(){
+  $("paneDetail").classList.add("hide");
+  $("tabs").classList.remove("hide");
+  $("paneList").classList.remove("hide");
+  switchTab("list");
+  document.querySelector(".navbar .back").setAttribute("href", "../site.html");
+  document.querySelector(".navbar .back").onclick = null;
+  backToList = false;
+}
+function withdraw(){
+  if (!curDetail) return;
+  curDetail.status = "wait";
+  toast("原型演示：撤回后回到草稿状态");
+  closeDetail();
+  renderList();
+}
+function reApply(){
+  if (!curDetail) return;
+  const r = curDetail;
+  closeDetail();
+  switchTab("apply");
+  $("fName").value = r.name;
+  $("fPhone").value = r.phone;
+  $("fIdCard").value = r.idCard;
+  $("fBankName").value = r.bankName;
+  $("fBankCard").value = r.bankCard;
+  form.dept = r.dept; $("vDept").textContent = r.dept; $("fFlowDept").textContent = r.dept;
+  form.trade = r.trade; $("vTrade").textContent = r.trade; $("vTrade").classList.remove("ph");
+  form.type = r.type;
+  document.querySelectorAll("#paneApply .t-chip").forEach(o => o.classList.toggle("on", o.dataset.t === r.type));
+  setType(document.querySelector(`#paneApply .t-chip[data-t="${r.type}"]`));
+  if (r.team) { form.team = r.team; $("vTeam").textContent = r.team; $("vTeam").classList.remove("ph"); }
+  if (r.bank) $("fBank").value = r.bank;
+  toast("已带出原申请内容，修改后重新提交");
+}
+
+// 手机号 / 卡号输入格式化
+$("fBankCard").addEventListener("input", e => {
+  const v = e.target.value.replace(/\D/g, "").slice(0, 19);
+  e.target.value = v.replace(/(\d{4})(?=\d)/g, "$1 ");
+});
+$("fPhone").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 11); });
+
+renderPhotos();
+renderList();
+</script>
+</body>
+</html>

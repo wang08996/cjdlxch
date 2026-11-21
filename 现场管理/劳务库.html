@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>劳务库 - 郴江电力</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; background:#e9ecf1; }
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+  .phone { width:390px; height:820px; background:#f4f6f9; border-radius:36px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.18); position:relative; display:flex; flex-direction:column; }
+  .statusbar { height:44px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:14px; font-weight:600; flex-shrink:0; }
+  .statusbar .right { display:flex; align-items:center; gap:6px; font-size:12px; }
+  .navbar { height:48px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 12px; border-bottom:1px solid #f0f0f0; flex-shrink:0; }
+  .navbar .back { font-size:15px; color:#2b7cff; padding:8px 4px; cursor:pointer; }
+  .navbar .title { font-size:17px; font-weight:600; color:#222; }
+  .navbar .right { min-width:60px; text-align:right; font-size:14px; color:#2b7cff; cursor:pointer; }
+
+  .body { flex:1; overflow-y:auto; background:#f4f6f9; }
+
+  /* 顶部长期工 / 临时工 切换 */
+  .lib-tabs { display:flex; background:#fff; border-bottom:1px solid #f0f0f0; }
+  .lt { flex:1; text-align:center; padding:12px 0 10px; font-size:15px; color:#66707c; cursor:pointer; position:relative; }
+  .lt.on { color:#2b7cff; font-weight:600; }
+  .lt.on::after { content:""; position:absolute; left:50%; transform:translateX(-50%); bottom:0; width:44px; height:3px; border-radius:2px; background:#2b7cff; }
+  .lt-n { font-size:11px; color:#a7b0bd; margin-left:3px; font-weight:400; }
+  .lt.on .lt-n { color:#2b7cff; }
+
+  /* 搜索与筛选 */
+  .search-wrap { background:#fff; padding:10px 12px 12px; border-bottom:1px solid #f0f0f0; }
+  .search { width:100%; height:36px; border:1px solid #e5e7eb; border-radius:18px; padding:0 14px; font-size:13px; background:#f7f9fc; outline:none; color:#222; }
+  .search::placeholder { color:#a7b0bd; }
+  .chips { display:flex; gap:8px; margin-top:10px; overflow-x:auto; padding-bottom:2px; }
+  .chips::-webkit-scrollbar { display:none; }
+  .fchip { flex:none; font-size:12px; color:#66707c; background:#f2f4f8; border-radius:12px; padding:5px 12px; cursor:pointer; border:1px solid transparent; }
+  .fchip.on { background:#eef4ff; color:#2b7cff; border-color:#c8ddff; font-weight:600; }
+
+  .list-head { font-size:11px; color:#98a2b3; padding:10px 14px 6px; }
+
+  /* 人员卡 */
+  .p-card { background:#fff; margin:0 12px 10px; border-radius:12px; padding:12px 14px; cursor:pointer; }
+  .p-card.sealed { opacity:.62; }
+  .p-top { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .p-nm { font-size:15px; font-weight:700; color:#222; }
+  .badge { font-size:10px; padding:2px 7px; border-radius:8px; font-weight:600; }
+  .b-self { background:#eef4ff; color:#1d4ed8; }
+  .b-sub { background:#f5edff; color:#7c3aed; }
+  .b-temp { background:#fff1e6; color:#c2410c; }
+  .b-grid { background:#e3f0ff; color:#1b5fd0; }
+  .b-ok { background:#dcfce7; color:#16a34a; }
+  .b-warn { background:#fef3c7; color:#b45309; }
+  .b-exp { background:#fee2e2; color:#dc2626; }
+  .b-none { background:#f1f3f7; color:#98a2b3; }
+  .b-sealed { background:#e5e7eb; color:#6b7280; }
+  .p-trade { font-size:11px; color:#66707c; margin-left:auto; }
+  .p-sub { font-size:12px; color:#98a2b3; margin-top:6px; }
+  .p-sub b { color:#66707c; font-weight:500; }
+  .p-ops { display:flex; justify-content:flex-end; margin-top:9px; }
+  .p-edit { font-size:12px; color:#2b7cff; border:1px solid #d3e0ff; background:#f6faff; border-radius:14px; padding:5px 16px; cursor:pointer; }
+  .p-edit:active { background:#eef4ff; }
+  .v-row { display:flex; gap:10px; padding:11px 0; border-bottom:1px solid #f4f5f7; }
+  .v-row .k { flex:none; width:80px; font-size:13px; color:#98a2b3; }
+  .v-row .v { flex:1; min-width:0; font-size:14px; color:#222; line-height:1.5; word-break:break-all; }
+  .v-tip { font-size:12px; color:#98a2b3; background:#f7f9fc; border-radius:8px; padding:8px 10px; margin-top:14px; line-height:1.6; }
+
+  .add-row { margin:8px 12px 24px; padding:12px; text-align:center; font-size:14px; color:#2b7cff; border:1px dashed #c8ddff; border-radius:10px; cursor:pointer; background:#fff; }
+  .empty { margin:40px 12px; text-align:center; font-size:13px; color:#a7b0bd; line-height:1.8; }
+
+  /* 弹层 */
+  .mask { position:absolute; inset:0; background:rgba(0,0,0,.45); z-index:50; display:none; align-items:flex-end; }
+  .mask.open { display:flex; }
+  .sheet { background:#fff; width:100%; max-height:88%; border-radius:16px 16px 0 0; display:flex; flex-direction:column; }
+  .sheet-head { padding:14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0f0f0; }
+  .sheet-title { font-size:16px; font-weight:600; color:#222; }
+  .sheet-close { color:#888; font-size:14px; cursor:pointer; }
+  .sheet-body { flex:1; overflow-y:auto; padding:4px 16px 16px; }
+  .sheet-foot { flex-shrink:0; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid #f0f0f0; display:flex; gap:10px; }
+  .btn-primary { flex:1; height:46px; border:none; border-radius:10px; background:#2b7cff; color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn-secondary { flex:1; height:46px; border:1px solid #2b7cff; border-radius:10px; background:#fff; color:#2b7cff; font-size:15px; font-weight:600; cursor:pointer; }
+
+  /* 表单 */
+  .f-sec { font-size:12px; font-weight:600; color:#98a2b3; margin:18px 0 2px; letter-spacing:.5px; }
+  .f-row { display:flex; align-items:flex-start; gap:10px; padding:11px 0; border-bottom:1px solid #f4f5f7; }
+  .f-row > label { flex:none; width:76px; font-size:13px; color:#66707c; padding-top:6px; }
+  .req { color:#dc2626; margin-left:2px; }
+  .f-in { flex:1; min-width:0; border:0; outline:none; font-size:14px; color:#222; padding:5px 0; background:transparent; font-family:inherit; }
+  .f-in::placeholder { color:#b6bfcc; }
+  select.f-in { appearance:none; -webkit-appearance:none; background:transparent; }
+  .id-tip { font-size:11px; color:#16a34a; margin-top:2px; }
+  .id-tip.err { color:#dc2626; }
+  .type-chips { display:flex; gap:8px; flex:1; }
+  .f-pick { flex:1; min-width:0; font-size:14px; color:#222; padding:5px 0; cursor:pointer; display:flex; align-items:center; }
+  .f-pick::after { content:"›"; margin-left:auto; color:#b6bfcc; font-size:15px; }
+  .f-pick.ph { color:#b6bfcc; }
+  .pk-item { display:flex; align-items:center; padding:13px 4px; border-bottom:1px solid #f4f5f7; font-size:14px; color:#222; cursor:pointer; }
+  .pk-item.on { color:#2b7cff; font-weight:600; }
+  .pk-ck { margin-left:auto; color:#2b7cff; font-size:13px; }  .tchip { flex:1; text-align:center; font-size:13px; padding:9px 0; border:1px solid #e5e7eb; border-radius:8px; color:#66707c; cursor:pointer; }
+  .tchip.on { border-color:#2b7cff; background:#eef4ff; color:#2b7cff; font-weight:600; }
+  .danger-row { margin-top:20px; }
+  .btn-danger { width:100%; height:44px; border:1px solid #fca5a5; color:#dc2626; background:#fff; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; }
+  .btn-danger.unseal { border-color:#93c5fd; color:#2b7cff; }
+  .sealed-tip { font-size:12px; color:#98a2b3; background:#f7f9fc; border-radius:8px; padding:8px 10px; margin-top:12px; line-height:1.6; }
+
+  /* 确认弹层 */
+  .cfm-sheet { max-height:none; }
+  .cfm-body { padding:18px 16px 8px; }
+  .cfm-title { font-size:15px; font-weight:600; color:#222; }
+  .cfm-desc { font-size:13px; color:#66707c; margin-top:8px; line-height:1.6; }
+  .toast { position:absolute; left:50%; bottom:110px; transform:translateX(-50%); background:rgba(0,0,0,.78); color:#fff; font-size:13px; padding:9px 16px; border-radius:18px; opacity:0; pointer-events:none; transition:opacity .18s; z-index:80; }
+  .toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar">
+    <span>9:41</span>
+    <div class="right"><span>信号</span><span>Wi-Fi</span><span>100%</span></div>
+  </div>
+  <div class="navbar">
+    <span class="back" onclick="goBack()">‹ 现场管理</span>
+    <span class="title">劳务库</span>
+    <span class="right" onclick="openForm()">+ 新增</span>
+  </div>
+
+  <div class="body" id="bodyWrap">
+    <div class="lib-tabs" id="libTabs">
+      <div class="lt" data-lib="long" onclick="setLib('long')">长期工</div>
+      <div class="lt" data-lib="temp" onclick="setLib('temp')">临时工</div>
+    </div>
+    <div class="search-wrap">
+      <input class="search" id="kw" placeholder="搜索姓名 / 手机号 / 施工队" oninput="render()">
+      <div class="chips" id="filterChips"></div>
+    </div>
+    <div class="list-head" id="listHead"></div>
+    <div id="list"></div>
+    <div class="add-row" id="addRow" onclick="openForm()">+ 新增劳务人员</div>
+  </div>
+
+  <!-- 新增 / 编辑 -->
+  <div class="mask" id="formMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="formTitle">新增劳务人员</div>
+        <div class="sheet-close" onclick="closeForm()">关闭</div>
+      </div>
+      <div class="sheet-body" id="formBody"></div>
+      <div class="sheet-foot">
+        <button class="btn-secondary" onclick="closeForm()">取消</button>
+        <button class="btn-primary" onclick="saveForm()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 劳务档案（只读查看） -->
+  <div class="mask" id="viewMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="viewTitle">劳务档案</div>
+        <div class="sheet-close" onclick="closeView()">关闭</div>
+      </div>
+      <div class="sheet-body" id="viewBody"></div>
+      <div class="sheet-foot">
+        <button class="btn-primary" onclick="closeView()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 通用选择弹层（部门 / 工种 / 施工队） -->
+  <div class="mask" id="pickMask" style="z-index:60">
+    <div class="sheet" style="max-height:70%">
+      <div class="sheet-head">
+        <div class="sheet-title" id="pickTitle">选择</div>
+        <div class="sheet-close" onclick="closePicker()">关闭</div>
+      </div>
+      <div class="sheet-body" style="padding-top:10px">
+        <input class="search" id="pickKw" placeholder="搜索" oninput="renderPickList()">
+        <div id="pickList" style="margin-top:6px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认 -->
+  <div class="mask" id="cfmMask">
+    <div class="sheet cfm-sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="cfmTitle">确认</div>
+        <div class="sheet-close" onclick="closeConfirm()">关闭</div>
+      </div>
+      <div class="cfm-body">
+        <div class="cfm-desc" id="cfmDesc"></div>
+      </div>
+      <div class="sheet-foot">
+        <button class="btn-secondary" onclick="closeConfirm()">取消</button>
+        <button class="btn-primary" onclick="doConfirm()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ============ 常量 ============
+const DEPTS = ["郴州公司/项目一部", "郴州公司/项目二部", "郴州公司/运维部", "常德分公司/项目一部"];
+const TRADES = ["现场负责人", "电工", "焊工", "高处作业工", "起重司索", "挖掘机手", "汽车驾驶员", "普工", "安全员"];
+const COMPANIES = ["湖南顺达劳务有限公司", "郴州宏达建筑劳务有限公司", "湘南众力劳务有限公司"];
+// 施工队 → 对应劳务公司
+const TEAMS = [
+  { name:"顺达劳务·一班", company:"湖南顺达劳务有限公司", leader:"张强" },
+  { name:"宏达建筑·二班", company:"郴州宏达建筑劳务有限公司", leader:"唐良辉" },
+  { name:"众力劳务·三班", company:"湘南众力劳务有限公司", leader:"黄勇" },
+  { name:"项目一部自有队", company:"郴江电力（自有）", leader:"刘建国" }
+];
+// 编辑权限：仅被授权的账号（项目负责人 / 劳务专员）在列表上看到「编辑」，未授权账号只有查看
+const CAN_EDIT = true;
+
+// ============ 演示数据（原型 mock） ============
+let PEOPLE = [
+  { id:"w01", grid:true, name:"黄志远", phone:"13807352233", dept:"郴州公司/项目一部", idCard:"431003198503124512", trade:"现场负责人", type:"自有", company:"", insExpire:"2027-03-15", bank:"黄志远", card:"6228480430218836", bankName:"中国农业银行郴州苏仙支行", sealed:false },
+  { id:"w02", grid:true, name:"刘建国", phone:"13907354411", dept:"郴州公司/项目一部", idCard:"431003198711203354", trade:"电工", type:"自有", company:"", insExpire:"2027-01-20", bank:"刘建国", card:"6222021408001234", bankName:"中国工商银行郴州分行", sealed:false },
+  { id:"w03", name:"唐良辉", phone:"13707356688", dept:"郴州公司/项目一部", idCard:"431003198209084417", trade:"电工", type:"自有", company:"", insExpire:"2026-11-24", bank:"唐良辉", card:"6217001980022", bankName:"中国建设银行郴州支行", sealed:false },
+  { id:"w04", grid:true, name:"张强", phone:"18607359902", dept:"郴州公司/项目一部", idCard:"431003199305167735", trade:"普工", type:"外包", team:"顺达劳务·一班", company:"湖南顺达劳务有限公司", insExpire:"2026-12-03", bank:"张强", card:"6214830211447788", bankName:"招商银行郴州分行", sealed:false },
+  { id:"w05", name:"李军", phone:"13507357701", dept:"郴州公司/项目一部", idCard:"431003199001156615", trade:"焊工", type:"自有", company:"", insExpire:"2027-02-08", bank:"李军", card:"6228480430998821", bankName:"中国农业银行郴州苏仙支行", sealed:false },
+  { id:"w06", grid:true, name:"陈伟", phone:"15007351234", dept:"郴州公司/项目二部", idCard:"43100319911022551X", trade:"起重司索", type:"自有", company:"", insExpire:"2026-11-19", bank:"陈伟", card:"6212261408013344", bankName:"中国工商银行郴州分行", sealed:false },
+  { id:"w07", name:"王磊", phone:"15807358765", dept:"郴州公司/项目二部", idCard:"431003199407091233", trade:"挖掘机手", type:"自有", company:"", insExpire:"2027-05-30", bank:"王磊", card:"6226090210099123", bankName:"中国银行郴州分行", sealed:false },
+  { id:"w08", grid:true, name:"赵敏", phone:"15907352345", dept:"郴州公司/运维部", idCard:"431003199205063322", trade:"汽车驾驶员", type:"自有", company:"", insExpire:"2027-04-11", bank:"赵敏", card:"6222021408015566", bankName:"中国工商银行郴州分行", sealed:false },
+  { id:"w09", name:"周强", phone:"18807359876", dept:"郴州公司/项目一部", idCard:"431003198812306619", trade:"普工", type:"外包", team:"宏达建筑·二班", company:"郴州宏达建筑劳务有限公司", insExpire:"2026-11-10", bank:"周强", card:"6214830255339911", bankName:"招商银行郴州分行", sealed:false },
+  { id:"w10", name:"吴海涛", phone:"13707354321", dept:"常德分公司/项目一部", idCard:"43070319860412771X", trade:"电工", type:"自有", company:"", insExpire:"2026-09-30", bank:"吴海涛", card:"6228480430662211", bankName:"中国农业银行常德分行", sealed:false },
+  { id:"w11", name:"郑凯", phone:"18307352290", dept:"郴州公司/项目二部", idCard:"431003199602024415", trade:"普工", type:"外包", team:"众力劳务·三班", company:"湘南众力劳务有限公司", insExpire:"", bank:"郑凯", card:"", bankName:"", sealed:true },
+  { id:"w12", grid:true, name:"邓志刚", phone:"13786552214", dept:"郴州公司/项目一部", idCard:"431003198905174431", trade:"普工", type:"临时工", team:"顺达劳务·一班", company:"湖南顺达劳务有限公司", insExpire:"2026-12-20", bank:"邓志刚", card:"6217001980033445", bankName:"中国建设银行郴州支行", sealed:false },
+  { id:"w13", grid:true, name:"罗小军", phone:"13876554432", dept:"郴州公司/项目二部", idCard:"431003199309081236", trade:"副工", type:"临时工", team:"宏达建筑·二班", company:"郴州宏达建筑劳务有限公司", insExpire:"2026-11-28", bank:"罗小军", card:"6214830277881122", bankName:"招商银行郴州分行", sealed:false },
+  { id:"w14", name:"彭建平", phone:"13677453321", dept:"郴州公司/项目一部", idCard:"431003198712223317", trade:"普工", type:"临时工", team:"众力劳务·三班", company:"湘南众力劳务有限公司", insExpire:"2026-11-08", bank:"彭建平", card:"6228480430556677", bankName:"中国农业银行郴州苏仙支行", sealed:false }
+];
+
+// ============ 工具 ============
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function maskPhone(p){ return p ? p.replace(/(\d{3})\d{4}(\d{3})/, "$1****$2") : "未填手机"; }
+
+let toastTimer = null;
+function toast(msg){
+  const el = $("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 1600);
+}
+
+// 保险状态：由到期日推算
+function insInfo(p){
+  if (!p.insExpire) return { k:"none", txt:"待同步" };
+  const end = new Date(p.insExpire + "T23:59:59");
+  const days = Math.floor((end - new Date()) / 86400000);
+  if (days < 0) return { k:"expired", txt:"保险过期" };
+  if (days <= 7) return { k:"warn", txt:"7天到期" };
+  return { k:"ok", txt:"保险有效" };
+}
+
+// 身份证校验（GB 11643 模 11）
+const ID_W = [7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2];
+const ID_C = "10X98765432";
+function checkId(s){
+  if (!/^\d{17}[\dXx]$/.test(s)) return false;
+  let sum = 0;
+  for (let i = 0; i < 17; i++) sum += parseInt(s[i], 10) * ID_W[i];
+  return ID_C[sum % 11] === s[17].toUpperCase();
+}
+function idMeta(s){
+  if (!checkId(s)) return null;
+  const y = +s.substr(6,4), m = +s.substr(10,2), d = +s.substr(12,2);
+  const sex = (+s[16]) % 2 === 1 ? "男" : "女";
+  const now = new Date();
+  let age = now.getFullYear() - y;
+  if (now.getMonth() + 1 < m || (now.getMonth() + 1 === m && now.getDate() < d)) age--;
+  return { sex, age, birth: y + "-" + ("0"+m).slice(-2) + "-" + ("0"+d).slice(-2) };
+}
+
+// ============ 列表 ============
+let libTab = "long";        // long 长期工 / temp 临时工
+let filter = "all";
+const FILTER_LONG = [
+  { k:"all", t:"全部" },
+  { k:"self", t:"自有" },
+  { k:"sub", t:"外包" },
+  { k:"grid", t:"国网准入" },
+  { k:"ins", t:"保险异常" },
+  { k:"sealed", t:"已封存" }
+];
+const FILTER_TEMP = [
+  { k:"all", t:"全部" },
+  { k:"grid", t:"国网准入" },
+  { k:"ins", t:"保险异常" },
+  { k:"sealed", t:"已封存" }
+];
+
+function tabsOf(){
+  return [
+    { k:"long", t:"长期工", n:PEOPLE.filter(p => p.type !== "临时工").length },
+    { k:"temp", t:"临时工", n:PEOPLE.filter(p => p.type === "临时工").length }
+  ];
+}
+function renderTabs(){
+  $("libTabs").innerHTML = tabsOf().map(t =>
+    `<div class="lt ${libTab===t.k?"on":""}" data-lib="${t.k}" onclick="setLib('${t.k}')">${t.t}<span class="lt-n">${t.n}</span></div>`
+  ).join("");
+}
+function setLib(k){
+  if (libTab === k) return;
+  libTab = k;
+  filter = "all";
+  const kw = $("kw");
+  if (kw) kw.value = "";
+  render();
+}
+
+function renderChips(){
+  const fs = libTab === "temp" ? FILTER_TEMP : FILTER_LONG;
+  $("filterChips").innerHTML = fs.map(f =>
+    `<div class="fchip ${filter===f.k?"on":""}" onclick="setFilter('${f.k}')">${f.t}</div>`
+  ).join("");
+}
+function setFilter(k){ filter = k; render(); }
+
+function render(){
+  renderTabs();
+  renderChips();
+  const isTemp = libTab === "temp";
+  const kw = ($("kw").value || "").trim();
+  let list = PEOPLE.filter(p => (p.type === "临时工") === isTemp);
+
+  if (filter === "self") list = list.filter(p => p.type === "自有");
+  else if (filter === "sub") list = list.filter(p => p.type === "外包");
+  else if (filter === "grid") list = list.filter(p => p.grid);
+  else if (filter === "ins") list = list.filter(p => { const i = insInfo(p); return i.k === "warn" || i.k === "expired" || i.k === "none"; });
+  else if (filter === "sealed") list = list.filter(p => p.sealed);
+
+  if (kw) {
+    list = list.filter(p =>
+      (p.name||"").includes(kw) || (p.phone||"").includes(kw) ||
+      (p.trade||"").includes(kw) || (p.dept||"").includes(kw) ||
+      (p.team||"").includes(kw) || (p.company||"").includes(kw)
+    );
+  }
+
+  // 未封存在前
+  list.sort((a,b) => (a.sealed?1:0) - (b.sealed?1:0));
+
+  const scope = PEOPLE.filter(p => (p.type === "临时工") === isTemp);
+  const total = scope.length;
+  const sealedN = scope.filter(p => p.sealed).length;
+  const selfN = scope.filter(p => p.type === "自有" && !p.sealed).length;
+  const subN = scope.filter(p => p.type === "外包" && !p.sealed).length;
+  const gridN = scope.filter(p => p.grid).length;
+  if (isTemp) {
+    $("listHead").textContent = `共 ${total} 人 · 在册 ${total - sealedN} · 国网准入 ${gridN} · 已封存 ${sealedN}`;
+  } else {
+    $("listHead").textContent = `共 ${total} 人 · 在册 ${total - sealedN}（自有 ${selfN} / 外包 ${subN}）· 国网准入 ${gridN} · 已封存 ${sealedN}`;
+  }
+  $("addRow").textContent = isTemp ? "+ 新增临时工" : "+ 新增劳务人员";
+
+  if (!list.length) {
+    $("list").innerHTML = `<div class="empty">${isTemp ? "临时工库暂无记录" : "没有匹配的劳务人员"}<br>换个关键词或筛选条件试试</div>`;
+    return;
+  }
+
+  $("list").innerHTML = list.map(p => {
+    const ins = insInfo(p);
+    const insCls = "b-" + (ins.k === "expired" ? "exp" : ins.k);
+    const bCls = p.type === "自有" ? "b-self" : (p.type === "临时工" ? "b-temp" : "b-sub");
+    return `<div class="p-card ${p.sealed?"sealed":""}" data-id="${p.id}">
+      <div class="p-top">
+        <span class="p-nm">${esc(p.name)}</span>
+        <span class="badge ${bCls}">${p.type}</span>
+        ${p.grid ? `<span class="badge b-grid">国网准入</span>` : ""}
+        <span class="badge ${insCls}">${ins.txt}</span>
+        ${p.sealed ? `<span class="badge b-sealed">已封存</span>` : ""}
+        <span class="p-trade">${esc(p.trade || "未填工种")}</span>
+      </div>
+      <div class="p-sub">${maskPhone(p.phone)} · <b>${esc(p.dept || "未填部门")}</b></div>
+      ${(p.type === "外包" || p.type === "临时工") && (p.team || p.company) ? `<div class="p-sub">施工队：<b>${esc(p.team || p.company)}</b></div>` : ""}
+      ${p.insExpire ? `<div class="p-sub">保险到期 <b>${p.insExpire}</b></div>` : `<div class="p-sub">保险信息待补充</div>`}
+      ${CAN_EDIT ? `<div class="p-ops"><span class="p-edit" data-edit="${p.id}">编辑</span></div>` : ""}
+    </div>`;
+  }).join("");
+
+  // 点卡片 = 只读查看；点编辑 = 需授权后进入编辑
+  $("list").querySelectorAll(".p-card").forEach(card => {
+    card.addEventListener("click", () => openView(card.dataset.id));
+  });
+  $("list").querySelectorAll(".p-edit").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.stopPropagation();
+      openForm(btn.dataset.edit);
+    });
+  });
+}
+
+// ============ 只读查看 ============
+let viewId = null;
+function openView(id){
+  const p = PEOPLE.find(x => x.id === id);
+  if (!p) return;
+  viewId = id;
+  const ins = insInfo(p);
+  $("viewTitle").textContent = p.name + " · 劳务档案";
+  $("viewBody").innerHTML = `
+    <div class="v-row"><div class="k">姓名</div><div class="v">${esc(p.name)}</div></div>
+    <div class="v-row"><div class="k">类型</div><div class="v">${esc(p.type)}</div></div>
+    <div class="v-row"><div class="k">施工队</div><div class="v">${esc(p.team || p.company || "—")}</div></div>
+    <div class="v-row"><div class="k">国网准入</div><div class="v">${p.grid ? "已通过国网准入" : "未通过"}</div></div>
+    <div class="v-row"><div class="k">工种</div><div class="v">${esc(p.trade || "—")}</div></div>
+    <div class="v-row"><div class="k">所属部门</div><div class="v">${esc(p.dept || "—")}</div></div>
+    <div class="v-row"><div class="k">手机号</div><div class="v">${esc(p.phone || "—")}</div></div>
+    <div class="v-row"><div class="k">身份证号</div><div class="v">${p.idCard ? esc(p.idCard.slice(0,6)) + "********" + esc(p.idCard.slice(-4)) : "—"}</div></div>
+    <div class="v-row"><div class="k">保险状态</div><div class="v">${ins.txt}${p.insExpire ? "（到期 " + esc(p.insExpire) + "）" : ""}</div></div>
+    <div class="v-row"><div class="k">档案状态</div><div class="v">${p.sealed ? "已封存" : "在册"}</div></div>
+    <div class="v-tip">此页仅供查看。如需修改档案信息，可由有编辑权限的账号在列表中点「编辑」进入。</div>
+  `;
+  $("viewMask").classList.add("open");
+}
+function closeView(){ $("viewMask").classList.remove("open"); viewId = null; }
+
+// ============ 新增 / 编辑 ============
+let editId = null, editType = "自有", editGrid = false;
+let formVals = { dept:"", trade:"", team:"" };
+
+function openForm(id){
+  editId = id || null;
+  const p = id ? PEOPLE.find(x => x.id === id) : null;
+  editType = p ? p.type : (libTab === "temp" ? "临时工" : "自有");
+  editGrid = p ? !!p.grid : false;
+  formVals = {
+    dept: p ? (p.dept || "") : "",
+    trade: p ? (p.trade || "") : "",
+    team: p ? (p.team || p.company || "") : ""
+  };
+  $("formTitle").textContent = p ? "编辑劳务人员" : "新增劳务人员";
+  renderForm(p);
+  $("formMask").classList.add("open");
+}
+function closeForm(){
+  $("formMask").classList.remove("open");
+  editId = null;
+}
+function renderForm(p){
+  const isOut = editType === "外包" || editType === "临时工";
+  $("formBody").innerHTML = `
+    <div class="f-sec">基本信息</div>
+    <div class="f-row">
+      <label>姓名<span class="req">*</span></label>
+      <input class="f-in" id="fName" placeholder="必填" value="${esc(p ? p.name : "")}">
+    </div>
+    <div class="f-row">
+      <label>所属部门</label>
+      <div class="f-pick ${formVals.dept ? "" : "ph"}" id="fDeptShow" onclick="openPicker('dept')">${esc(formVals.dept || "请选择所属部门")}</div>
+    </div>
+    <div class="f-row">
+      <label>手机号</label>
+      <input class="f-in" id="fPhone" type="tel" maxlength="11" placeholder="11 位手机号" value="${esc(p ? p.phone : "")}">
+    </div>
+    <div class="f-row">
+      <label>身份证</label>
+      <div style="flex:1;min-width:0">
+        <input class="f-in" id="fId" maxlength="18" placeholder="18 位身份证号" value="${esc(p ? p.idCard : "")}" oninput="onIdInput()" style="width:100%">
+        <div class="id-tip" id="idTip"></div>
+      </div>
+    </div>
+    <div class="f-row">
+      <label>工种</label>
+      <div class="f-pick ${formVals.trade ? "" : "ph"}" id="fTradeShow" onclick="openPicker('trade')">${esc(formVals.trade || "请选择工种")}</div>
+    </div>
+
+    <div class="f-sec">劳务关系</div>
+    <div class="f-row">
+      <label>国网准入</label>
+      <div class="type-chips">
+        <div class="tchip ${editGrid?"on":""}" data-g="1" onclick="setGrid(true)">已准入</div>
+        <div class="tchip ${editGrid?"":"on"}" data-g="0" onclick="setGrid(false)">未准入</div>
+      </div>
+    </div>
+    <div class="f-row">
+      <label>劳务类型</label>
+      <div class="type-chips">
+        <div class="tchip ${editType==="自有"?"on":""}" data-t="自有" onclick="setType('自有')">自有</div>
+        <div class="tchip ${editType==="外包"?"on":""}" data-t="外包" onclick="setType('外包')">外包</div>
+        <div class="tchip ${editType==="临时工"?"on":""}" data-t="临时工" onclick="setType('临时工')">临时工</div>
+      </div>
+    </div>
+    <div class="f-row" id="companyRow" ${isOut?"":"style=\"display:none\""}>
+      <label>施工队<span class="req">*</span></label>
+      <div class="f-pick ${formVals.team ? "" : "ph"}" id="fTeamShow" onclick="openPicker('team')">${esc(formVals.team || "请选择施工队")}</div>
+    </div>
+
+    <div class="f-sec">银行信息</div>
+    <div class="f-row">
+      <label>户名</label>
+      <input class="f-in" id="fBankName2" placeholder="工资收款户名" value="${esc(p ? p.bank : "")}">
+    </div>
+    <div class="f-row">
+      <label>银行卡号</label>
+      <input class="f-in" id="fCard" inputmode="numeric" placeholder="银行卡号" value="${esc(p ? p.card : "")}">
+    </div>
+    <div class="f-row">
+      <label>开户行</label>
+      <input class="f-in" id="fBank" placeholder="如 中国农业银行郴州苏仙支行" value="${esc(p ? p.bankName : "")}">
+    </div>
+
+    ${p ? `<div class="sealed-tip" style="margin-top:14px">保险信息由系统带出，本页不录入。当前：${p.insExpire ? insInfo(p).txt + " · 到期 " + p.insExpire : "暂无保单信息"}</div>` : ""}
+
+    ${p ? `<div class="danger-row">
+      <button class="btn-danger ${p.sealed?"unseal":""}" onclick="askSeal('${p.id}')">${p.sealed ? "解除封存（可重新派工）" : "封存该人员"}</button>
+    </div>` : ""}
+    ${p && p.sealed ? `<div class="sealed-tip">该人员已封存，不可再参与日计划派工与日完工点工；解除封存后可继续使用。</div>` : ""}
+  `;
+  onIdInput();
+}
+function setGrid(v){
+  editGrid = v;
+  document.querySelectorAll("#formBody .tchip[data-g]").forEach(el => {
+    el.classList.toggle("on", el.getAttribute("data-g") === (v ? "1" : "0"));
+  });
+}
+function setType(t){
+  editType = t;
+  document.querySelectorAll("#formBody .tchip").forEach(el => {
+    el.classList.toggle("on", el.getAttribute("data-t") === t);
+  });
+  const row = $("companyRow");
+  if (row) row.style.display = (t === "外包" || t === "临时工") ? "" : "none";
+}
+function onIdInput(){
+  const v = ($("fId").value || "").trim().toUpperCase();
+  const tip = $("idTip");
+  if (!v) { tip.textContent = ""; tip.className = "id-tip"; return; }
+  const m = idMeta(v);
+  if (m) {
+    tip.className = "id-tip";
+    tip.textContent = `${m.sex} · ${m.age} 岁 · 出生 ${m.birth}`;
+  } else {
+    tip.className = "id-tip err";
+    tip.textContent = v.length === 18 ? "身份证校验不通过，请核对" : "身份证应为 18 位";
+  }
+}
+function saveForm(){
+  const name = ($("fName").value || "").trim();
+  if (!name) { toast("请填写姓名"); $("fName").focus(); return; }
+  const phone = ($("fPhone").value || "").trim();
+  if (phone && !/^1\d{10}$/.test(phone)) { toast("手机号应为 11 位数字"); return; }
+  const idCard = ($("fId").value || "").trim().toUpperCase();
+  if (idCard && !checkId(idCard)) { toast("身份证校验不通过"); return; }
+  const needTeam = editType === "外包" || editType === "临时工";
+  if (needTeam && !formVals.team) { toast("请选择施工队"); return; }
+  const teamMeta = TEAMS.find(t => t.name === formVals.team);
+
+  const row = {
+    name,
+    dept: formVals.dept,
+    phone,
+    idCard,
+    trade: formVals.trade,
+    type: editType,
+    grid: editGrid,
+    team: needTeam ? formVals.team : "",
+    company: needTeam ? (teamMeta ? teamMeta.company : "") : "",
+    bank: ($("fBankName2").value || "").trim(),
+    card: ($("fCard").value || "").trim(),
+    bankName: ($("fBank").value || "").trim(),
+    insExpire: editId ? (PEOPLE.find(x => x.id === editId) || {}).insExpire || "" : ""
+  };
+
+  if (editId) {
+    const p = PEOPLE.find(x => x.id === editId);
+    Object.assign(p, row);
+    toast("已保存");
+  } else {
+    row.id = "n" + Date.now().toString().slice(-6);
+    row.sealed = false;
+    PEOPLE.unshift(row);
+    toast("已新增");
+  }
+  closeForm();
+  render();
+}
+
+// ============ 选择弹层（部门 / 工种 / 施工队） ============
+let pickTarget = null;
+const PICK_SRC = {
+  dept:  { title:"选择所属部门", data: () => DEPTS },
+  trade: { title:"选择工种",     data: () => TRADES },
+  team:  { title:"选择施工队",   data: () => TEAMS.map(t => t.name) }
+};
+function openPicker(kind){
+  pickTarget = kind;
+  $("pickTitle").textContent = PICK_SRC[kind].title;
+  $("pickKw").value = "";
+  $("pickKw").placeholder = kind === "dept" ? "搜索部门" : (kind === "trade" ? "搜索工种" : "搜索施工队");
+  renderPickList();
+  $("pickMask").classList.add("open");
+}
+function renderPickList(){
+  if (!pickTarget) return;
+  const kw = ($("pickKw").value || "").trim();
+  const all = PICK_SRC[pickTarget].data();
+  const cur = formVals[pickTarget] || "";
+  const list = kw ? all.filter(v => v.includes(kw)) : all;
+  if (!list.length) {
+    $("pickList").innerHTML = `<div class="empty" style="margin:28px 0">没有匹配项<br>换个关键词试试</div>`;
+    return;
+  }
+  $("pickList").innerHTML = list.map(v =>
+    `<div class="pk-item ${v===cur?"on":""}" onclick="pickItem('${v}')">${esc(v)}${v===cur?`<span class="pk-ck">✓</span>`:""}</div>`
+  ).join("");
+}
+function pickItem(v){
+  formVals[pickTarget] = v;
+  const map = { dept:"fDeptShow", trade:"fTradeShow", team:"fTeamShow" };
+  const el = $(map[pickTarget]);
+  if (el) { el.textContent = v; el.classList.remove("ph"); }
+  closePicker();
+}
+function closePicker(){
+  $("pickMask").classList.remove("open");
+  pickTarget = null;
+}
+
+// ============ 封存 / 解封 ============
+let cfmCb = null;
+function openConfirm(title, desc, cb){
+  $("cfmTitle").textContent = title;
+  $("cfmDesc").textContent = desc;
+  cfmCb = cb;
+  $("cfmMask").classList.add("open");
+}
+function closeConfirm(){
+  $("cfmMask").classList.remove("open");
+  cfmCb = null;
+}
+function doConfirm(){
+  if (cfmCb) cfmCb();
+  closeConfirm();
+}
+function askSeal(id){
+  const p = PEOPLE.find(x => x.id === id);
+  if (!p) return;
+  if (p.sealed) {
+    openConfirm("解除封存", `解除后「${p.name}」可重新参与日计划派工与日完工点工。`, () => {
+      p.sealed = false;
+      closeForm();
+      render();
+      toast("已解除封存");
+    });
+  } else {
+    openConfirm("封存人员", `封存后「${p.name}」不能再被日计划、日完工派工，记录仍保留在列表，可随时解除封存。`, () => {
+      p.sealed = true;
+      closeForm();
+      render();
+      toast("已封存");
+    });
+  }
+}
+
+// ============ 初始化 ============
+function goBack(){
+  location.href = "../site.html";
+}
+render();
+$("formMask").addEventListener("click", function(e){ if (e.target === this) closeForm(); });
+$("cfmMask").addEventListener("click", function(e){ if (e.target === this) closeConfirm(); });
+</script>
+</body>
+</html>

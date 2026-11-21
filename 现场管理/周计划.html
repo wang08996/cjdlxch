@@ -19,7 +19,9 @@
   .body { flex:1; overflow-y:auto; background:#f4f6f9; }
 
   /* 周选择 */
-  .week-bar { background:#fff; padding:12px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0f0f0; }
+  .week-bar { background:#fff; padding:12px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0f0f0; position:relative; }
+  .share-chip { position:absolute; top:8px; right:8px; background:#eef4ff; color:#2b7cff; font-size:11px; font-weight:600; padding:4px 9px; border-radius:12px; cursor:pointer; }
+  .share-chip:active { opacity:.7; }
   .week-nav { font-size:18px; color:#2b7cff; cursor:pointer; padding:4px 10px; }
   .week-info { text-align:center; }
   .week-title { font-size:15px; font-weight:600; color:#222; }
@@ -72,8 +74,9 @@
 
   /* 人员选择浮层（统一样式） */
   .pw-search { width:100%; height:40px; border:none; background:#f2f3f5; border-radius:20px; padding:0 14px; font-size:14px; box-sizing:border-box; outline:none; }
-  .pw-tabs { display:flex; gap:8px; padding:0 14px 10px; flex-wrap:wrap; }
-  .pw-tab { padding:7px 14px; border-radius:16px; background:#f2f3f5; font-size:13px; color:#555; cursor:pointer; flex:none; white-space:nowrap; }
+  .pw-tabs { display:flex; gap:6px; padding:0 14px 10px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; }
+  .pw-tabs::-webkit-scrollbar { display:none; }
+  .pw-tab { padding:7px 10px; border-radius:16px; background:#f2f3f5; font-size:12.5px; color:#555; cursor:pointer; flex:none; white-space:nowrap; }
   .pw-tab.on { background:#2b7cff; color:#fff; }
   .pw-row { display:flex; align-items:center; gap:10px; padding:12px 0; border-bottom:1px solid #f2f3f5; cursor:pointer; }
   .pw-row.disabled { opacity:.55; cursor:not-allowed; }
@@ -82,6 +85,8 @@
   .pw-name { font-size:15px; font-weight:600; color:#222; }
   .pw-name .pw-tag-self { font-size:10px; background:#dbeafe; color:#1d4ed8; padding:1px 6px; border-radius:4px; margin-left:6px; font-weight:400; }
   .pw-name .pw-tag-out { font-size:10px; background:#fef3c7; color:#92400e; padding:1px 6px; border-radius:4px; margin-left:6px; font-weight:400; }
+  .pw-name .pw-tag-grid { font-size:10px; background:#e3f0ff; color:#1b5fd0; padding:1px 6px; border-radius:4px; margin-left:4px; font-weight:600; }
+  .pw-name .pw-tag-nogrid { font-size:10px; background:#f3f4f6; color:#9ca3af; padding:1px 6px; border-radius:4px; margin-left:4px; font-weight:400; }
   .pw-sub { font-size:11px; color:#888; margin-top:3px; }
   .pw-ins { font-size:11px; padding:2px 8px; border-radius:8px; font-weight:500; }
   .pw-ins.ok { background:#dcfce7; color:#15803d; }
@@ -121,9 +126,14 @@
         <div class="sheet-close" onclick="closeTaskSheet()">关闭</div>
       </div>
       <div class="sheet-body">
-        <div class="form-row"><label>项目（先选项目）</label>
+        <div class="form-row"><label>项目（选一次，本页多条任务都归这个项目）</label>
           <input id="fProj" placeholder="点击选择项目" readonly onclick="openProjPicker()" style="background:#f9fafb;">
         </div>
+        <div id="pendingBox" style="display:none;margin:0 0 12px;">
+          <div style="font-size:12px;color:#888;margin-bottom:6px;">本页已添加 <b id="pendingCount" style="color:#2b7cff;">0</b> 条任务（同一项目）</div>
+          <div id="pendingList"></div>
+        </div>
+        <div style="font-size:12px;color:#888;margin:-2px 0 8px;padding-top:8px;border-top:1px dashed #eee;">正在填写下一条任务</div>
         <div class="form-row"><label>作业内容</label><input id="fTask" placeholder="如：放线、顶管"></div>
         <div id="taskHistory" style="margin:-6px 0 12px;display:flex;flex-wrap:wrap;gap:6px;"></div>
         <div class="form-row"><label>风险等级</label>
@@ -150,16 +160,28 @@
           <input id="fMachine" placeholder="点击选机械" readonly onclick="openMachinePicker()" style="background:#f9fafb;">
         </div>
       </div>
-      <div class="sheet-foot"><button class="btn-primary" style="box-shadow:0 4px 12px rgba(43,124,255,.3);border-radius:12px;" onclick="saveTask()">保存任务</button></div>
+      <div class="sheet-foot">
+        <button class="btn-secondary" id="addMoreBtn" onclick="addPendingTask()" style="flex:1;">+ 再加一条任务</button>
+        <button class="btn-primary" id="saveTaskBtn" onclick="saveTask()" style="flex:1.2;box-shadow:0 4px 12px rgba(43,124,255,.3);border-radius:12px;">保存任务</button>
+      </div>
     </div>
   </div>
 
-  <!-- 选周 sheet -->
+  <!-- 新建周计划 sheet（选周 + 作业组 + 创建人 / 部门） -->
   <div class="mask" id="pickWeekMask">
     <div class="sheet">
-      <div class="sheet-head"><div class="sheet-title">选择要创建的周</div><div class="sheet-close" onclick="closePickWeek()">关闭</div></div>
-      <div class="sheet-body" id="pickWeekList"></div>
-      <div class="sheet-foot"><button class="btn-primary" style="box-shadow:0 4px 12px rgba(43,124,255,.3);border-radius:12px;" onclick="confirmPickWeek()">创建该周计划</button></div>
+      <div class="sheet-head"><div class="sheet-title">新建周计划</div><div class="sheet-close" onclick="closePickWeek()">关闭</div></div>
+      <div style="padding:12px 14px 2px;font-size:12px;color:#888;">先选周，再选作业组；同一周同一组只能有一份周计划</div>
+      <div class="sheet-body" id="pickWeekList" style="max-height:250px;padding-bottom:4px;"></div>
+      <div style="padding:0 14px 6px;border-top:1px solid #f0f0f0;">
+        <div class="form-row"><label>作业组</label>
+          <div id="newGroupRow" style="display:flex;gap:8px;padding:2px 0 4px;"></div>
+        </div>
+        <div class="form-row"><label>创建人</label><input id="newCreator" value="李志强"></div>
+        <div class="form-row"><label>创建部门（默认）</label><input id="newDept" value="电网建设运维中心项目一部"></div>
+        <div id="newWeekHint" style="font-size:12px;color:#ef4444;padding:2px 0 8px;display:none;"></div>
+      </div>
+      <div class="sheet-foot"><button class="btn-primary" id="newWeekBtn" style="box-shadow:0 4px 12px rgba(43,124,255,.3);border-radius:12px;" onclick="confirmPickWeek()">创建周计划</button></div>
     </div>
   </div>
 
@@ -168,9 +190,18 @@
     <div class="sheet">
       <div class="sheet-head"><div class="sheet-title">选择项目</div><div class="sheet-close" onclick="closeProjPicker()">关闭</div></div>
       <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;">
-        <input id="projSearch" placeholder="搜索项目..." oninput="renderProjList()" style="width:100%;height:40px;border:1px solid #ddd;border-radius:8px;padding:0 10px;font-size:14px;">
+        <input id="projSearch" placeholder="搜索项目名称 / 项目编号" oninput="renderProjList()" style="width:100%;height:40px;border:1px solid #ddd;border-radius:8px;padding:0 10px;font-size:14px;">
       </div>
       <div class="sheet-body" id="projList" style="max-height:300px;"></div>
+    </div>
+  </div>
+
+  <!-- 分享到群 sheet -->
+  <div class="mask" id="shareMask">
+    <div class="sheet">
+      <div class="sheet-head"><div class="sheet-title">分享到工作群</div><div class="sheet-close" onclick="closeShare()">关闭</div></div>
+      <div style="padding:10px 14px 6px;font-size:12px;color:#888;">已发布计划卡片将发送到所选群，群成员可直接查看本周安排</div>
+      <div class="sheet-body" id="shareList" style="max-height:320px;padding:0 14px 14px;"></div>
     </div>
   </div>
 
@@ -187,6 +218,7 @@
         <div class="pw-tab" data-f="out" onclick="setWorkerFilter(this)">外包</div>
         <div class="pw-tab" data-f="tech" onclick="setWorkerFilter(this)">技工</div>
         <div class="pw-tab" data-f="help" onclick="setWorkerFilter(this)">副工</div>
+        <div class="pw-tab" data-f="grid" onclick="setWorkerFilter(this)">国网准入</div>
       </div>
       <div class="sheet-body" id="workerList" style="max-height:350px;padding:0 14px 14px;"></div>
     </div>
@@ -236,33 +268,33 @@
 <script>
 // 项目库
 const PROJ_LIB = [
-  "园垄线10kV改造工程",
-  "珠东线配电自动化改造",
-  "高速杆迁瓦窑坪支线工程",
-  "嘉禾县农网巩固提升工程",
-  "苏仙区小区供配电改造",
-  "10kV白露塘线迁改工程",
-  "湘南物流园屋顶分布式光伏",
-  "碧桂园配电房新建工程",
+  { code:"YL-2025-010", name:"园垄线10kV改造工程" },
+  { code:"ZD-2025-007", name:"珠东线配电自动化改造" },
+  { code:"WY-2025-003", name:"高速杆迁瓦窑坪支线工程" },
+  { code:"JH-2025-012", name:"嘉禾县农网巩固提升工程" },
+  { code:"SX-2025-021", name:"苏仙区小区供配电改造" },
+  { code:"BL-2025-002", name:"10kV白露塘线迁改工程" },
+  { code:"XN-2025-016", name:"湘南物流园屋顶分布式光伏" },
+  { code:"BG-2025-008", name:"碧桂园配电房新建工程" },
 ];
-// 劳务人员库
+// 劳务人员库（grid = 国网准入通过）
 const WORKERS = [
-  { name:"黄志远", type:"自有", role:"现场负责人", ins:"ok", insText:"保险有效" },
-  { name:"刘建国", type:"自有", role:"队长", ins:"ok", insText:"保险有效" },
-  { name:"陈立军", type:"自有", role:"队长", ins:"ok", insText:"保险有效" },
-  { name:"张强",   type:"外包", role:"队长", ins:"ok", insText:"保险有效" },
-  { name:"唐良辉", type:"外包", role:"队长", ins:"warn", insText:"保险11/18到期" },
-  { name:"王大伟", type:"自有", role:"技工", ins:"ok", insText:"保险有效" },
-  { name:"李军",   type:"自有", role:"技工", ins:"ok", insText:"保险有效" },
-  { name:"刘文兵", type:"自有", role:"技工", ins:"ok", insText:"保险有效" },
-  { name:"张喜明", type:"自有", role:"技工", ins:"ok", insText:"保险有效" },
-  { name:"周正权", type:"外包", role:"技工", ins:"ok", insText:"保险有效" },
-  { name:"朱伟林", type:"自有", role:"技工", ins:"ok", insText:"保险有效" },
-  { name:"黄勇",   type:"外包", role:"技工", ins:"ok", insText:"保险有效" },
-  { name:"李铁牛", type:"外包", role:"副工", ins:"ok", insText:"保险有效" },
-  { name:"刘海",   type:"自有", role:"副工", ins:"ok", insText:"保险有效" },
-  { name:"陈小兵", type:"外包", role:"副工", ins:"ok", insText:"保险有效" },
-  { name:"张二狗", type:"外包", role:"副工", ins:"bad", insText:"保险过期" },
+  { name:"黄志远", type:"自有", role:"现场负责人", ins:"ok", insText:"保险有效", grid:true },
+  { name:"刘建国", type:"自有", role:"队长", ins:"ok", insText:"保险有效", grid:true },
+  { name:"陈立军", type:"自有", role:"队长", ins:"ok", insText:"保险有效", grid:true },
+  { name:"张强",   type:"外包", role:"队长", ins:"ok", insText:"保险有效", grid:true },
+  { name:"唐良辉", type:"外包", role:"队长", ins:"warn", insText:"保险11/18到期", grid:true },
+  { name:"王大伟", type:"自有", role:"技工", ins:"ok", insText:"保险有效", grid:true },
+  { name:"李军",   type:"自有", role:"技工", ins:"ok", insText:"保险有效", grid:true },
+  { name:"刘文兵", type:"自有", role:"技工", ins:"ok", insText:"保险有效", grid:false },
+  { name:"张喜明", type:"自有", role:"技工", ins:"ok", insText:"保险有效", grid:true },
+  { name:"周正权", type:"外包", role:"技工", ins:"ok", insText:"保险有效", grid:true },
+  { name:"朱伟林", type:"自有", role:"技工", ins:"ok", insText:"保险有效", grid:false },
+  { name:"黄勇",   type:"外包", role:"技工", ins:"ok", insText:"保险有效", grid:true },
+  { name:"李铁牛", type:"外包", role:"副工", ins:"ok", insText:"保险有效", grid:false },
+  { name:"刘海",   type:"自有", role:"副工", ins:"ok", insText:"保险有效", grid:true },
+  { name:"陈小兵", type:"外包", role:"副工", ins:"ok", insText:"保险有效", grid:true },
+  { name:"张二狗", type:"外包", role:"副工", ins:"bad", insText:"保险过期", grid:false },
 ];
 // 车辆库
 const CARS = [
@@ -289,27 +321,42 @@ function getCurrentWeek(){
 }
 const NOW = getCurrentWeek();
 
-// 周数据：多周管理
-function buildWeek(no,start,end,status,remark,tasksByDay){
+// 作业组：一个部门下分多个组，各组独立建周计划、独立审批
+const GROUPS = [
+  {id:"pw", name:"配网组", leader:"黄志远"},
+  {id:"yx", name:"营销组", leader:"周国华"}
+];
+const DEPT_DEFAULT = "电网建设运维中心项目一部";
+function gNameOf(id){ const g=GROUPS.find(x=>x.id===id); return g?g.name:GROUPS[0].name; }
+
+// 周数据：多周管理（同一周同一组仅一份）
+function buildWeek(no,start,end,status,remark,tasksByDay,group,creator){
   const names=["周一","周二","周三","周四","周五","周六","周日"];
   const days=names.map((n,i)=>({m:start.split('/')[0]+'/'+(parseInt(start.split('/')[1])+i), name:n, tasks:(tasksByDay&&tasksByDay[i])||[]}));
-  return { weekNo:no, start, end, year:2026, dept:"电网建设运维中心项目一部", creator:"李志强", status, remark, days };
+  return { weekNo:no, start, end, year:2026, dept:DEPT_DEFAULT, creator:creator||"李志强", status, remark, days, group:group||"pw" };
 }
 let WEEKS = [
   buildWeek(NOW.weekNo, NOW.start, NOW.end, "draft", "", [
     null,null,null,null,
-    [{proj:"园垄线10kV改造工程",task:"放线",risk:"III",note:"验电接地",leader:"黄志远",labor:3,tech:2,car:"湘L·D1234、湘L·T5678",machine:"无"}],
+    [{proj:"园垄线10kV改造工程",task:"放线",risk:"III",note:"验电接地",leader:"黄志远",labor:3,tech:2,car:"湘L·D1234、湘L·T5678",machine:"无"},
+     {proj:"园垄线10kV改造工程",task:"顶管",risk:"II",note:"管径DN200",leader:"陈立军",labor:2,tech:1,car:"湘L·D1234",machine:"无"}],
     [{proj:"高速杆迁瓦窑坪支线工程",task:"基础开挖",risk:"IV",note:"放坡",leader:"陈立军",labor:4,tech:1,car:"",machine:"挖机1台"}],
     null
-  ]),
+  ],"pw"),
+  buildWeek(NOW.weekNo, NOW.start, NOW.end, "review", "本周以台区表计轮换、装表接电为主，注意带电作业安全", [
+    [{proj:"宜章台区改造项目",task:"装表接电",risk:"II",note:"带电作业车到位",leader:"周国华",labor:3,tech:2,car:"湘L·B5566",machine:"无"}],
+    null,
+    [{proj:"苏仙区小区供配电改造",task:"表计轮换",risk:"III",note:"提前告知物业",leader:"刘建平",labor:2,tech:1,car:"湘L·B5566",machine:"无"}],
+    null,null,null,null
+  ],"yx"),
   buildWeek(31,"11/9","11/15","published","上周整体正常完成",[
     [{proj:"园垄线10kV改造工程",task:"勘查",risk:"II",note:"",leader:"黄志远",labor:2,tech:1,car:"湘L·D1234",machine:"无"}],
     null,null,null,null,null,null
-  ])
+  ],"pw")
 ];
 let currentWeekIdx = 0;
 let WEEK = WEEKS[currentWeekIdx];
-let historyMode = false;
+let historyMode = true;   // 默认进主界面 = 周计划列表
 
 let expandedDays = {};
 let editingCtx = null;
@@ -320,28 +367,50 @@ function render() {
 
   // 页签行（最顶）
   html += `<div style="display:flex;gap:0;padding:0 12px;background:#fff;border-bottom:1px solid #f0f0f0;">
-    <div onclick="switchTab(false)" style="flex:1;text-align:center;padding:12px;font-size:14px;font-weight:${historyMode?'400':'600'};color:${historyMode?'#888':'#2b7cff'};border-bottom:2px solid ${historyMode?'transparent':'#2b7cff'};">当前周</div>
     <div onclick="switchTab(true)" style="flex:1;text-align:center;padding:12px;font-size:14px;font-weight:${historyMode?'600':'400'};color:${historyMode?'#2b7cff':'#888'};border-bottom:2px solid ${historyMode?'#2b7cff':'transparent'};">周计划</div>
-    <div onclick="newWeek()" style="flex:1;text-align:center;padding:12px;font-size:14px;color:#2b7cff;">+ 新建</div>
+    <div onclick="switchTab(false)" style="flex:1;text-align:center;padding:12px;font-size:14px;font-weight:${historyMode?'400':'600'};color:${historyMode?'#888':'#2b7cff'};border-bottom:2px solid ${historyMode?'transparent':'#2b7cff'};">当前周</div>
   </div>`;
 
   if (historyMode) {
-    html += `<div style="padding:12px;">`;
+    // 列表头：数量 + 新建入口
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px 4px;">
+      <span style="font-size:12px;color:#888;">共 ${WEEKS.length} 份周计划</span>
+      <span onclick="newWeek()" style="font-size:12px;color:#2b7cff;font-weight:600;">+ 新建周计划</span>
+    </div>`;
+    html += `<div style="padding:8px 12px 12px;">`;
     WEEKS.forEach((w,i) => {
       const st = w.status==='draft'?'草稿':w.status==='review'?'待审核':'已发布';
       const stCls = w.status==='draft'?'st-draft':w.status==='review'?'st-review':'st-published';
-      html += `<div onclick="pickWeek(${i});switchTab(false);" style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,.05);">
-        <div>
-          <div style="font-size:15px;font-weight:600;">第${w.weekNo}周计划</div>
-          <div style="font-size:12px;color:#888;margin-top:3px;">${w.start} ~ ${w.end}</div>
-          <div style="font-size:11px;color:#aaa;margin-top:2px;">${w.dept} · ${w.creator}</div>
+      const gname = gNameOf(w.group);
+      html += `<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);">
+        <div onclick="viewWeek(${i})" style="display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;">
+          <div style="min-width:0;">
+            <div style="font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px;">
+              <span>第${w.weekNo}周计划</span>
+              <span style="font-size:11px;font-weight:400;padding:2px 7px;border-radius:9px;background:${w.group==='yx'?'#fff4e8':'#eef4ff'};color:${w.group==='yx'?'#b45309':'#2b7cff'};">${gname}</span>
+            </div>
+            <div style="font-size:12px;color:#888;margin-top:4px;">${w.start} ~ ${w.end}</div>
+            <div style="font-size:11px;color:#aaa;margin-top:2px;">${w.dept} · ${w.creator}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex:none;">
+            <span class="week-status ${stCls}">${st}</span>
+            <span style="color:#c8c8c8;font-size:15px;">›</span>
+          </div>
         </div>
-        <div style="text-align:right;">
-          <span class="week-status ${stCls}">${st}</span>
-          ${w.status==='draft'?`<div style="font-size:11px;color:#ef4444;margin-top:6px;cursor:pointer;" onclick="event.stopPropagation();delWeek(${i})">删除</div>`:''}
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;padding-top:9px;border-top:1px dashed #f0f0f0;" onclick="event.stopPropagation();">
+          <span onclick="event.stopPropagation();editWeek(${i})" style="font-size:12px;color:${w.status==='published'?'#bbb':'#2b7cff'};padding:4px 12px;border:1px solid ${w.status==='published'?'#eee':'#cfe0ff'};border-radius:12px;background:${w.status==='published'?'#fafafa':'#f4f8ff'};cursor:pointer;">修改</span>
+          ${w.status==='draft'?`<span onclick="event.stopPropagation();delWeek(${i})" style="font-size:12px;color:#ef4444;padding:4px 12px;border:1px solid #ffd7d7;border-radius:12px;background:#fff6f6;cursor:pointer;">删除</span>`:''}
         </div>
       </div>`;
     });
+    if (!WEEKS.length) {
+      html += `<div style="padding:50px 24px;text-align:center;">
+        <div style="font-size:44px;margin-bottom:14px;color:#c8ddff;">📅</div>
+        <div style="font-size:15px;font-weight:600;color:#333;margin-bottom:6px;">还没有周计划</div>
+        <div style="font-size:12px;color:#888;margin-bottom:20px;">先建一份，再安排每天的项目和任务</div>
+        <button class="btn-primary" style="width:80%;margin:0 auto;" onclick="newWeek()">+ 新建周计划</button>
+      </div>`;
+    }
     html += `</div>`;
   } else {
 
@@ -361,9 +430,10 @@ function render() {
 
   // 周选择条
   html += `<div class="week-bar">
+    ${WEEK.status==='published'?`<span class="share-chip" onclick="openShare()">📤 分享</span>`:''}
     <div class="week-nav" onclick="shiftWeek(-1)">‹</div>
     <div class="week-info">
-      <div class="week-title">第${WEEK.weekNo}周计划（${WEEK.start||'—'} ~ ${WEEK.end||'—'}）</div>
+      <div class="week-title">第${WEEK.weekNo}周计划 · ${gNameOf(WEEK.group)}（${WEEK.start||'—'} ~ ${WEEK.end||'—'}）</div>
       <div class="week-range" style="color:#2b7cff;font-weight:600;">${WEEK.dept}</div>
       <div class="week-range">创建：${WEEK.creator||'—'} · 11/18 19:00</div>
       <span class="week-status st-${WEEK.status}">${WEEK.status==='draft'?'草稿':WEEK.status==='review'?'待审核':'已发布'}</span>
@@ -384,6 +454,12 @@ function render() {
     const projCount = new Set(d.tasks.map(t=>t.proj)).size;
     const headCount = d.tasks.reduce((s,t)=>s+(t.labor||0)+(t.tech||0),0);
     const machineCount = d.tasks.filter(t=>t.machine && t.machine!=='无').length;
+    // 同一项目多条任务合并成一组
+    const groups = [];
+    d.tasks.forEach((t,ti)=>{
+      const g = groups.find(x=>x.proj===t.proj);
+      if (g) g.items.push({t,ti}); else groups.push({proj:t.proj, items:[{t,ti}]});
+    });
     html += `<div class="day-card">
       <div class="day-head" onclick="toggleDay('${d.m}')">
         <div style="flex:1;">
@@ -393,9 +469,9 @@ function render() {
           </div>
           <div style="font-size:12px;color:#888;margin-top:2px;">${d.m||'待填日期'}</div>
           ${!open && d.tasks.length ? `<div style="margin-top:6px;">` +
-            d.tasks.map(t=>`<div style="font-size:13px;color:#333;padding:3px 0;line-height:1.4;">
-              <div>· ${t.proj}</div>
-              <div style="font-size:12px;color:#666;padding-left:10px;">${t.task} <span style="color:#2b7cff;">负责人：${t.leader||'—'}</span></div>
+            groups.map(g=>`<div style="font-size:13px;color:#333;padding:3px 0;line-height:1.4;">
+              <div>· ${g.proj}${g.items.length>1?` <span style="font-size:11px;color:#2b7cff;">${g.items.length}项作业</span>`:''}</div>
+              ${g.items.map(it=>`<div style="font-size:12px;color:#666;padding-left:10px;">${it.t.task} <span style="color:#2b7cff;">${it.t.leader||'—'}</span></div>`).join("")}
             </div>`).join("") +
           `</div>` : ''}
           ${!open && d.tasks.length ? `<div style="margin-top:6px;display:flex;gap:6px;">
@@ -408,18 +484,23 @@ function render() {
       </div>
       <div class="day-body ${open?'open':''}">`;
 
-    d.tasks.forEach((t, ti) => {
+    groups.forEach(g => {
       html += `<div class="proj-item">
-        <div class="proj-name">${t.proj}</div>
-        <div class="task-line"><span style="color:#999;">作业：</span><b style="color:#222;font-weight:600;">${t.task}</b> <span class="risk-badge r-${t.risk}">风险${t.risk}</span></div>
-        ${t.note?`<div class="task-line"><span style="color:#999;">注意：</span><b style="color:#222;font-weight:600;">${t.note}</b></div>`:''}
-        <div class="task-line"><span style="color:#999;">负责人：</span><b style="color:#222;font-weight:600;">${t.leader||'—'}</b>　<span style="color:#999;">技工：</span><b style="color:#222;font-weight:600;">${t.labor}</b>　<span style="color:#999;">副工：</span><b style="color:#222;font-weight:600;">${t.tech}</b></div>
-        <div class="task-line"><span style="color:#999;">车辆：</span><b style="color:#222;font-weight:600;">${t.car||'—'}</b>　<span style="color:#999;">机械：</span><b style="color:#222;font-weight:600;">${t.machine||'—'}</b></div>
-        ${WEEK.status==='draft'?`<div style="margin-top:6px;text-align:right;">
-          <span style="color:#2b7cff;font-size:12px;cursor:pointer;margin-right:10px;" onclick="editTask(${idx},${ti})">编辑</span>
-          <span style="color:#ef4444;font-size:12px;cursor:pointer;" onclick="delTask(${idx},${ti})">删除</span>
-        </div>`:''}
-      </div>`;
+        <div class="proj-name">${g.proj}${g.items.length>1?` <span style="font-size:11px;font-weight:400;color:#2b7cff;background:#eef4ff;padding:2px 7px;border-radius:8px;margin-left:4px;">${g.items.length}项作业</span>`:''}</div>`;
+      g.items.forEach((it,k) => {
+        const t = it.t;
+        html += `<div style="${k?'margin-top:9px;padding-top:9px;border-top:1px dashed #eee;':''}">
+          <div class="task-line"><span style="color:#999;">作业${g.items.length>1?k+1:''}：</span><b style="color:#222;font-weight:600;">${t.task}</b> <span class="risk-badge r-${t.risk}">风险${t.risk}</span></div>
+          ${t.note?`<div class="task-line"><span style="color:#999;">注意：</span><b style="color:#222;font-weight:600;">${t.note}</b></div>`:''}
+          <div class="task-line"><span style="color:#999;">负责人：</span><b style="color:#222;font-weight:600;">${t.leader||'—'}</b>　<span style="color:#999;">技工：</span><b style="color:#222;font-weight:600;">${t.labor}</b>　<span style="color:#999;">副工：</span><b style="color:#222;font-weight:600;">${t.tech}</b></div>
+          <div class="task-line"><span style="color:#999;">车辆：</span><b style="color:#222;font-weight:600;">${t.car||'—'}</b>　<span style="color:#999;">机械：</span><b style="color:#222;font-weight:600;">${t.machine||'—'}</b></div>
+          ${WEEK.status==='draft'?`<div style="margin-top:6px;text-align:right;">
+            <span style="color:#2b7cff;font-size:12px;cursor:pointer;margin-right:10px;" onclick="editTask(${idx},${it.ti})">编辑</span>
+            <span style="color:#ef4444;font-size:12px;cursor:pointer;" onclick="delTask(${idx},${it.ti})">删除</span>
+          </div>`:''}
+        </div>`;
+      });
+      html += `</div>`;
     });
 
     if (WEEK.status==='draft') {
@@ -463,10 +544,11 @@ function switchTab(isHistory){
   render();
 }
 let pickedWeekOffset = 1; // 默认下周
+let newGroup = "pw";      // 新建时选中的作业组
+let NEW_WEEK_OPTS = [];
 
-function newWeek(){
-  // 列出未来3周：本周(0)、下周(1)、下下周(2)，不显示过去的周
-  const weeks = [];
+function weekOpts(){
+  const arr = [];
   for (let i=0; i<=2; i++) {
     const d = new Date();
     const day = d.getDay()||7;
@@ -476,52 +558,113 @@ function newWeek(){
     const sun = new Date(d); sun.setDate(sun.getDate()+6);
     const onejan = new Date(mon.getFullYear(),0,1);
     const wk = Math.ceil((((mon - onejan) / 86400000) + onejan.getDay()+1)/7);
-    weeks.push({ offset:i, weekNo:wk, start:fmt(mon), end:fmt(sun) });
+    arr.push({ offset:i, weekNo:wk, start:fmt(mon), end:fmt(sun), mon:mon, sun:sun });
   }
-  let html = "";
-  weeks.forEach(w => {
-    const label = w.offset===0?'本周':w.offset===1?'下周':w.offset===2?'下下周':'上周';
-    const on = pickedWeekOffset===w.offset;
-    const exists = WEEKS.some(x=>x.weekNo===w.weekNo);
-    html += `<div onclick="${exists?'':`pickWeekOffset(${w.offset})`}" style="padding:14px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;cursor:${exists?'not-allowed':'pointer'};background:${on?'#eef4ff':'#fff'};${exists?'opacity:.5;':''}">
-      <div>
-        <div style="font-size:15px;font-weight:${on?'600':'400'};">第${w.weekNo}周（${label}）${exists?' <span style="font-size:11px;color:#ef4444;font-weight:400;">已创建</span>':''}</div>
-        <div style="font-size:12px;color:#888;margin-top:2px;">${w.start} ~ ${w.end}</div>
-      </div>
-      <span style="width:22px;height:22px;border-radius:50%;border:2px solid ${on?'#2b7cff':'#ccc'};background:${on?'#2b7cff':'#fff'};display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;">${on?'✓':''}</span>
-    </div>`;
-  });
-  document.getElementById("pickWeekList").innerHTML = html;
+  return arr;
+}
+function findWeek(weekNo, gid){
+  return WEEKS.find(w=>w.weekNo===weekNo && (w.group||"pw")===gid);
+}
+
+function newWeek(){
+  NEW_WEEK_OPTS = weekOpts();
+  // 默认落在第一个「还有组没建」的周
+  const firstFree = NEW_WEEK_OPTS.find(o=>GROUPS.some(g=>!findWeek(o.weekNo,g.id))) || NEW_WEEK_OPTS[0];
+  pickedWeekOffset = firstFree.offset;
+  // 默认组：当前所在组优先；该周该组已建则挑一个未建的组
+  newGroup = (!historyMode && WEEK && WEEK.group) ? WEEK.group : "pw";
+  if (findWeek(firstFree.weekNo, newGroup)) {
+    const free = GROUPS.find(g=>!findWeek(firstFree.weekNo,g.id));
+    if (free) newGroup = free.id;
+  }
+  document.getElementById("newCreator").value = "李志强";
+  document.getElementById("newDept").value = DEPT_DEFAULT;
+  renderNewSheet();
   document.getElementById("pickWeekMask").classList.add("open");
 }
 function closePickWeek(){ document.getElementById("pickWeekMask").classList.remove("open"); }
 function pickWeekOffset(i){
   pickedWeekOffset = i;
-  newWeek(); // 刷新列表高亮
+  const opt = NEW_WEEK_OPTS.find(o=>o.offset===i);
+  if (opt && findWeek(opt.weekNo, newGroup)) {
+    const free = GROUPS.find(g=>!findWeek(opt.weekNo,g.id));
+    if (free) newGroup = free.id;
+  }
+  renderNewSheet();
+}
+function pickNewGroup(gid){
+  const opt = NEW_WEEK_OPTS.find(o=>o.offset===pickedWeekOffset);
+  if (opt && findWeek(opt.weekNo, gid)) { toast(`${gNameOf(gid)}的该周计划已存在，不能重复创建`); return; }
+  newGroup = gid;
+  renderNewSheet();
+}
+function renderNewSheet(){
+  const sel = NEW_WEEK_OPTS.find(o=>o.offset===pickedWeekOffset) || NEW_WEEK_OPTS[0];
+  let html = "";
+  NEW_WEEK_OPTS.forEach(w => {
+    const label = w.offset===0?'本周':w.offset===1?'下周':'下下周';
+    const on = pickedWeekOffset===w.offset;
+    const full = GROUPS.every(g=>findWeek(w.weekNo,g.id));
+    const tags = GROUPS.map(g=>{
+      const has = !!findWeek(w.weekNo,g.id);
+      return `<span style="font-size:10px;padding:2px 6px;border-radius:8px;${has?'background:#eef4ff;color:#2b7cff;':'background:#f5f5f5;color:#bbb;'}">${g.name}${has?' ✓':''}</span>`;
+    }).join(" ");
+    html += `<div onclick="pickWeekOffset(${w.offset})" style="padding:12px 14px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:${on?'#eef4ff':'#fff'};">
+      <div style="min-width:0;">
+        <div style="font-size:15px;font-weight:${on?'600':'400'};${full?'color:#bbb;':''}">第${w.weekNo}周（${label}）${full?' <span style="font-size:11px;color:#bbb;font-weight:400;">已满</span>':''}</div>
+        <div style="font-size:12px;color:#888;margin-top:3px;">${w.start} ~ ${w.end}</div>
+        <div style="margin-top:6px;display:flex;gap:6px;">${tags}</div>
+      </div>
+      <span style="width:22px;height:22px;flex:none;border-radius:50%;border:2px solid ${on?'#2b7cff':'#ccc'};background:${on?'#2b7cff':'#fff'};display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;">${on?'✓':''}</span>
+    </div>`;
+  });
+  document.getElementById("pickWeekList").innerHTML = html;
+
+  // 作业组选择
+  const gHtml = GROUPS.map(g=>{
+    const has = sel ? !!findWeek(sel.weekNo,g.id) : false;
+    const on = newGroup===g.id;
+    return `<div onclick="pickNewGroup('${g.id}')" style="flex:1;text-align:center;padding:9px 0;border-radius:9px;font-size:13px;
+      border:1px solid ${on?'#2b7cff':(has?'#eee':'#ddd')};
+      background:${on?'#eef4ff':(has?'#f7f7f7':'#fff')};
+      color:${has?'#bbb':(on?'#2b7cff':'#333')};cursor:pointer;">
+      ${g.name}${has?'<div style="font-size:10px;margin-top:2px;">已创建</div>':''}
+    </div>`;
+  }).join("");
+  document.getElementById("newGroupRow").innerHTML = gHtml;
+
+  // 按钮与提示
+  const dup = sel ? !!findWeek(sel.weekNo, newGroup) : false;
+  const btn = document.getElementById("newWeekBtn");
+  btn.disabled = dup;
+  btn.style.opacity = dup ? .5 : 1;
+  btn.textContent = dup ? "该周该组已创建" : "创建周计划";
+  const hint = document.getElementById("newWeekHint");
+  if (dup) {
+    hint.style.display = "block";
+    hint.textContent = `第${sel.weekNo}周 · ${gNameOf(newGroup)}已有周计划，请换一周或换组`;
+  } else {
+    hint.style.display = "none";
+  }
 }
 function confirmPickWeek(){
-  // 根据 pickedWeekOffset 算日期
-  const d = new Date();
-  const day = d.getDay()||7;
-  d.setDate(d.getDate()-day+1 + pickedWeekOffset*7);
-  const fmt = x => (x.getMonth()+1)+'/'+x.getDate();
-  const mon = new Date(d);
-  const sun = new Date(d); sun.setDate(sun.getDate()+6);
-  const onejan = new Date(mon.getFullYear(),0,1);
-  const wkNo = Math.ceil((((mon - onejan) / 86400000) + onejan.getDay()+1)/7);
-  // 检查是否已存在
-  if (WEEKS.some(w=>w.weekNo===wkNo)) {
-    toast(`第${wkNo}周计划已存在，不能重复创建`);
+  const sel = NEW_WEEK_OPTS.find(o=>o.offset===pickedWeekOffset) || NEW_WEEK_OPTS[0];
+  const wkNo = sel.weekNo;
+  if (findWeek(wkNo, newGroup)) {
+    toast(`第${wkNo}周 · ${gNameOf(newGroup)}已存在周计划，不能重复创建`);
     return;
   }
+  const mon = sel.mon, sun = sel.sun;
+  const fmt = x => (x.getMonth()+1)+'/'+x.getDate();
   const m = mon.getMonth()+1;
   const d0 = mon.getDate();
   const names=["周一","周二","周三","周四","周五","周六","周日"];
   const days = names.map((n,i)=>({ m:m+'/'+(d0+i), name:n, tasks:[] }));
+  const creator = (document.getElementById("newCreator").value||"").trim() || "李志强";
+  const dept = (document.getElementById("newDept").value||"").trim() || DEPT_DEFAULT;
   WEEKS.unshift({
     weekNo: wkNo, start:fmt(mon), end:fmt(sun), year:2026,
-    dept:"电网建设运维中心项目一部", creator:"李志强", status:"draft", remark:"",
-    days
+    dept, creator, status:"draft", remark:"", days, group:newGroup
   });
   currentWeekIdx = 0;
   WEEK = WEEKS[0];
@@ -529,7 +672,7 @@ function confirmPickWeek(){
   expandedDays = {};
   closePickWeek();
   render();
-  toast(`已创建第${wkNo}周计划（${fmt(mon)}~${fmt(sun)}）`);
+  toast(`已创建第${wkNo}周 · ${gNameOf(newGroup)}周计划（${fmt(mon)}~${fmt(sun)}）`);
 }
 function pickWeek(i){
   currentWeekIdx = i;
@@ -544,16 +687,45 @@ function delWeek(i){
   render();
   toast("周计划已删除");
 }
+function viewWeek(i){
+  pickWeek(i);
+  switchTab(false);
+}
+function editWeek(i){
+  const w = WEEKS[i];
+  if (w.status === 'published') { toast("已发布的周计划，需先撤回后才能修改"); return; }
+  pickWeek(i);
+  switchTab(false);
+  if (w.status === 'review') toast("待审核的周计划，可先撤回再改");
+}
 
 function renderTaskHistory(){
   const el = document.getElementById("taskHistory");
   if (!el) return;
   el.innerHTML = TASK_HISTORY.map(t=>`<span onclick="document.getElementById('fTask').value='${t}'" style="font-size:12px;background:#eef4ff;color:#2b7cff;padding:4px 10px;border-radius:12px;cursor:pointer;">${t}</span>`).join("");
 }
-function addTask(dayIdx){
-  editingCtx = { dayIdx, taskIdx:null };
-  document.getElementById("taskSheetTitle").textContent = "添加任务";
-  document.getElementById("fProj").value = "";
+let pendingTasks = [];   // 本页同一项目下已添加、待保存的任务
+
+function renderPending(){
+  const box = document.getElementById("pendingBox");
+  const list = document.getElementById("pendingList");
+  const cnt = document.getElementById("pendingCount");
+  if (!pendingTasks.length) { box.style.display = "none"; list.innerHTML = ""; cnt.textContent = "0"; return; }
+  box.style.display = "block";
+  cnt.textContent = pendingTasks.length;
+  list.innerHTML = pendingTasks.map((t,i)=>`<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;background:#f8fafc;border:1px solid #eef2f7;border-radius:9px;padding:8px 10px;margin-bottom:6px;">
+    <div style="min-width:0;">
+      <div style="font-size:13px;color:#222;font-weight:600;">${i+1}. ${t.task} <span class="risk-badge r-${t.risk}">风险${t.risk}</span></div>
+      <div style="font-size:11px;color:#888;margin-top:3px;">${t.leader||'待选负责人'} · 技工${t.labor} / 副工${t.tech}${t.car&&t.car!=='未派车'?' · '+t.car:''}</div>
+    </div>
+    <span onclick="delPending(${i})" style="flex:none;color:#ef4444;font-size:12px;cursor:pointer;padding:2px 4px;">删除</span>
+  </div>`).join("");
+}
+function delPending(i){
+  pendingTasks.splice(i,1);
+  renderPending();
+}
+function clearTaskForm(keepProj){
   document.getElementById("fTask").value = "";
   document.getElementById("fNote").value = "";
   document.getElementById("fLeader").value = "";
@@ -561,12 +733,46 @@ function addTask(dayIdx){
   document.getElementById("fTech").value = 0;
   document.getElementById("fCar").value = "";
   document.getElementById("fMachine").value = "";
+  if (!keepProj) document.getElementById("fProj").value = "";
   document.querySelectorAll("#fRisk .risk-opt").forEach(o => o.classList.toggle("on", o.dataset.v==="I"));
   renderTaskHistory();
+}
+function readTaskForm(){
+  return {
+    proj: document.getElementById("fProj").value,
+    task: (document.getElementById("fTask").value||"").trim(),
+    note: document.getElementById("fNote").value,
+    leader: document.getElementById("fLeader").value,
+    labor: parseInt(document.getElementById("fLabor").value)||0,
+    tech: parseInt(document.getElementById("fTech").value)||0,
+    car: document.getElementById("fCar").value || "未派车",
+    machine: document.getElementById("fMachine").value || "无",
+    risk: document.querySelector("#fRisk .risk-opt.on").dataset.v
+  };
+}
+function addPendingTask(){
+  const t = readTaskForm();
+  if (!t.proj) { toast("请先选择项目"); return; }
+  if (!t.task) { toast("请填写作业内容"); return; }
+  pendingTasks.push(t);
+  renderPending();
+  clearTaskForm(true);           // 保留项目，清空任务字段，继续填下一条
+  toast(`已加入第${pendingTasks.length}条，项目已锁定`);
+}
+function addTask(dayIdx){
+  editingCtx = { dayIdx, taskIdx:null };
+  pendingTasks = [];
+  document.getElementById("taskSheetTitle").textContent = "添加任务";
+  clearTaskForm(false);
+  renderPending();
+  document.getElementById("addMoreBtn").style.display = "";
+  document.getElementById("saveTaskBtn").style.flex = "1.2";
+  document.getElementById("saveTaskBtn").textContent = "保存任务";
   openSheet("taskMask");
 }
 function editTask(dayIdx, taskIdx){
   editingCtx = { dayIdx, taskIdx };
+  pendingTasks = [];
   const t = WEEK.days[dayIdx].tasks[taskIdx];
   document.getElementById("taskSheetTitle").textContent = "编辑任务";
   document.getElementById("fProj").value = t.proj;
@@ -578,6 +784,11 @@ function editTask(dayIdx, taskIdx){
   document.getElementById("fCar").value = t.car==='未派车'?'':t.car;
   document.getElementById("fMachine").value = t.machine==='无'?'':t.machine;
   document.querySelectorAll("#fRisk .risk-opt").forEach(o => o.classList.toggle("on", o.dataset.v===t.risk));
+  renderPending();
+  // 单条编辑不显示「再加一条」
+  document.getElementById("addMoreBtn").style.display = "none";
+  document.getElementById("saveTaskBtn").style.flex = "1";
+  document.getElementById("saveTaskBtn").textContent = "保存修改";
   renderTaskHistory();
   openSheet("taskMask");
 }
@@ -588,27 +799,28 @@ function delTask(dayIdx, taskIdx){
   toast("已删除");
 }
 function saveTask(){
-  const risk = document.querySelector("#fRisk .risk-opt.on").dataset.v;
-  const t = {
-    proj: document.getElementById("fProj").value,
-    task: document.getElementById("fTask").value,
-    note: document.getElementById("fNote").value,
-    leader: document.getElementById("fLeader").value,
-    labor: parseInt(document.getElementById("fLabor").value)||0,
-    tech: parseInt(document.getElementById("fTech").value)||0,
-    car: document.getElementById("fCar").value || "未派车",
-    machine: document.getElementById("fMachine").value || "无",
-    risk
-  };
+  const t = readTaskForm();
   if (!t.proj) { toast("请先选择项目"); return; }
-  if (!t.task) { toast("请填写作业内容"); return; }
-  if (!TASK_HISTORY.includes(t.task)) TASK_HISTORY.unshift(t.task);
-  if (TASK_HISTORY.length>10) TASK_HISTORY.pop();
-  if (editingCtx.taskIdx===null) WEEK.days[editingCtx.dayIdx].tasks.push(t);
-  else WEEK.days[editingCtx.dayIdx].tasks[editingCtx.taskIdx] = t;
+  // 编辑单条
+  if (editingCtx.taskIdx !== null && editingCtx.taskIdx !== undefined) {
+    if (!t.task) { toast("请填写作业内容"); return; }
+    WEEK.days[editingCtx.dayIdx].tasks[editingCtx.taskIdx] = t;
+    closeTaskSheet(); render(); toast("已保存修改");
+    return;
+  }
+  // 新增：本页累积的多条 + 当前表单里未提交的一条
+  const batch = pendingTasks.slice();
+  if (t.task) batch.push(t);
+  if (!batch.length) { toast("请至少填写 1 条作业内容"); return; }
+  batch.forEach(x=>{
+    if (!TASK_HISTORY.includes(x.task)) TASK_HISTORY.unshift(x.task);
+  });
+  TASK_HISTORY.length = Math.min(TASK_HISTORY.length, 10);
+  WEEK.days[editingCtx.dayIdx].tasks.push(...batch);
+  pendingTasks = [];
   closeTaskSheet();
   render();
-  toast("已保存");
+  toast(`已保存 ${batch.length} 条任务`);
 }
 function closeTaskSheet(){ closeSheet("taskMask"); }
 function submitReview(){
@@ -643,17 +855,48 @@ function openProjPicker(){
 function closeProjPicker(){ document.getElementById("projMask").classList.remove("open"); }
 function renderProjList(){
   const kw = document.getElementById("projSearch").value.trim();
-  const list = PROJ_LIB.filter(p => !kw || p.includes(kw));
+  const up = kw.toUpperCase();
+  const list = PROJ_LIB.filter(p => !kw || p.name.includes(kw) || p.code.includes(up));
   let html = "";
   list.forEach(p => {
-    html += `<div onclick="pickProj('${p}')" style="padding:12px 0;border-bottom:1px solid #f0f0f0;font-size:15px;color:#222;cursor:pointer;">${p}</div>`;
+    html += `<div onclick="pickProj('${p.name}')" style="padding:11px 0;border-bottom:1px solid #f0f0f0;cursor:pointer;">
+      <div style="font-size:15px;color:#222;line-height:1.4;">${p.name}</div>
+      <div style="font-size:11px;color:#a7b0bd;margin-top:3px;">${p.code}</div>
+    </div>`;
   });
-  if (!list.length) html = `<div style="padding:30px;text-align:center;color:#999;font-size:13px;">无匹配项目</div>`;
+  if (!list.length) html = `<div style="padding:30px;text-align:center;color:#999;font-size:13px;">无匹配项目<br><span style="font-size:11px;">可搜项目名称或编号</span></div>`;
   document.getElementById("projList").innerHTML = html;
 }
 function pickProj(p){
   document.getElementById("fProj").value = p;
   closeProjPicker();
+}
+
+// 分享到群（仅已发布的周计划）
+const SHARE_GROUPS = [
+  { name:"郴江电力·项目一部工作群", num:32 },
+  { name:"郴江电力·现场管理群", num:86 },
+  { name:"郴电·分公司经理管理群", num:15 },
+  { name:"本周施工班组群", num:12 },
+];
+function openShare(){
+  let html = "";
+  SHARE_GROUPS.forEach((g, i) => {
+    html += `<div onclick="doShare(${i})" style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #f0f0f0;cursor:pointer;">
+      <div>
+        <div style="font-size:15px;color:#222;">${g.name}</div>
+        <div style="font-size:11px;color:#a7b0bd;margin-top:3px;">${g.num}人 · 含本周安排与每日任务</div>
+      </div>
+      <span style="color:#2b7cff;font-size:12px;">发送</span>
+    </div>`;
+  });
+  document.getElementById("shareList").innerHTML = html;
+  document.getElementById("shareMask").classList.add("open");
+}
+function closeShare(){ document.getElementById("shareMask").classList.remove("open"); }
+function doShare(i){
+  closeShare();
+  toast(`已分享「第${WEEK.weekNo}周计划」到 ${SHARE_GROUPS[i].name}`);
 }
 
 // 选人
@@ -681,18 +924,22 @@ function renderWorkerList(){
     if (workerFilter === "out" && w.type !== "外包") return false;
     if (workerFilter === "tech" && w.role !== "技工") return false;
     if (workerFilter === "help" && w.role !== "副工") return false;
-    if (kw && !w.name.includes(kw) && !w.role.includes(kw) && !w.type.includes(kw)) return false;
+    if (workerFilter === "grid" && !w.grid) return false;
+    if (kw && !w.name.includes(kw) && !w.role.includes(kw) && !w.type.includes(kw) && !(w.grid && "国网准入".includes(kw))) return false;
     return true;
   });
   let html = "";
   list.forEach(w => {
     const bad = w.ins === "bad";
     const srcTag = w.type === "自有" ? `<span class="pw-tag-self">自有</span>` : `<span class="pw-tag-out">外包</span>`;
+    const gridTag = w.grid
+      ? `<span class="pw-tag-grid">国网准入</span>`
+      : `<span class="pw-tag-nogrid">未准入</span>`;
     const on = cur === w.name;
     html += `<div class="pw-row ${bad ? "disabled" : ""}" data-name="${w.name}">
       <div class="pw-avatar">${w.name[0]}</div>
       <div class="pw-info">
-        <div class="pw-name">${w.name}${srcTag}</div>
+        <div class="pw-name">${w.name}${srcTag}${gridTag}</div>
         <div class="pw-sub">${w.role} · <span class="pw-ins ${w.ins}">${w.insText}</span></div>
       </div>
       <div class="pw-check ${on ? "on" : ""}">${on ? "✓" : ""}</div>
@@ -832,7 +1079,32 @@ function confirmMachinePicker(){
   document.getElementById("machineMask").classList.remove("open");
 }
 
-render();
+// 原型直达： #new 打开新建 / #pw #yx 直达对应组当前周 / #list 列表
+(function(){
+  const h = (location.hash||"").replace("#","");
+  if (h === "new") { newWeek(); return; }
+  if (h === "workers") {    currentWeekIdx = 0; WEEK = WEEKS[0]; historyMode = false; render();
+    addTask(0); document.getElementById("fLeader").value = ""; openWorkerPicker();
+    return;
+  }
+  if (h === "multi") {
+    currentWeekIdx = 0; WEEK = WEEKS[0]; historyMode = false; render();
+    addTask(0);
+    document.getElementById("fProj").value = "园垄线10kV改造工程";
+    pendingTasks = [
+      {proj:"园垄线10kV改造工程",task:"放线",risk:"III",note:"验电接地",leader:"黄志远",labor:3,tech:2,car:"湘L·D1234",machine:"无"},
+      {proj:"园垄线10kV改造工程",task:"顶管",risk:"II",note:"",leader:"陈立军",labor:2,tech:1,car:"湘L·D1234",machine:"无"}
+    ];
+    renderPending();
+    return;
+  }
+  const g = h;
+  if (g === "pw" || g === "yx") {
+    const i = WEEKS.findIndex(w=>w.group===g && w.status!=="published");
+    if (i >= 0) { currentWeekIdx = i; WEEK = WEEKS[i]; historyMode = false; }
+  }
+  render();
+})();
 </script>
 </body>
 </html>

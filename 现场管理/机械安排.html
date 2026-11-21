@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>机械安排 · 郴江电力小程序原型</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2341C7CE'/%3E%3Cpath d='M8 22h16M11 22v-4h10v4' stroke='%23fff' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  body { background: #e9ecf1; display: flex; justify-content: center; align-items: flex-start; padding: 20px 0; min-height: 100vh; }
+  .phone {
+    width: 390px; height: 820px; background: #f5f6f8;
+    border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    overflow: hidden; position: relative; display: flex; flex-direction: column;
+    border: 10px solid #1a1a1a;
+  }
+  .status-bar {
+    height: 34px; flex: none; background: #fff;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 22px; font-size: 13px; color: #000; font-weight: 600;
+  }
+  .status-bar .icons { display: flex; gap: 5px; align-items: center; font-size: 12px; }
+  .screen { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+
+  .navbar {
+    height: 46px; flex: none; background: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px; border-bottom: 1px solid #eee;
+  }
+  .navbar .back { font-size: 14px; color: #2b7cff; cursor: pointer; min-width: 66px; text-decoration: none; }
+  .navbar .title { font-size: 16px; font-weight: 600; color: #222; }
+  .navbar .right { min-width: 66px; text-align: right; font-size: 13px; color: #2b7cff; cursor: pointer; }
+
+  .tabs { display: flex; background: #fff; flex: none; border-bottom: 1px solid #f0f0f0; }
+  .tab { flex: 1; text-align: center; padding: 12px 0 11px; font-size: 14px; color: #666; cursor: pointer; position: relative; }
+  .tab.on { color: #2b7cff; font-weight: 600; }
+  .tab.on::after { content: ""; position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: 30px; height: 3px; border-radius: 2px; background: #2b7cff; }
+
+  .pane { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 8px; }
+  .hide { display: none; }
+
+  .card { background: #fff; margin: 10px 12px 0; border-radius: 12px; padding: 12px 14px; cursor: pointer; }
+  .card:active { background: #fbfcfe; }
+  .card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .meta { font-size: 11px; color: #3a3f47; letter-spacing: .2px; }
+  .badge { flex: none; font-size: 11px; padding: 2px 8px; border-radius: 9px; line-height: 16px; white-space: nowrap; }
+  .b-wait { background: #fef3c7; color: #b45309; }
+  .b-plan { background: #dbeafe; color: #1d4ed8; }
+  .b-on { background: #dcfce7; color: #15803d; }
+  .b-done { background: #f1f2f4; color: #6b7280; }
+  .p-name { font-size: 14px; font-weight: 600; color: #2b7cff; line-height: 1.45; margin-top: 7px; }
+  .line { font-size: 12px; color: #777; margin-top: 5px; line-height: 1.6; }
+  .line span { color: #aaa; }
+  .mach-hl { font-size: 13px; color: #2b7cff; font-weight: 500; margin-top: 6px; }
+  .mach-hl .k { color: #aaa; font-weight: 400; }
+  .ops { display: flex; gap: 8px; margin-top: 11px; }
+  .btn-sm { flex: 1; height: 34px; border-radius: 17px; font-size: 13px; cursor: pointer; border: 1px solid #dbe1ea; background: #fff; color: #5b6472; }
+  .btn-sm.main { border-color: #2b7cff; color: #2b7cff; font-weight: 600; }
+  .btn-sm:active { background: #f2f6ff; }
+
+  .empty { margin: 60px 20px; text-align: center; font-size: 13px; color: #a7b0bd; line-height: 1.9; }
+
+  .filter-wrap { padding: 10px 12px 2px; }
+  .search { width: 100%; height: 36px; border: 1px solid #e5e9ef; border-radius: 18px; padding: 0 14px; font-size: 13px; outline: none; background: #fff; font-family: inherit; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
+  .chip { padding: 6px 12px; border-radius: 14px; border: 1px solid #eceff3; background: #fff; font-size: 12px; color: #555; cursor: pointer; }
+  .chip.on { background: #eef4ff; border-color: #2b7cff; color: #2b7cff; font-weight: 600; }
+
+  .bottom-bar {
+    flex: none; padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+    background: #fff; border-top: 1px solid #eee;
+  }
+  .btn-primary { width: 100%; height: 50px; border: none; border-radius: 25px; background: #2b7cff; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
+  .btn-primary:active { background: #1f6ae0; }
+  .bottom-bar .tip { font-size: 11px; color: #a8b0bb; text-align: center; margin-top: 7px; }
+
+  /* 弹层 */
+  .mask { position: absolute; inset: 0; background: rgba(0,0,0,.42); z-index: 50; display: none; align-items: flex-end; }
+  .mask.open { display: flex; }
+  .sheet { background: #fff; width: 100%; max-height: 88%; border-radius: 16px 16px 0 0; display: flex; flex-direction: column; }
+  .sheet-head { padding: 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }
+  .sheet-title { font-size: 16px; font-weight: 600; color: #222; }
+  .sheet-close { color: #888; font-size: 14px; cursor: pointer; }
+  .sheet-body { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 16px 16px; }
+  .sheet-foot { flex-shrink: 0; padding: 12px 16px; border-top: 1px solid #f0f0f0; display: flex; gap: 10px; }
+  .btn-secondary { flex: 1; height: 46px; border: 1px solid #2b7cff; border-radius: 10px; background: #fff; color: #2b7cff; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .btn-main { flex: 1; height: 46px; border: none; border-radius: 10px; background: #2b7cff; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .btn-danger { flex: 1; height: 46px; border: 1px solid #fca5a5; border-radius: 10px; background: #fff; color: #dc2626; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+  .fld { margin-bottom: 14px; }
+  .fld-l { font-size: 12px; color: #98a2b3; margin-bottom: 7px; }
+  .fld-l i { color: #e23b3b; font-style: normal; margin-right: 2px; }
+  .fld-in { width: 100%; height: 42px; border: 1px solid #e5e9ef; border-radius: 10px; padding: 0 12px; font-size: 14px; color: #222; outline: none; background: #fafbfc; font-family: inherit; }
+  .fld-in:focus { border-color: #2b7cff; background: #fff; }
+  .fld-ta { width: 100%; border: 1px solid #e5e9ef; border-radius: 10px; padding: 10px 12px; font-size: 14px; color: #222; line-height: 1.6; resize: none; outline: none; background: #fafbfc; font-family: inherit; }
+  .fld-ta:focus { border-color: #2b7cff; background: #fff; }
+  .fld-pick { display: flex; align-items: center; justify-content: space-between; min-height: 42px; border: 1px solid #e5e9ef; border-radius: 10px; padding: 10px 12px; font-size: 14px; color: #222; background: #fafbfc; cursor: pointer; }
+  .fld-pick.ph { color: #b6bec9; }
+  .fld-pick .arr { color: #c9cdd4; font-size: 13px; }
+  .src-tip { background: #f6f9fd; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #5b6472; line-height: 1.6; margin-bottom: 14px; }
+  .src-tip b { color: #1d4ed8; font-weight: 600; }
+  .slot { border: 1px solid #e9edf3; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; background: #fbfcfe; }
+  .slot-h { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; color: #2b7cff; margin-bottom: 8px; }
+  .slot-h .del { font-size: 12px; color: #bbb; font-weight: 400; cursor: pointer; }
+  .slot .fld-in { background: #fff; }
+  .slot .fld-l { margin-bottom: 5px; font-size: 11px; }
+  .slot-rent { display: flex; align-items: center; justify-content: space-between; margin-top: 7px; padding: 8px 10px; border: 1px dashed #dfe6f2; border-radius: 8px; background: #fff; font-size: 12px; color: #333; cursor: pointer; }
+  .slot-rent.ph { color: #b6bec9; }
+  .slot-rent.on { border-style: solid; border-color: #bcd4ff; color: #2b7cff; background: #f5f9ff; }
+  .slot-rent .arr { color: #c9cdd4; font-size: 12px; }
+  .slot-price { display: flex; align-items: center; gap: 8px; margin-top: 7px; }
+  .slot-price .lbl { font-size: 12px; color: #66707c; flex: none; }
+  .slot-price input { flex: 1; height: 34px; border: 1px solid #e5e9ef; border-radius: 8px; padding: 0 10px; font-size: 14px; font-weight: 600; color: #e5342b; background: #fff; outline: none; font-family: inherit; }
+  .slot-price input:focus { border-color: #2b7cff; }
+  .slot-price .unit { font-size: 12px; color: #98a2b3; flex: none; }
+  .add-slot { width: 100%; height: 38px; border: 1px dashed #c9d6e8; border-radius: 10px; background: #fafcff; color: #2b7cff; font-size: 13px; cursor: pointer; }
+
+  /* 选择项 */
+  .pick-item { display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-radius: 10px; cursor: pointer; border: 1px solid transparent; background: #fafbfc; margin-bottom: 8px; }
+  .pick-item.on { background: #eef4ff; border-color: #c8ddff; }
+  .pick-item .txt { flex: 1; min-width: 0; }
+  .pick-item .n { font-size: 14px; color: #222; font-weight: 500; line-height: 1.4; }
+  .pick-item .d { font-size: 11px; color: #999; margin-top: 3px; }
+  .pick-item .tick { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #ddd; background: #fff; color: #fff; font-size: 12px; line-height: 16px; text-align: center; }
+  .pick-item.on .tick { border-color: #2b7cff; background: #2b7cff; }
+
+  .toast {
+    position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%);
+    background: rgba(0,0,0,.78); color: #fff; padding: 9px 16px; border-radius: 8px;
+    font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 90; max-width: 84%; text-align: center;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="#000"><rect x="0" y="7" width="3" height="4"/><rect x="4" y="5" width="3" height="6"/><rect x="8" y="2.5" width="3" height="8.5"/><rect x="12" y="0" width="3" height="11"/></svg>
+        <span>100%</span>
+        <svg width="22" height="11" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="20" height="11" rx="2.5" fill="none" stroke="#000"/><rect x="2" y="2" width="17" height="8" rx="1" fill="#000"/></svg>
+      </div>
+    </div>
+
+    <div class="screen">
+      <div class="navbar">
+        <a class="back" href="../site.html">‹ 现场管理</a>
+        <div class="title">机械安排</div>
+        <div class="right"></div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab on" id="tabWait" onclick="switchTab('wait')">待安排</div>
+        <div class="tab" id="tabRec" onclick="switchTab('rec')">安排记录</div>
+      </div>
+
+      <!-- ===== 视图：待安排 ===== -->
+      <div class="pane" id="paneWait">
+        <div class="filter-wrap">
+          <div style="font-size:12px;color:#98a2b3;">来自「机械申请」，安排日期、租赁公司、车牌号、单价后即可进场</div>
+        </div>
+        <div id="waitList"></div>
+      </div>
+
+      <!-- ===== 视图：安排记录 ===== -->
+      <div class="pane hide" id="paneRec">
+        <div class="filter-wrap">
+          <input class="search" id="recKw" placeholder="搜索项目 / 车牌 / 租赁公司" oninput="renderRecords()">
+          <div class="chips" id="recChips"></div>
+        </div>
+        <div id="recList"></div>
+      </div>
+
+      <div class="bottom-bar">
+        <button class="btn-primary" onclick="openForm()">＋ 新增安排</button>
+        <div class="tip">无申请的机械也可直接安排，需选择项目</div>
+      </div>
+    </div>
+
+    <!-- ===== 弹层：安排表单 ===== -->
+    <div class="mask" id="formMask">
+      <div class="sheet">
+        <div class="sheet-head">
+          <div class="sheet-title" id="formTitle">新增安排</div>
+          <div class="sheet-close" onclick="closeForm()">关闭</div>
+        </div>
+        <div class="sheet-body" id="formBody"></div>
+        <div class="sheet-foot" id="formFoot">
+          <button class="btn-secondary" onclick="closeForm()">取消</button>
+          <button class="btn-main" onclick="saveForm()">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 弹层：项目选择 ===== -->
+    <div class="mask" id="projMask">
+      <div class="sheet" style="max-height:76%;">
+        <div class="sheet-head"><div class="sheet-title">选择项目</div><div class="sheet-close" onclick="closeMask('projMask')">关闭</div></div>
+        <div class="sheet-body">
+          <input class="search" id="projKw" placeholder="搜索项目名称 / 编号" oninput="renderProjPick()" style="margin-bottom:10px;">
+          <div id="projPick"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 弹层：租赁公司选择 ===== -->
+    <div class="mask" id="rentMask">
+      <div class="sheet" style="max-height:76%;">
+        <div class="sheet-head"><div class="sheet-title">选择租赁公司</div><div class="sheet-close" onclick="closeMask('rentMask')">关闭</div></div>
+        <div class="sheet-body">
+          <div class="src-tip" id="rentTip" style="margin-bottom:10px;"></div>
+          <input class="search" id="rentKw" placeholder="搜索或输入租赁公司名称" oninput="renderRentPick()" style="margin-bottom:10px;">
+          <div id="rentPick"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 弹层：删除确认 ===== -->
+    <div class="mask" id="delMask">
+      <div class="sheet" style="max-height:44%;">
+        <div class="sheet-head"><div class="sheet-title">删除安排</div><div class="sheet-close" onclick="closeMask('delMask')">关闭</div></div>
+        <div class="sheet-body">
+          <div style="font-size:14px;color:#444;line-height:1.8;" id="delText">确定删除这条机械安排？</div>
+        </div>
+        <div class="sheet-foot">
+          <button class="btn-secondary" onclick="closeMask('delMask')">取消</button>
+          <button class="btn-danger" onclick="confirmDelete()">删除</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+<script>
+// ====== 基础数据 ======
+const ME = "张伟";
+const LS_REQ = "cj_mech_reqs_v1";
+const LS_ASG = "cj_mech_assigns_v1";
+
+const PROJECT_LIB = [
+  { code: "XM2026-041", name: "园垄线 10kV 线路架设工程", manager: "刘德海", addr: "郴州市北湖区园垄村至铜坑村沿线" },
+  { code: "XM2026-042", name: "珠东线电缆通道改造", manager: "杨小波", addr: "郴州市苏仙区珠东街 3 号电缆通道" },
+  { code: "XM2026-045", name: "嘉禾县工业园区双电源工程", manager: "周志远", addr: "郴州市嘉禾县工业园区西区变电站" },
+  { code: "XM2026-048", name: "北湖区10kV增容改造", manager: "黄国平", addr: "郴州市北湖区下湄桥街道 8 号台区" },
+  { code: "XM2026-052", name: "汝城风电送出线路工程", manager: "曹建华", addr: "郴州市汝城县暖水镇风场升压站" },
+  { code: "XM2026-055", name: "宜章台区改造项目", manager: "李晓东", addr: "郴州市宜章县玉溪镇 12 个台区" },
+  { code: "XM2026-058", name: "临武变电站扩建配套工程", manager: "王勇", addr: "郴州市临武县武水镇变电站" },
+  { code: "XM2026-061", name: "安仁农网巩固提升工程", manager: "张伟", addr: "郴州市安仁县永乐江镇沿线村组" }
+];
+const MACHINE_TYPES = ["挖机", "炮机", "吊车", "随车吊", "渣土车", "铲车"];
+const MACHINE_PRICE = { "挖机": 1200, "炮机": 1600, "吊车": 1800, "随车吊": 1500, "渣土车": 900, "铲车": 900 };
+const MACH_ORD = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧"];
+const RENTALS = ["顺达机械", "宏达吊装", "顺发设备", "郴州建机", "恒力租赁", "华宇机械"];
+const STATUS = {
+  plan: { name: "已安排", cls: "b-plan" },
+  on:   { name: "已进场", cls: "b-on" },
+  done: { name: "已完成", cls: "b-done" }
+};
+
+// ====== 申请单（与「机械申请」同源） ======
+let REQS = [
+  { no: "JX-20261118-002", project: "宜章台区改造项目", code: "XM2026-055",
+    addr: "郴州市宜章县玉溪镇 12 个台区", from: "2026-11-19 08:00", to: "2026-11-20 18:00",
+    machines: { "挖机": 1, "随车吊": 1 }, reason: "台区改造电缆沟开挖及材料转运",
+    applicant: "张三", dept: "郴州公司/项目一部", created: "2026-11-18 09:20" },
+  { no: "JX-20261117-001", project: "珠东线电缆通道改造", code: "XM2026-042",
+    addr: "郴州市苏仙区珠东街 3 号电缆通道", from: "2026-11-19 08:00", to: "2026-11-19 17:00",
+    machines: { "炮机": 1, "渣土车": 2 }, reason: "破除原混凝土基础并清运渣土",
+    applicant: "李强", dept: "郴州公司/项目二部", created: "2026-11-17 09:12" },
+  { no: "JX-20261116-003", project: "园垄线 10kV 线路架设工程", code: "XM2026-041",
+    addr: "郴州市北湖区园垄村至铜坑村沿线", from: "2026-11-18 08:00", to: "2026-11-18 18:00",
+    machines: { "挖机": 2, "吊车": 1 }, reason: "配合立杆吊装、杆坑开挖",
+    applicant: "王海", dept: "郴州公司/项目一部", created: "2026-11-16 16:40" },
+  { no: "JX-20261115-002", project: "高速杆迁瓦窑坪项目", code: "XM2026-023",
+    addr: "郴州市苏仙区瓦窑坪村 220kV 线路走廊", from: "2026-11-17 07:30", to: "2026-11-17 16:00",
+    machines: { "随车吊": 1 }, reason: "材料二次转运并配合组塔",
+    applicant: "陈明", dept: "郴州公司/项目三部", created: "2026-11-15 15:20" },
+  { no: "JX-20261112-004", project: "苏仙区小区供配电改造工程", code: "XM2026-031",
+    addr: "郴州市苏仙区苏仙岭街道 5 个老旧小区", from: "2026-11-14 08:00", to: "2026-11-14 18:00",
+    machines: { "挖机": 1, "铲车": 1 }, reason: "电缆沟开挖、场地平整",
+    applicant: "周涛", dept: "郴州公司/项目二部", created: "2026-11-12 10:05" },
+  { no: "JX-20261110-001", project: "北湖区10kV增容改造", code: "XM2026-048",
+    addr: "郴州市北湖区下湄桥街道 8 号台区", from: "2026-11-11 08:00", to: "2026-11-11 12:00",
+    machines: { "吊车": 1 }, reason: "变压器吊装就位",
+    applicant: "刘洋", dept: "郴州公司/项目一部", created: "2026-11-10 17:30",
+    reject: "当日吊车已全部派出，建议改约 11/13 上午" }
+];
+
+// ====== 安排记录 ======
+let ASSIGNS = [
+  { id: "A1", reqNo: "JX-20261116-003", project: "园垄线 10kV 线路架设工程", code: "XM2026-041",
+    type: "挖机①", date: "2026-11-18", rental: "顺达机械", plate: "湘L·E6666", price: 1200,
+    note: "", status: "plan", creator: ME, createdAt: "2026-11-17 10:20" },
+  { id: "A2", reqNo: "JX-20261116-003", project: "园垄线 10kV 线路架设工程", code: "XM2026-041",
+    type: "挖机②", date: "2026-11-18", rental: "顺达机械", plate: "湘L·E7777", price: 1200,
+    note: "", status: "plan", creator: ME, createdAt: "2026-11-17 10:20" },
+  { id: "A3", reqNo: "JX-20261116-003", project: "园垄线 10kV 线路架设工程", code: "XM2026-041",
+    type: "吊车", date: "2026-11-18", rental: "宏达吊装", plate: "湘L·D8888", price: 1800,
+    note: "立杆作业上午进场", status: "plan", creator: ME, createdAt: "2026-11-17 10:22" },
+  { id: "A4", reqNo: "JX-20261115-002", project: "高速杆迁瓦窑坪项目", code: "XM2026-023",
+    type: "随车吊", date: "2026-11-17", rental: "顺发设备", plate: "湘L·H2333", price: 1500,
+    note: "司机陈师傅，随车带 2 副吊索", status: "on", creator: ME, createdAt: "2026-11-16 09:05" },
+  { id: "A5", reqNo: "JX-20261112-004", project: "苏仙区小区供配电改造工程", code: "XM2026-031",
+    type: "挖机", date: "2026-11-14", rental: "顺达机械", plate: "湘L·E6666", price: 1200,
+    note: "", status: "done", creator: ME, createdAt: "2026-11-13 16:30" },
+  { id: "A6", reqNo: "JX-20261112-004", project: "苏仙区小区供配电改造工程", code: "XM2026-031",
+    type: "铲车", date: "2026-11-14", rental: "顺达机械", plate: "湘L·M1122", price: 900,
+    note: "场地平整后当天退场", status: "done", creator: ME, createdAt: "2026-11-13 16:30" },
+  { id: "A7", reqNo: null, project: "宜章台区改造项目", code: "XM2026-055",
+    type: "挖机", date: "2026-11-19", rental: "郴州建机", plate: "湘L·E8888", price: 1300,
+    note: "项目经理口头通知，先行进场清表", status: "plan", creator: ME, createdAt: "2026-11-18 08:40" }
+];
+let SEQ = 8;
+
+// ====== 工具 ======
+function pad2(n) { return String(n).padStart(2, "0"); }
+function todayStr(off) {
+  const d = new Date();
+  d.setDate(d.getDate() + (off || 0));
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+}
+function fmtDate(s) {
+  if (!s) return "—";
+  const d = new Date(s + "T00:00:00");
+  if (isNaN(d.getTime())) return s;
+  const wk = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][d.getDay()];
+  return pad2(d.getMonth() + 1) + "/" + pad2(d.getDate()) + " " + wk;
+}
+function money(n) { return Math.round(n || 0).toLocaleString("en-US"); }
+function projOf(code) { return PROJECT_LIB.find(p => p.code === code); }
+function reqOf(no) { return REQS.find(r => r.no === no); }
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.classList.remove("show"), 1800);
+}
+function openMask(id) { document.getElementById(id).classList.add("open"); }
+function closeMask(id) { document.getElementById(id).classList.remove("open"); }
+
+// ====== 持久化 ======
+function loadStore() {
+  try {
+    const req = JSON.parse(localStorage.getItem(LS_REQ) || "null");
+    if (req && Array.isArray(req) && req.length) REQS = req;
+  } catch (e) {}
+  try {
+    const asg = JSON.parse(localStorage.getItem(LS_ASG) || "null");
+    if (asg && Array.isArray(asg) && asg.length) ASSIGNS = asg;
+  } catch (e) {}
+}
+function saveAssigns() {
+  try { localStorage.setItem(LS_ASG, JSON.stringify(ASSIGNS)); } catch (e) {}
+}
+
+// ====== Tab ======
+function switchTab(k) {
+  const wait = k === "wait";
+  document.getElementById("paneWait").classList.toggle("hide", !wait);
+  document.getElementById("paneRec").classList.toggle("hide", wait);
+  document.getElementById("tabWait").classList.toggle("on", wait);
+  document.getElementById("tabRec").classList.toggle("on", !wait);
+  if (wait) renderWait(); else renderRecords();
+}
+
+// ====== 待安排 ======
+function totalOf(r) { return Object.keys(r.machines || {}).reduce((s, k) => s + (r.machines[k] || 0), 0); }
+function arrangedCount(no) { return ASSIGNS.filter(a => a.reqNo === no).length; }
+function pendingSlots(r) {
+  const out = [];
+  Object.keys(r.machines || {}).forEach(t => {
+    const n = r.machines[t];
+    for (let i = 0; i < n; i++) {
+      const nm = n > 1 ? t + MACH_ORD[i] : t;
+      const done = ASSIGNS.filter(a => a.reqNo === r.no && a.type === nm).length;
+      if (!done) out.push({ type: nm, plate: "" });
+    }
+  });
+  return out;
+}
+function renderWait() {
+  const list = REQS.filter(r => !r.reject);
+  const box = document.getElementById("waitList");
+  const rows = list.filter(r => pendingSlots(r).length).sort((a, b) => {
+    const da = arrangedCount(a.no), db = arrangedCount(b.no);
+    return (da ? 1 : 0) - (db ? 1 : 0);
+  });
+  if (!rows.length) {
+    box.innerHTML = `<div class="empty">没有待安排的机械申请<br>可直接点底部「＋ 新增安排」安排机械</div>`;
+    return;
+  }
+  box.innerHTML = rows.map(r => {
+    const total = totalOf(r), done = arrangedCount(r.no);
+    const st = done === 0 ? `<span class="badge b-wait">待安排</span>`
+             : done < total ? `<span class="badge b-wait">部分安排 ${done}/${total}</span>`
+             : `<span class="badge b-plan">已安排</span>`;
+    const mach = Object.keys(r.machines).map(t => `${t} ${r.machines[t]} 台`).join(" · ");
+    return `<div class="card" onclick="openArrFromReq('${r.no}')">
+      <div class="card-head"><div class="meta">${r.no} · ${String(r.created || "").slice(5)}</div>${st}</div>
+      <div class="p-name">${r.project}</div>
+      <div class="mach-hl"><span class="k">申请：</span>${mach}</div>
+      <div class="line"><span>用机：</span>${r.from ? r.from.slice(5, 16) : "—"} ${r.from ? "至 " + String(r.to || "").slice(5, 16) : ""}</div>
+      <div class="line"><span>申请人：</span>${r.applicant || "—"} · ${r.dept || "—"}</div>
+      <div class="line"><span>地点：</span>${r.addr || "待定"}</div>
+      <div class="ops">
+        <button class="btn-sm main" onclick="openArrFromReq('${r.no}');event.stopPropagation();">去安排</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ====== 安排记录 ======
+let recFilter = "all";
+const REC_FILTERS = [
+  { k: "all", t: "全部" },
+  { k: "today", t: "今天" },
+  { k: "week", t: "本周" },
+  { k: "plan", t: "待进场" },
+  { k: "on", t: "已进场" },
+  { k: "done", t: "已完成" }
+];
+function weekRange() {
+  const d = new Date(), w = (d.getDay() + 6) % 7;
+  const s = new Date(d); s.setDate(d.getDate() - w);
+  const e = new Date(s); e.setDate(s.getDate() + 6);
+  const f = x => x.getFullYear() + "-" + pad2(x.getMonth() + 1) + "-" + pad2(x.getDate());
+  return [f(s), f(e)];
+}
+function renderRecords() {
+  document.getElementById("recChips").innerHTML = REC_FILTERS.map(f =>
+    `<div class="chip ${recFilter === f.k ? "on" : ""}" onclick="setFilter('${f.k}')">${f.t}</div>`).join("");
+  const kw = (document.getElementById("recKw").value || "").trim();
+  const [ws, we] = weekRange();
+  const today = todayStr(0);
+  let rows = ASSIGNS.slice().sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  if (recFilter === "today") rows = rows.filter(a => a.date === today);
+  if (recFilter === "week") rows = rows.filter(a => a.date >= ws && a.date <= we);
+  if (recFilter === "plan" || recFilter === "on" || recFilter === "done") rows = rows.filter(a => a.status === recFilter);
+  if (kw) rows = rows.filter(a => a.project.indexOf(kw) >= 0 || a.plate.indexOf(kw) >= 0 || a.rental.indexOf(kw) >= 0 || (a.type || "").indexOf(kw) >= 0);
+  const box = document.getElementById("recList");
+  if (!rows.length) {
+    box.innerHTML = `<div class="empty">暂无符合条件的安排记录</div>`;
+    return;
+  }
+  box.innerHTML = rows.map(a => {
+    const st = STATUS[a.status] || STATUS.plan;
+    const src = a.reqNo ? a.reqNo : "直接安排";
+    return `<div class="card" onclick="openEdit('${a.id}')">
+      <div class="card-head"><div class="meta">${src} · ${String(a.createdAt || "").slice(5)}</div>
+        <span class="badge ${st.cls}">${st.name}</span></div>
+      <div class="p-name">${a.project}</div>
+      <div class="mach-hl"><span class="k">机械：</span>${a.type} · ${a.plate}</div>
+      <div class="line"><span>租赁：</span>${a.rental} · 单价 ${money(a.price)} 元/台班</div>
+      <div class="line"><span>安排日期：</span>${fmtDate(a.date)}</div>
+      ${a.note ? `<div class="line"><span>备注：</span>${a.note}</div>` : ""}
+    </div>`;
+  }).join("");
+}
+function setFilter(k) { recFilter = k; renderRecords(); }
+
+// ====== 表单 ======
+let form = null;
+let formMode = "new";  // new | req | edit
+let editId = null;
+let selectedProj = null;
+let selectedRent = "";
+let rentSlotIdx = -1;   // -1 表示设置默认租赁公司，>=0 表示设置某一台
+
+function blankForm() {
+  return { reqNo: null, code: "", project: "", date: todayStr(0), type: MACHINE_TYPES[0], rental: "", price: MACHINE_PRICE[MACHINE_TYPES[0]],
+    note: "", status: "plan", slots: [{ type: MACHINE_TYPES[0], plate: "", rental: "", price: MACHINE_PRICE[MACHINE_TYPES[0]] }] };
+}
+function openForm() {
+  formMode = "new";
+  editId = null;
+  form = blankForm();
+  selectedProj = null;
+  selectedRent = "";
+  rentSlotIdx = -1;
+  buildForm();
+  openMask("formMask");
+}
+function openArrFromReq(no) {
+  const r = reqOf(no);
+  if (!r) { openForm(); return; }
+  const slots = pendingSlots(r);
+  if (!slots.length) { toast("该申请的机械已全部安排"); return; }
+  formMode = "req";
+  editId = null;
+  form = blankForm();
+  form.reqNo = r.no;
+  form.code = r.code || "";
+  form.project = r.project || "";
+  form.note = "";
+  form.slots = slots.map(s => ({ type: s.type, plate: s.plate || "", rental: "", price: MACHINE_PRICE[s.type] || MACHINE_PRICE[slots[0].type] || 0 }));
+  form.date = r.from ? r.from.slice(0, 10) : todayStr(0);
+  form.type = slots[0].type;
+  selectedProj = projOf(r.code) || { code: r.code, name: r.project, manager: "" };
+  selectedRent = "";
+  rentSlotIdx = -1;
+  buildForm();
+  openMask("formMask");
+}
+function openEdit(id) {
+  const a = ASSIGNS.find(x => x.id === id);
+  if (!a) return;
+  formMode = "edit";
+  editId = id;
+  form = { reqNo: a.reqNo || null, code: a.code, project: a.project, date: a.date, type: a.type, rental: a.rental,
+    price: a.price, note: a.note || "", status: a.status,
+    slots: [{ type: a.type, plate: a.plate, rental: a.rental, price: a.price }] };
+  selectedProj = projOf(a.code) || { code: a.code, name: a.project, manager: "" };
+  selectedRent = a.rental;
+  rentSlotIdx = -1;
+  buildForm();
+  openMask("formMask");
+}
+function buildForm() {
+  document.getElementById("formTitle").textContent =
+    formMode === "edit" ? "编辑安排" : formMode === "req" ? "安排机械" : "新增安排";
+
+  let html = "";
+  if (formMode === "req") {
+    const req = form.reqNo ? reqOf(form.reqNo) : null;
+    html += `<div class="src-tip">来源申请 <b>${req ? req.no : "—"}</b>${req && req.reason ? " · " + req.reason : ""}<br>
+      按申请台数逐台填写车牌号与单价，安排信息将回写到申请人的「我的申请」</div>`;
+  } else if (formMode === "edit") {
+    html += `<div class="src-tip">记录 <b>${form.reqNo || "直接安排"}</b> · 可修改日期、租赁公司、车牌、单价与状态</div>`;
+  }
+
+  // 项目
+  html += `<div class="fld">
+    <div class="fld-l"><i>*</i>项目</div>
+    <div class="fld-pick ${form.project ? "" : "ph"}" onclick="openProjPick()">${form.project || "请选择项目"}<span class="arr">›</span></div>
+  </div>`;
+
+  // 机械类型（仅新增/编辑单选）
+  if (formMode !== "req") {
+    html += `<div class="fld">
+      <div class="fld-l"><i>*</i>机械类型</div>
+      <div class="chips" id="typeChips">${MACHINE_TYPES.map(t =>
+        `<div class="chip ${form.type === t ? "on" : ""}" onclick="setType('${t}')">${t}</div>`).join("")}</div>
+    </div>`;
+  }
+
+  // 台位车牌
+  html += `<div class="fld">
+    <div class="fld-l"><i>*</i>车牌号</div>
+    ${form.slots.map((s, i) => `<div class="slot">
+      <div class="slot-h">${form.slots.length > 1 ? s.type : (s.type || form.type)}
+        ${(formMode === "new" && form.slots.length > 1) ? `<span class="del" onclick="delSlot(${i})">删除</span>` : ""}</div>
+      <input class="fld-in" placeholder="如 湘L·E6666" value="${s.plate}" oninput="setPlate(${i}, this.value)">
+      ${form.slots.length > 1 ? `<div class="slot-rent ${s.rental ? "on" : "ph"}" onclick="openRentPick(${i});event.stopPropagation();">${s.rental || (form.rental ? "默认 " + form.rental : "该台租赁公司（默认同下方）")}<span class="arr">›</span></div>` : ""}
+      <div class="slot-price">
+        <span class="lbl">单价</span>
+        <input type="text" inputmode="decimal" value="${s.price || ''}" placeholder="该台单价" onclick="event.stopPropagation();" oninput="setSlotPrice(${i}, this.value)">
+        <span class="unit">元/台班</span>
+      </div>
+    </div>`).join("")}
+    ${formMode === "new" ? `<button class="add-slot" onclick="addSlot()">＋ 增加一台</button>` : ""}
+  </div>`;
+
+  // 安排日期
+  const ds = [
+    { o: 0, t: "今天" }, { o: 1, t: "明天" }, { o: 2, t: "后天" }, { o: 3, t: "大后天" }
+  ];
+  html += `<div class="fld">
+    <div class="fld-l"><i>*</i>安排日期</div>
+    <div class="chips">${ds.map(d => {
+      const v = todayStr(d.o);
+      return `<div class="chip ${form.date === v ? "on" : ""}" onclick="setDate('${v}')">${d.t} ${fmtDate(v)}</div>`;
+    }).join("")}<div class="chip ${ds.every(d => todayStr(d.o) !== form.date) ? "on" : ""}" onclick="pickOtherDate()">其他日期${ds.every(d => todayStr(d.o) !== form.date) ? " " + fmtDate(form.date) : ""}</div></div>
+    <input type="date" id="datePick" onchange="setDate(this.value)" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
+  </div>`;
+
+  // 租赁公司（默认值，逐台可单独指定）
+  html += `<div class="fld">
+    <div class="fld-l"><i>*</i>默认租赁公司</div>
+    <div class="fld-pick ${form.rental ? "" : "ph"}" onclick="openRentPick(-1)">${form.rental || "未单独指定的台位按此公司"}<span class="arr">›</span></div>
+  </div>`;
+
+  // 备注
+  html += `<div class="fld">
+    <div class="fld-l">备注</div>
+    <textarea class="fld-ta" rows="3" placeholder="如：司机联系方式、进场时间要求、带何种属具" oninput="setNote(this.value)">${form.note}</textarea>
+  </div>`;
+
+  // 状态（编辑时）
+  if (formMode === "edit") {
+    html += `<div class="fld">
+      <div class="fld-l">机械状态</div>
+      <div class="chips">${Object.keys(STATUS).map(k =>
+        `<div class="chip ${form.status === k ? "on" : ""}" onclick="setStatus('${k}')">${STATUS[k].name}</div>`).join("")}</div>
+    </div>`;
+  }
+
+  document.getElementById("formBody").innerHTML = html;
+  const foot = document.getElementById("formFoot");
+  foot.innerHTML = formMode === "edit"
+    ? `<button class="btn-secondary" style="border-color:#fca5a5;color:#dc2626;flex:0 0 96px;" onclick="askDelete('${editId}')">删除</button>
+       <button class="btn-main" onclick="saveForm()">保存修改</button>`
+    : `<button class="btn-secondary" onclick="closeForm()">取消</button>
+       <button class="btn-main" onclick="saveForm()">保存安排</button>`;
+  const dp = document.getElementById("datePick");
+  if (dp) { dp.min = todayStr(0); dp.value = form.date; }
+}
+function closeForm() {
+  closeMask("formMask");
+  form = null;
+  editId = null;
+}
+function setType(t) {
+  const oldDefault = MACHINE_PRICE[form.type];
+  form.type = t;
+  form.slots.forEach(s => {
+    if (!s.price || s.price === oldDefault) s.price = MACHINE_PRICE[t] || s.price;
+  });
+  if (formMode === "new" && form.slots.length === 1) form.slots[0].type = t;
+  buildForm();
+}
+function setPlate(i, v) { if (form.slots[i]) form.slots[i].plate = v.trim(); }
+function setSlotPrice(i, v) {
+  if (!form.slots[i]) return;
+  const n = parseFloat(String(v).replace(/[^\d.]/g, ""));
+  form.slots[i].price = isNaN(n) ? 0 : n;
+  if (form.slots.length === 1) form.price = form.slots[i].price;
+}
+function addSlot() {
+  if (form.slots.length >= 8) { toast("单次最多增加 8 台"); return; }
+  form.slots.push({ type: form.type, plate: "", rental: "", price: MACHINE_PRICE[form.type] || 0 });
+  buildForm();
+}
+function delSlot(i) { form.slots.splice(i, 1); buildForm(); }
+function setDate(v) { if (!v) return; form.date = v; buildForm(); }
+function pickOtherDate() {
+  const dp = document.getElementById("datePick");
+  if (dp) { try { dp.showPicker ? dp.showPicker() : dp.click(); } catch (e) { dp.click(); } }
+}
+function setPrice(v) {
+  const n = parseFloat(String(v).replace(/[^\d.]/g, ""));
+  form.price = isNaN(n) ? 0 : n;
+  if (form.slots.length === 1) form.slots[0].price = form.price;
+}
+function setNote(v) { form.note = v; }
+function setStatus(k) { form.status = k; buildForm(); }
+
+// ====== 项目选择 ======
+function openProjPick() {
+  document.getElementById("projKw").value = "";
+  renderProjPick();
+  openMask("projMask");
+}
+function renderProjPick() {
+  const kw = (document.getElementById("projKw").value || "").trim();
+  const list = PROJECT_LIB.filter(p => !kw || p.name.indexOf(kw) >= 0 || p.code.indexOf(kw) >= 0);
+  document.getElementById("projPick").innerHTML = list.length
+    ? list.map(p => `<div class="pick-item ${p.code === form.code ? "on" : ""}" onclick="pickProj('${p.code}')">
+        <div class="txt"><div class="n">${p.name}</div><div class="d">${p.code} · 负责人 ${p.manager}</div></div>
+        <div class="tick">✓</div>
+      </div>`).join("")
+    : `<div class="empty" style="margin:24px 0;">没有匹配的项目</div>`;
+}
+function pickProj(code) {
+  const p = projOf(code);
+  form.code = p.code;
+  form.project = p.name;
+  closeMask("projMask");
+  buildForm();
+}
+
+// ====== 租赁公司选择 ======
+function rentCur() {
+  if (!form) return "";
+  if (rentSlotIdx >= 0 && form.slots[rentSlotIdx]) return form.slots[rentSlotIdx].rental || "";
+  return form.rental || "";
+}
+function openRentPick(i) {
+  if (!form) return;
+  rentSlotIdx = (i === undefined || i === null) ? -1 : Number(i);
+  const s = rentSlotIdx >= 0 ? form.slots[rentSlotIdx] : null;
+  const tip = document.getElementById("rentTip");
+  if (tip) {
+    tip.innerHTML = s
+      ? `为第 ${rentSlotIdx + 1} 台「${s.type}」单独指定租赁公司，不同台位可分属不同公司`
+      : "未单独指定租赁公司的台位，统一使用此公司";
+  }
+  document.getElementById("rentKw").value = rentCur();
+  renderRentPick();
+  openMask("rentMask");
+}
+function renderRentPick() {
+  const kw = (document.getElementById("rentKw").value || "").trim();
+  const cur = rentCur();
+  const list = RENTALS.filter(x => !kw || x.indexOf(kw) >= 0);
+  let html = list.map(x => `<div class="pick-item ${cur === x ? "on" : ""}" onclick="pickRent('${x}')">
+      <div class="txt"><div class="n">${x}</div></div><div class="tick">✓</div></div>`).join("");
+  if (kw && RENTALS.indexOf(kw) < 0) {
+    html += `<div class="pick-item" onclick="pickRent('${kw.replace(/'/g, "")}')">
+      <div class="txt"><div class="n">使用「${kw}」</div><div class="d">该名称将记入本次安排</div></div><div class="tick">✓</div></div>`;
+  }
+  if (!html) html = `<div class="empty" style="margin:24px 0;">输入公司名称后可选用</div>`;
+  document.getElementById("rentPick").innerHTML = html;
+}
+function pickRent(x) {
+  if (!form) return;
+  if (rentSlotIdx >= 0 && form.slots[rentSlotIdx]) {
+    form.slots[rentSlotIdx].rental = x;
+  } else {
+    form.rental = x;
+  }
+  rentSlotIdx = -1;
+  closeMask("rentMask");
+  buildForm();
+}
+
+// ====== 保存 ======
+function plateDup(plate, date, ignoreId) {
+  if (!plate) return false;
+  return ASSIGNS.some(a => a.id !== ignoreId && a.date === date && a.plate.replace(/\s/g, "") === plate.replace(/\s/g, ""));
+}
+function saveForm() {
+  if (!form) return;
+  if (!form.project) { toast("请先选择项目"); return; }
+  if (!form.date) { toast("请选择安排日期"); return; }
+  if (!form.rental && !form.slots.every(s => s.rental)) { toast("请选择租赁公司"); return; }
+  const filled = form.slots.filter(s => s.plate);
+  if (!filled.length) { toast("请填写车牌号"); return; }
+  for (let i = 0; i < form.slots.length; i++) {
+    const s = form.slots[i];
+    if (!s.plate) { toast("第 " + (i + 1) + " 台车牌号未填写"); return; }
+    if (!s.price || s.price <= 0) { toast("第 " + (i + 1) + " 台「" + (s.type || form.type) + "」单价未填写"); return; }
+    if (plateDup(s.plate, form.date, editId)) { toast("车牌 " + s.plate + " 在 " + fmtDate(form.date) + " 已有安排"); return; }
+  }
+  if (formMode === "edit") {
+    const a = ASSIGNS.find(x => x.id === editId);
+    if (!a) return;
+    a.code = form.code; a.project = form.project; a.date = form.date;
+    a.rental = form.slots[0].rental || form.rental;
+    a.price = form.slots[0].price || form.price; a.note = form.note; a.status = form.status;
+    a.type = form.slots[0].type || form.type;
+    a.plate = form.slots[0].plate;
+    saveAssigns();
+    closeForm();
+    toast("已保存修改");
+    refreshAll();
+    return;
+  }
+  const req = formMode === "req" && form.reqNo ? reqOf(form.reqNo) : null;
+  const items = [];
+  form.slots.forEach(s => {
+    items.push({
+      id: "A" + SEQ++, reqNo: req ? req.no : null, project: form.project, code: form.code,
+      type: req ? s.type : (form.slots.length > 1 ? form.type + MACH_ORD[items.length] : form.type),
+      date: form.date, rental: s.rental || form.rental, plate: s.plate, price: s.price || form.price,
+      note: form.note, status: req ? "plan" : "plan", creator: ME, createdAt: nowText()
+    });
+  });
+  ASSIGNS = items.concat(ASSIGNS);
+  saveAssigns();
+  closeForm();
+  toast(req ? "已安排 " + items.length + " 台机械，已通知申请人" : "已新增安排");
+  refreshAll();
+}
+function nowText() {
+  const d = new Date();
+  return todayStr(0) + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+}
+function refreshAll() {
+  renderWait();
+  renderRecords();
+}
+
+// ===== 从「日计划-机械进度」跳进来：带 ?req=单号 直接打开安排 =====
+(function openFromDayPlan() {
+  const reqNo = new URLSearchParams(location.search || "").get("req");
+  if (!reqNo) return;
+  switchTab("wait");
+  const r = reqOf(reqNo);
+  if (!r) { toast("没找到这张机械申请单 " + reqNo); return; }
+  setTimeout(() => openArrFromReq(reqNo), 60);
+})();
+
+// ====== 删除 ======
+let delId = null;
+function askDelete(id) {
+  delId = id;
+  const a = ASSIGNS.find(x => x.id === id);
+  document.getElementById("delText").innerHTML =
+    `确定删除「${a.project} · ${a.type} ${a.plate}」这条安排？<br>
+     <span style="color:#98a2b3;font-size:12px;">删除后该机械回到待安排，可重新安排。</span>`;
+  openMask("delMask");
+}
+function confirmDelete() {
+  if (!delId) return;
+  ASSIGNS = ASSIGNS.filter(a => a.id !== delId);
+  delId = null;
+  saveAssigns();
+  closeMask("delMask");
+  if (document.getElementById("formMask").classList.contains("open")) closeForm();
+  toast("已删除该安排");
+  refreshAll();
+}
+
+// ====== 启动 ======
+(function init() {
+  loadStore();
+  // 已有安排记录回写申请单状态
+  REQS.forEach(r => {
+    const total = totalOf(r), done = arrangedCount(r.no);
+    if (!r.reject && done > 0) r.status = done >= total ? "plan" : "part";
+  });
+  renderWait();
+  renderRecords();
+  if ((location.hash || "").indexOf("new") >= 0) setTimeout(() => openForm(), 60);
+})();
+</script>
+</body>
+</html>

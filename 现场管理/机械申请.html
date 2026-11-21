@@ -277,6 +277,7 @@
 
         <!-- ========== 申请机械 ========== -->
         <div class="pane" id="paneApply">
+          <div id="dpTip" style="display:none;margin:0 0 10px;padding:9px 12px;border-radius:10px;background:#eef4ff;color:#1b5fd0;font-size:12px;line-height:1.6;"></div>
           <div class="sec-title">申请信息</div>
           <div class="card">
             <div class="row nt">
@@ -547,6 +548,28 @@ let REQS = [
   }
 ];
 
+// ====== 与「机械安排」页共享申请与安排数据 ======
+const LS_REQ = "cj_mech_reqs_v1";
+const LS_ASG = "cj_mech_assigns_v1";
+function persistReqs() {
+  try { localStorage.setItem(LS_REQ, JSON.stringify(REQS)); } catch (e) {}
+}
+function syncFromArrangement() {
+  let asg = null, reqs = null;
+  try { asg = JSON.parse(localStorage.getItem(LS_ASG) || "null"); } catch (e) {}
+  try { reqs = JSON.parse(localStorage.getItem(LS_REQ) || "null"); } catch (e) {}
+  if (reqs && Array.isArray(reqs) && reqs.length) REQS = reqs;
+  if (!asg || !Array.isArray(asg) || !asg.length) return;
+  REQS.forEach(r => {
+    const rel = asg.filter(a => a.reqNo === r.no);
+    if (!rel.length) return;
+    r.assigns = rel.map(a => ({ type: a.type, plate: a.plate, rental: a.rental, date: a.date, price: a.price, note: a.note }));
+    const total = Object.keys(r.machines || {}).reduce((s, k) => s + (r.machines[k] || 0), 0);
+    if (r.status !== "rej") r.status = rel.length >= total ? "plan" : "part";
+  });
+}
+syncFromArrangement();
+
 // ====== 表单状态 ======
 const TAB_SLOT = ["06:00", "08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00"];
 let form = blankForm();
@@ -607,7 +630,7 @@ function renderProjects() {
   const list = PROJECT_LIB.filter(p => !kw || p.name.indexOf(kw) >= 0 || p.code.indexOf(kw) >= 0);
   document.getElementById("projList").innerHTML = list.length
     ? list.map(p => `<div class="pick-item ${p.code === form.code ? "on" : ""}" onclick="pickProject('${p.code}')">
-        <div class="txt"><div class="n">${p.name}</div><div class="d">${p.code} · 负责人 ${p.manager}</div></div>
+        <div class="txt"><div class="n">${p.name}</div><div class="d">${p.code} · 项目经理 ${p.manager}</div></div>
         <div class="tick">✓</div>
       </div>`).join("")
     : `<div style="padding:30px 0;text-align:center;color:#aaa;font-size:13px;">没有匹配的项目</div>`;
@@ -835,9 +858,11 @@ function submitReq() {
     from: form.from, to: "",
     machines: JSON.parse(JSON.stringify(form.machines)),
     reason: form.reason, photos: form.photos.length, photosList: form.photos.slice(),
-    status: "wait", created: fmtNow(), assigns: []
+    status: "wait", created: fmtNow(), assigns: [],
+    dpKey: (DPCTX && DPCTX.key) || "", dpDate: (DPCTX && DPCTX.date) || "", dpTask: (DPCTX && DPCTX.task) || ""
   };
   REQS.unshift(req);
+  persistReqs(req);
 
   const dept = form.dept;
   form = blankForm();
@@ -847,6 +872,7 @@ function submitReq() {
   switchTab("list");
   renderReqs(req.no);
   toast("已提交，等待机械专员安排");
+  dpBackLink(req.no);
 }
 function fmtNow() {
   const d = new Date();
@@ -892,6 +918,7 @@ function confirmDelete() {
   const no = pendingDelNo;
   pendingDelNo = null;
   REQS = REQS.filter(r => r.no !== no);
+  persistReqs();
   closeSheet("delMask", "delSheet");
   renderReqs();
   toast("已删除");
@@ -900,7 +927,7 @@ function reqCard(r, hl) {
   const st = STATUS[r.status] || STATUS.wait;
   const asg = (r.assigns && r.assigns.length)
     ? `<div class="asg"><div class="ah">安排信息（机械专员）</div>
-        ${r.assigns.map(a => `<div class="a"><b>${a.type}</b><span class="p">${a.plate}</span><span class="s">${a.rental}</span></div>`).join("")}
+        ${r.assigns.map(a => `<div class="a"><b>${a.type}</b><span class="p">${a.plate}</span><span class="s">${a.rental}${a.date ? " · " + a.date.slice(5) : ""}</span></div>`).join("")}
       </div>` : "";
   const rej = r.reject ? `<div class="rej-tip">驳回原因：${r.reject}</div>` : "";
   const del = r.status === "wait"
@@ -953,7 +980,7 @@ function detailBody(r) {
     ? `<div class="d-photos">${r.photosList.map(p => `<div class="d-photo"><img src="${p}"></div>`).join("")}</div>`
     : `<div class="d-empty">未上传照片 / 附件</div>`;
   const asg = (r.assigns && r.assigns.length)
-    ? `${r.assigns.map(a => `<div class="d-row asg-row"><div class="k">${a.type}</div><div class="v">${a.plate} <span style="color:#98a2b3;">· ${a.rental}</span></div></div>`).join("")}`
+    ? `${r.assigns.map(a => `<div class="d-row asg-row"><div class="k">${a.type}</div><div class="v">${a.plate} <span style="color:#98a2b3;">· ${a.rental}${a.date ? " · " + a.date.slice(5) : ""}${a.price ? " · " + a.price + " 元/台班" : ""}</span></div></div>`).join("")}`
     : (r.status === "rej" ? "" : `<div class="d-empty">等待机械专员安排</div>`);
   return `
     <div class="d-card">
@@ -1021,6 +1048,66 @@ function closeDetail() {
 bindPhotoInputs();
 renderPhotos();
 renderReqs();
+
+// ===== 从「日计划」串联过来：预填项目/日期/机械台数，提交后回写进度 =====
+const LS_DP_LINK = "cj_dp_mech_link_v1";
+const DPCTX = (function () {
+  const q = new URLSearchParams(location.search || "");
+  if (q.get("from") !== "dp") return null;
+  return {
+    key: q.get("key") || "", proj: q.get("proj") || "", code: q.get("code") || "",
+    date: q.get("date") || "", task: q.get("task") || "", mach: q.get("mach") || ""
+  };
+})();
+function dpSetTxt(id, txt) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = txt;
+  el.classList.remove("ph");
+}
+function dpPrefill() {
+  if (!DPCTX) return;
+  const p = PROJECT_LIB.find(x => x.code === DPCTX.code);
+  form.code = DPCTX.code;
+  form.project = DPCTX.proj || (p && p.name) || "";
+  form.addr = (p && p.addr) || "";
+  form.from = (DPCTX.date || todayStr(0)) + " 08:00";
+  form.reason = DPCTX.task ? "日计划「" + DPCTX.task + "」用机" : "";
+  DPCTX.mach.split(",").forEach(seg => {
+    const kv = seg.split(":");
+    if (kv[0]) form.machines[kv[0]] = parseInt(kv[1] || "1", 10) || 1;
+  });
+  dpSetTxt("vProject", form.project);
+  if (form.addr) dpSetTxt("vAddr", form.addr);
+  const vf = document.getElementById("vFrom");
+  if (vf) { vf.textContent = fmtDT(form.from); vf.classList.remove("ph"); }
+  const vm = document.getElementById("vMach");
+  if (vm) { const txt = machText(form.machines); vm.textContent = txt; vm.classList.toggle("ph", !txt); }
+  const vr = document.getElementById("vReason");
+  if (vr) { vr.textContent = form.reason; vr.classList.remove("ph"); }
+  // 顶部提示：来自哪天哪个任务
+  const tip = document.getElementById("dpTip");
+  if (tip) {
+    tip.style.display = "";
+    tip.innerHTML = `来自日计划 · ${DPCTX.task}（用机日 ${DPCTX.date.slice(5).replace("-", "/")}）`;
+  }
+}
+function dpBackLink(reqNo) {
+  if (!DPCTX || !DPCTX.key) return;
+  try {
+    const links = JSON.parse(localStorage.getItem(LS_DP_LINK) || "{}") || {};
+    links[DPCTX.key] = reqNo;
+    localStorage.setItem(LS_DP_LINK, JSON.stringify(links));
+  } catch (e) {}
+  const tip = document.getElementById("dpTip");
+  if (tip) {
+    tip.style.display = "";
+    tip.innerHTML = `申请 ${reqNo} 已提交，进度已同步回日计划 <a href="日计划.html" style="color:#2b7cff;font-weight:600;text-decoration:none;">返回日计划 ›</a>`;
+  }
+}
+if (DPCTX) { switchTab("apply"); dpPrefill(); }
+// 原型直达：#proj 打开「选择项目」弹层
+if ((location.hash || "").indexOf("proj") >= 0) setTimeout(() => openProject(), 60);
 </script>
 </body>
 </html>

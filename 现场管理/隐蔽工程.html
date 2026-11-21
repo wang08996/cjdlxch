@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>隐蔽工程 - 郴江电力</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; background:#e9ecf1; }
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+  .phone { width:390px; height:820px; background:#f4f6f9; border-radius:36px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.18); position:relative; display:flex; flex-direction:column; }
+  .statusbar { height:44px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:14px; font-weight:600; flex-shrink:0; }
+  .statusbar .right { display:flex; align-items:center; gap:6px; font-size:12px; }
+  .navbar { height:48px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 12px; border-bottom:1px solid #f0f0f0; flex-shrink:0; }
+  .navbar .back { font-size:15px; color:#2b7cff; padding:8px 4px; cursor:pointer; }
+  .navbar .title { font-size:17px; font-weight:600; color:#222; }
+  .navbar .right { min-width:60px; text-align:right; font-size:14px; color:#2b7cff; cursor:pointer; }
+
+  .body { flex:1; overflow-y:auto; background:#f4f6f9; padding-bottom:20px; }
+
+  .search-wrap { background:#fff; padding:10px 12px 12px; border-bottom:1px solid #f0f0f0; }
+  .search { width:100%; height:36px; border:1px solid #e5e7eb; border-radius:18px; padding:0 14px; font-size:13px; background:#f7f9fc; outline:none; color:#222; }
+  .search::placeholder { color:#a7b0bd; }
+  .chips { display:flex; gap:8px; margin-top:10px; }
+  .fchip { flex:none; font-size:12px; color:#66707c; background:#f2f4f8; border-radius:12px; padding:5px 12px; cursor:pointer; border:1px solid transparent; }
+  .fchip.on { background:#eef4ff; color:#2b7cff; border-color:#c8ddff; font-weight:600; }
+
+  .list-head { font-size:11px; color:#98a2b3; padding:10px 14px 6px; }
+
+  /* 项目分组卡 */
+  .g-card { background:#fff; margin:0 12px 10px; border-radius:12px; overflow:hidden; }
+  .g-head { display:flex; align-items:center; padding:13px 14px; cursor:pointer; }
+  .g-title { flex:1; min-width:0; font-size:14px; font-weight:700; color:#2b7cff; line-height:1.4; }
+  .g-sum { flex:none; font-size:11px; color:#98a2b3; margin-left:8px; }
+  .g-sum b { color:#66707c; }
+  .g-arrow { flex:none; font-size:12px; color:#b6bfcc; margin-left:6px; }
+
+  .h-item { padding:12px 14px; border-top:1px solid #f4f5f7; cursor:pointer; }
+  .h-top { display:flex; align-items:center; gap:6px; }
+  .h-date { font-size:12px; font-weight:600; color:#3a3f47; }
+  .src { font-size:10px; padding:1px 7px; border-radius:8px; font-weight:600; }
+  .src-daily { background:#eef4ff; color:#1d4ed8; }
+  .src-manual { background:#f1f3f7; color:#6b7280; }
+  .h-acts { margin-left:auto; display:flex; gap:12px; }
+  .h-edit { font-size:11px; color:#2b7cff; }
+  .h-del { font-size:11px; color:#dc2626; }
+  .h-note { font-size:12px; color:#66707c; line-height:1.65; margin-top:7px; }
+  .h-ph { font-size:11px; color:#98a2b3; margin-top:8px; }
+  .h-ph b { color:#66707c; font-weight:600; }
+
+  .add-row { margin:8px 12px 24px; padding:12px; text-align:center; font-size:14px; color:#2b7cff; border:1px dashed #c8ddff; border-radius:10px; cursor:pointer; background:#fff; }
+  .empty { margin:46px 12px; text-align:center; font-size:13px; color:#a7b0bd; line-height:1.9; }
+
+  /* 弹层 */
+  .mask { position:absolute; inset:0; background:rgba(0,0,0,.45); z-index:50; display:none; align-items:flex-end; }
+  .mask.open { display:flex; }
+  .sheet { background:#fff; width:100%; max-height:88%; border-radius:16px 16px 0 0; display:flex; flex-direction:column; }
+  .sheet-head { padding:14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0f0f0; }
+  .sheet-title { font-size:16px; font-weight:600; color:#222; }
+  .sheet-close { color:#888; font-size:14px; cursor:pointer; }
+  .sheet-body { flex:1; overflow-y:auto; padding:4px 16px 16px; }
+  .sheet-foot { flex-shrink:0; padding:12px 16px; border-top:1px solid #f0f0f0; display:flex; gap:10px; }
+  .btn-primary { flex:1; height:46px; border:none; border-radius:10px; background:#2b7cff; color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn-secondary { flex:1; height:46px; border:1px solid #2b7cff; border-radius:10px; background:#fff; color:#2b7cff; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn-danger { flex:1; height:46px; border:1px solid #fca5a5; border-radius:10px; background:#fff; color:#dc2626; font-size:15px; font-weight:600; cursor:pointer; }
+
+  /* 表单 */
+  .f-sec { font-size:12px; font-weight:600; color:#98a2b3; margin:18px 0 2px; letter-spacing:.5px; }
+  .f-row { display:flex; align-items:flex-start; gap:10px; padding:11px 0; border-bottom:1px solid #f4f5f7; }
+  .f-row > label { flex:none; width:76px; font-size:13px; color:#66707c; padding-top:6px; }
+  .req { color:#dc2626; margin-left:2px; }
+  .f-in { flex:1; min-width:0; width:100%; border:0; outline:none; font-size:14px; color:#222; padding:5px 0; background:transparent; font-family:inherit; }
+  .f-in::placeholder { color:#b6bfcc; }
+  .f-pick { flex:1; min-width:0; font-size:14px; color:#222; padding:5px 0; cursor:pointer; display:flex; align-items:center; }
+  .f-pick::after { content:"›"; margin-left:auto; color:#b6bfcc; font-size:15px; }
+  .f-ph { color:#b6bfcc; }
+  .f-area {
+    width:100%; min-height:76px; border:1px solid #e8ecf3; border-radius:8px;
+    padding:9px 10px; font-size:13px; color:#3a3f47; line-height:1.6; resize:vertical;
+    outline:none; background:#fbfcfe; font-family:inherit;
+  }
+  .f-area::placeholder { color:#b6bfcc; }
+
+  .ph-grid { display:flex; flex-wrap:wrap; gap:8px; }
+  .ph { width:68px; height:68px; border-radius:8px; background:#eef2f8; display:flex; align-items:center; justify-content:center; font-size:11px; color:#8895a7; position:relative; }
+  .ph-del { position:absolute; top:-5px; right:-5px; width:17px; height:17px; line-height:17px; text-align:center; border-radius:50%; background:#dc2626; color:#fff; font-size:10px; }
+  .ph-add { border:1px dashed #bcd6ff; background:#f7fbff; color:#2b7cff; font-size:22px; font-weight:300; cursor:pointer; }
+  .ph-tip { font-size:11px; color:#98a2b3; margin-top:6px; }
+
+  .pk-item { display:flex; align-items:center; padding:13px 4px; border-bottom:1px solid #f4f5f7; font-size:14px; color:#222; cursor:pointer; }
+  .pk-item.on { color:#2b7cff; font-weight:600; }
+  .pk-item .pk-lead { font-size:11px; color:#98a2b3; margin-left:auto; }
+  .pk-ck { margin-left:8px; color:#2b7cff; font-size:13px; }
+
+  .cfm-sheet { max-height:none; }
+  .cfm-body { padding:18px 16px 8px; }
+  .cfm-title { font-size:15px; font-weight:600; color:#222; }
+  .cfm-desc { font-size:13px; color:#66707c; margin-top:8px; line-height:1.6; }
+
+  .toast { position:absolute; left:50%; bottom:110px; transform:translateX(-50%); background:rgba(0,0,0,.78); color:#fff; font-size:13px; padding:9px 16px; border-radius:18px; opacity:0; pointer-events:none; transition:opacity .18s; z-index:80; white-space:nowrap; }
+  .toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar">
+    <span>9:41</span>
+    <div class="right"><span>信号</span><span>Wi-Fi</span><span>100%</span></div>
+  </div>
+  <div class="navbar">
+    <span class="back" onclick="goBack()">‹ 现场管理</span>
+    <span class="title">隐蔽工程</span>
+    <span class="right" onclick="openForm(null)">+ 新增</span>
+  </div>
+
+  <div class="body" id="bodyWrap">
+    <div class="search-wrap">
+      <input class="search" id="kw" placeholder="搜索项目 / 备注 / 日期" oninput="render()">
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="list-head" id="listHead"></div>
+    <div id="list"></div>
+    <div class="add-row" onclick="openForm(null)">+ 新增隐蔽工程</div>
+  </div>
+
+  <!-- 新增 / 编辑 -->
+  <div class="mask" id="formMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="formTitle">新增隐蔽工程</div>
+        <div class="sheet-close" onclick="closeForm()">关闭</div>
+      </div>
+      <div class="sheet-body" id="formBody"></div>
+      <div class="sheet-foot" id="formFoot"></div>
+    </div>
+  </div>
+
+  <!-- 项目选择 -->
+  <div class="mask" id="projMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title">选择项目</div>
+        <div class="sheet-close" onclick="closeProjPick()">关闭</div>
+      </div>
+      <div class="sheet-body">
+        <input class="search" id="projKw" placeholder="搜索项目名称 / 负责人" oninput="renderProjList()" style="margin:8px 0 4px;">
+        <div id="projList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认 -->
+  <div class="mask" id="cfmMask">
+    <div class="sheet cfm-sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="cfmTitle">删除记录</div>
+        <div class="sheet-close" onclick="closeCfm()">关闭</div>
+      </div>
+      <div class="cfm-body">
+        <div class="cfm-desc" id="cfmDesc"></div>
+      </div>
+      <div class="sheet-foot">
+        <button class="btn-secondary" onclick="closeCfm()">取消</button>
+        <button class="btn-danger" id="cfmOk">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ========== 基础 ==========
+const WDS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+const TODAY = new Date();
+function dOf(off) { return new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + off); }
+function pad2(n) { return n < 9 ? "0" + n : "" + (n + 0); }
+function stampOf(off) {
+  const d = dOf(off);
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+}
+function todayStr() { return stampOf(0); }
+function dShort(ds) {           // "2026-11-16" -> "11/16 周一"
+  const p = ds.split("-");
+  const d = new Date(+p[0], +p[1] - 1, +p[2]);
+  return (+p[1]) + "/" + (+p[2]) + " " + WDS[d.getDay()];
+}
+function weekRange() {          // 本周一 ~ 本周日
+  const day = TODAY.getDay() === 0 ? 7 : TODAY.getDay();
+  return [stampOf(1 - day), stampOf(7 - day)];
+}
+
+// ========== 项目 ==========
+const PROJECTS = [
+  { code: "xm1", name: "园垄线10kV线路改造工程", leader: "李志强" },
+  { code: "xm2", name: "珠东线配电自动化改造", leader: "周国华" },
+  { code: "xm3", name: "高速杆迁瓦窑坪支线工程", leader: "陈立军" },
+  { code: "xm4", name: "嘉禾县农网巩固提升工程", leader: "刘建国" },
+  { code: "xm5", name: "苏仙区小区供配电改造工程", leader: "张强" }
+];
+
+function projOf(code) { return PROJECTS.find(p => p.code === code); }
+function projName(code) { const p = projOf(code); return p ? p.name : code; }
+
+// ========== 台账（日完工汇入 + 本页录入）==========
+let RECORDS = [
+  { id: 1, proj: "xm1", date: stampOf(-6), source: "daily",
+    note: "环网箱基础钢筋绑扎，双层双向 φ12，保护层 40mm，绑扎间距合格，浇筑前已拍照留存。", photos: 3 },
+  { id: 2, proj: "xm1", date: stampOf(-2), source: "daily",
+    note: "HA-2 环网箱基础混凝土浇筑完成，C30，方量 6.5m³，浇筑前验槽合格，试块留置 2 组。", photos: 4 },
+  { id: 3, proj: "xm2", date: stampOf(-1), source: "daily",
+    note: "配电终端二次回路隐蔽前检查：屏蔽双绞线敷设到位，端子压接牢固，屏蔽层单端接地。", photos: 2 },
+  { id: 4, proj: "xm3", date: stampOf(-4), source: "daily",
+    note: "深基坑支护完成，钢板桩打入 4.2m，坑底排水沟已做，坑边 1m 内无堆土。", photos: 5 },
+  { id: 5, proj: "xm3", date: stampOf(0), source: "manual",
+    note: "瓦窑坪支线 #12 杆基础回填分层夯实，每层 30cm，回填土无杂物、无冻土。", photos: 2 },
+  { id: 6, proj: "xm1", date: stampOf(-9), source: "daily",
+    note: "电缆沟盖板下电缆敷设隐蔽：10kV 电缆 2 回，弯曲半径 ≥15D，挂牌齐全。", photos: 3 }
+];
+
+// ========== 状态 ==========
+let filter = "all";       // all | week
+let editingId = null;     // null = 新增
+let form = { proj: "", date: "", note: "", photos: 0 };
+let cfmId = null;
+let collapsed = {};       // 项目卡折叠状态
+
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove("show"), 1800);
+}
+function goBack() { location.href = "../site.html"; }
+
+// ========== 列表渲染 ==========
+function matchKw(r) {
+  const kw = (document.getElementById("kw").value || "").trim().toLowerCase();
+  if (!kw) return true;
+  return (projName(r.proj) + " " + r.note + " " + r.date).toLowerCase().indexOf(kw) >= 0;
+}
+function currentRows() {
+  const [ws, we] = weekRange();
+  return RECORDS.filter(r => matchKw(r) && (filter === "week" ? (r.date >= ws && r.date <= we) : true));
+}
+function render() {
+  const all = RECORDS.filter(matchKw);
+  const [ws, we] = weekRange();
+  const weekN = all.filter(r => r.date >= ws && r.date <= we).length;
+
+  document.getElementById("chips").innerHTML = `
+    <div class="fchip ${filter === "all" ? "on" : ""}" onclick="setFilter('all')">全部 ${all.length}</div>
+    <div class="fchip ${filter === "week" ? "on" : ""}" onclick="setFilter('week')">本周 ${weekN}</div>`;
+
+  const rows = currentRows();
+  const projN = new Set(rows.map(r => r.proj)).size;
+  const photoN = rows.reduce((s, r) => s + (r.photos || 0), 0);
+  document.getElementById("listHead").textContent =
+    `共 ${rows.length} 条 · 覆盖 ${projN} 个项目 · 照片 ${photoN} 张`;
+
+  const list = document.getElementById("list");
+  if (!rows.length) {
+    list.innerHTML = `<div class="empty">暂无隐蔽工程记录<br>可点下方「+ 新增隐蔽工程」录入，或到日完工提交后自动汇入</div>`;
+    return;
+  }
+
+  // 按项目分组，项目按最新记录日期倒序
+  const groups = PROJECTS.map(p => {
+    const rs = rows.filter(r => r.proj === p.code).sort((a, b) => b.date.localeCompare(a.date));
+    return { p: p, rows: rs, latest: rs.length ? rs[0].date : "" };
+  }).filter(g => g.rows.length).sort((a, b) => b.latest.localeCompare(a.latest));
+
+  list.innerHTML = groups.map(g => {
+    const photos = g.rows.reduce((s, r) => s + (r.photos || 0), 0);
+    const open = !collapsed[g.p.code];
+    let inner = "";
+    if (open) {
+      inner = g.rows.map(r => `
+        <div class="h-item" onclick="openForm(${r.id})">
+          <div class="h-top">
+            <span class="h-date">${dShort(r.date)}</span>
+            <span class="src ${r.source === "daily" ? "src-daily" : "src-manual"}">${r.source === "daily" ? "日完工" : "台账录入"}</span>
+            <div class="h-acts">
+              <span class="h-edit" onclick="event.stopPropagation();openForm(${r.id})">编辑</span>
+              <span class="h-del" onclick="event.stopPropagation();askDelete(${r.id})">删除</span>
+            </div>
+          </div>
+          <div class="h-note">${r.note || "—"}</div>
+          <div class="h-ph">照片 <b>${r.photos || 0}</b> 张 · 点击查看或修改</div>
+        </div>`).join("");
+    }
+    return `<div class="g-card">
+      <div class="g-head" onclick="toggleGroup('${g.p.code}')">
+        <div class="g-title">${g.p.name}</div>
+        <div class="g-sum"><b>${g.rows.length}</b> 条 · <b>${photos}</b> 张照片</div>
+        <div class="g-arrow">${open ? "▾" : "▸"}</div>
+      </div>
+      ${inner}
+    </div>`;
+  }).join("");
+}
+function setFilter(f) { filter = f; render(); }
+function toggleGroup(code) { collapsed[code] = !collapsed[code]; render(); }
+
+// ========== 新增 / 编辑表单 ==========
+function openForm(id) {
+  editingId = id;
+  if (id === null) {
+    form = { proj: "", date: todayStr(), note: "", photos: 0 };
+  } else {
+    const r = RECORDS.find(x => x.id === id);
+    form = { proj: r.proj, date: r.date, note: r.note, photos: r.photos || 0 };
+  }
+  document.getElementById("formTitle").textContent = id === null ? "新增隐蔽工程" : "编辑隐蔽工程";
+  document.getElementById("formFoot").innerHTML = `
+    <button class="btn-secondary" onclick="closeForm()">取消</button>
+    <button class="btn-primary" onclick="saveForm()">保存</button>`;
+  renderForm();
+  document.getElementById("formMask").classList.add("open");
+}
+function renderForm() {
+  const p = projOf(form.proj);
+  document.getElementById("formBody").innerHTML = `
+    <div class="f-sec">基本信息</div>
+    <div class="f-row">
+      <label>项目<span class="req">*</span></label>
+      <div class="f-pick ${p ? "" : "f-ph"}" onclick="openProjPick()">${p ? p.name : "请选择项目"}</div>
+    </div>
+    <div class="f-row">
+      <label>日期<span class="req">*</span></label>
+      <input class="f-in" type="date" id="fDate" value="${form.date}" max="${todayStr()}" onchange="form.date=this.value">
+    </div>
+    <div class="f-sec">隐蔽内容</div>
+    <div class="f-row" style="border-bottom:0;align-items:flex-start;">
+      <label>备注<span class="req">*</span></label>
+      <div style="flex:1;min-width:0">
+        <textarea class="f-area" id="fNote" placeholder="隐蔽部位、做法、材料规格、验收结论…">${form.note}</textarea>
+      </div>
+    </div>
+    <div class="f-row" style="border-bottom:0;align-items:flex-start;">
+      <label>照片<span class="req">*</span></label>
+      <div style="flex:1;min-width:0" id="phBox"></div>
+    </div>`;
+  renderPhotos();
+}
+function renderPhotos() {
+  const box = document.getElementById("phBox");
+  if (!box) return;
+  let s = '<div class="ph-grid">';
+  for (let i = 0; i < form.photos; i++) {
+    s += `<div class="ph">照片 ${i + 1}<span class="ph-del" onclick="delPhoto()">✕</span></div>`;
+  }
+  if (form.photos < 6) s += `<div class="ph ph-add" onclick="addPhoto()">+</div>`;
+  s += "</div>";
+  s += `<div class="ph-tip">隐蔽工程必传照片，至少 1 张、最多 6 张（当前 ${form.photos} 张）</div>`;
+  box.innerHTML = s;
+}
+function addPhoto() {
+  if (form.photos >= 6) { toast("最多 6 张"); return; }
+  form.photos++;
+  renderPhotos();
+  toast("已添加 1 张照片（演示）");
+}
+function delPhoto() {
+  if (form.photos <= 0) return;
+  form.photos--;
+  renderPhotos();
+}
+function closeForm() {
+  form.note = (document.getElementById("fNote") || {}).value || form.note;
+  document.getElementById("formMask").classList.remove("open");
+  editingId = null;
+}
+function saveForm() {
+  const note = (document.getElementById("fNote").value || "").trim();
+  const date = (document.getElementById("fDate").value || "").trim();
+  if (!form.proj) { toast("请选择项目"); return; }
+  if (!date) { toast("请选择日期"); return; }
+  if (!note) { toast("请填写备注"); return; }
+  if (form.photos < 1) { toast("隐蔽工程必须上传至少 1 张照片"); return; }
+
+  if (editingId === null) {
+    const id = (RECORDS.reduce((m, r) => Math.max(m, r.id), 0)) + 1;
+    RECORDS.push({ id: id, proj: form.proj, date: date, note: note, photos: form.photos, source: "manual" });
+    toast("已新增隐蔽工程记录");
+  } else {
+    const r = RECORDS.find(x => x.id === editingId);
+    r.proj = form.proj; r.date = date; r.note = note; r.photos = form.photos;
+    toast("已更新隐蔽工程记录");
+  }
+  document.getElementById("formMask").classList.remove("open");
+  editingId = null;
+  render();
+}
+
+// ========== 项目选择 ==========
+function openProjPick() {
+  document.getElementById("projKw").value = "";
+  renderProjList();
+  document.getElementById("projMask").classList.add("open");
+}
+function renderProjList() {
+  const kw = (document.getElementById("projKw").value || "").trim().toLowerCase();
+  const rows = PROJECTS.filter(p => !kw || (p.name + " " + p.leader).toLowerCase().indexOf(kw) >= 0);
+  document.getElementById("projList").innerHTML = rows.length
+    ? rows.map(p => `<div class="pk-item ${form.proj === p.code ? "on" : ""}" data-code="${p.code}" onclick="pickProj(this.dataset.code)">
+        ${p.name}<span class="pk-lead">负责人 ${p.leader}</span>
+        ${form.proj === p.code ? '<span class="pk-ck">已选</span>' : ""}
+      </div>`).join("")
+    : `<div class="empty" style="margin:24px 0;">没有匹配的项目</div>`;
+}
+function pickProj(code) {
+  form.proj = code;
+  closeProjPick();
+  renderForm();
+}
+function closeProjPick() { document.getElementById("projMask").classList.remove("open"); }
+
+// ========== 删除 ==========
+function askDelete(id) {
+  const r = RECORDS.find(x => x.id === id);
+  if (!r) return;
+  cfmId = id;
+  document.getElementById("cfmDesc").innerHTML =
+    `确定删除 <b>${projName(r.proj)}</b> 于 <b>${dShort(r.date)}</b> 的这条隐蔽工程记录？<br>记录包含 ${r.photos || 0} 张照片，删除后不可恢复。`;
+  document.getElementById("cfmOk").onclick = function () { doDelete(); };
+  document.getElementById("cfmMask").classList.add("open");
+}
+function doDelete() {
+  const r = RECORDS.find(x => x.id === cfmId);
+  const wasDaily = r && r.source === "daily";
+  RECORDS = RECORDS.filter(x => x.id !== cfmId);
+  closeCfm();
+  render();
+  toast(wasDaily ? "已删除日完工汇入的这条记录" : "已删除隐蔽工程记录");
+}
+function closeCfm() { document.getElementById("cfmMask").classList.remove("open"); cfmId = null; }
+
+// ========== 启动 ==========
+render();
+</script>
+</body>
+</html>

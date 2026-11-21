@@ -34,35 +34,79 @@
   /* hero */
   .hero {
     background: linear-gradient(135deg, #2b7cff 0%, #1f6ae0 100%);
-    color: #fff; padding: 12px 18px 16px; flex: none;
+    color: #fff; padding: 8px 16px 9px; flex: none;
   }
   .hero-title { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 10px; }
   .hero-title-row {
     display: flex; justify-content: space-between; align-items: center;
-    font-size: 16px; font-weight: 600; margin-bottom: 10px;
+    font-size: 15px; font-weight: 600; margin-bottom: 5px;
   }
   .publish-status {
-    background: rgba(255,255,255,.25); padding: 2px 10px; border-radius: 10px;
-    font-size: 12px; font-weight: 500;
+    background: rgba(255,255,255,.25); padding: 2px 9px; border-radius: 10px;
+    font-size: 11px; font-weight: 500;
   }
   .share-btn {
-    background: #fff; color: #2b7cff; padding: 4px 12px; border-radius: 14px;
-    font-size: 12px; font-weight: 600; cursor: pointer;
+    background: #fff; color: #2b7cff; padding: 3px 10px; border-radius: 12px;
+    font-size: 11px; font-weight: 600; cursor: pointer;
   }
-  .hero-date-row { display: flex; align-items: center; gap: 10px; }
-  .hero-date { font-size: 26px; font-weight: 700; }
+  .hero-date-row { display: flex; align-items: center; gap: 8px; }
+  .hero-date { font-size: 21px; font-weight: 700; white-space: nowrap; line-height: 1.15; }
   .hero-tag {
-    background: rgba(255,255,255,.25); padding: 2px 10px;
-    border-radius: 10px; font-size: 12px;
+    background: rgba(255,255,255,.25); padding: 1px 8px;
+    border-radius: 9px; font-size: 11px;
   }
-  .hero-sub { font-size: 12px; opacity: .9; margin-top: 4px; }
-  .hero-main-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-  .hero-stats { display: flex; gap: 12px; flex: none; }
-  .hero-stat { text-align: center; }
-  .hero-stat .num { font-size: 18px; font-weight: 700; line-height: 1.1; }
-  .hero-stat .lbl { font-size: 10px; opacity: .9; margin-top: 2px; }
+  .hero-sub { font-size: 12px; opacity: .9; margin-top: 2px; line-height: 1.35; }
+  .hero-main-row { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+  .hero-main-row > div:first-child { min-width: 0; }
+  .hero-stats { display: flex; justify-content: space-between; gap: 6px; flex: none; width: 100%; }
+  .hero-stat { text-align: center; flex: 1; min-width: 0; }
+  .hero-stat .num { font-size: 16px; font-weight: 700; line-height: 1.05; }
+  .hero-stat .lbl { font-size: 10px; opacity: .9; margin-top: 1px; }
 
   /* date strip */
+  .grp-tabs {
+    background: #fff; padding: 9px 10px; flex: none;
+    display: flex; gap: 8px; align-items: center;
+    border-bottom: 1px solid #eee; overflow-x: auto;
+  }
+  .grp-tabs::-webkit-scrollbar { display: none; }
+  .grp-tab {
+    flex: none; display: flex; align-items: center; gap: 5px;
+    padding: 7px 12px; border-radius: 16px; background: #f3f5f9;
+    font-size: 13px; color: #55606f; border: 1px solid transparent; cursor: pointer;
+  }
+  .grp-tab .n {
+    font-size: 11px; color: #8a93a1; background: #fff; border-radius: 8px;
+    padding: 0 5px; line-height: 16px;
+  }
+  .grp-tab.on { background: #eaf1ff; color: #2b7cff; font-weight: 600; border-color: #c9dcff; }
+  .grp-tab.on .n { color: #2b7cff; }
+
+  /* 全部组汇总卡 */
+  .gsum-card {
+    background: #fff; margin: 10px 12px; border-radius: 12px; padding: 13px 14px;
+  }
+  .gsum-top { display: flex; align-items: center; justify-content: space-between; }
+  .gsum-name { font-size: 15px; font-weight: 600; color: #222; }
+  .gsum-st { font-size: 11px; padding: 2px 8px; border-radius: 9px; font-weight: 600; }
+  .gs-ok { background: #e8f7ec; color: #1f9254; }
+  .gs-draft { background: #fdf3dd; color: #a9761c; }
+  .gsum-sub { font-size: 11.5px; color: #8a93a1; margin-top: 5px; line-height: 1.6; }
+  .gsum-nums { display: flex; gap: 7px; margin-top: 9px; flex-wrap: wrap; }
+  .gsum-chip {
+    font-size: 11px; background: #f3f5f9; color: #55606f; border-radius: 8px; padding: 2px 8px;
+  }
+  .gsum-chip.hl { background: #eaf1ff; color: #2b7cff; }
+  .gsum-foot {
+    margin-top: 9px; padding-top: 8px; border-top: 1px dashed #eceff4;
+    font-size: 11px; color: #8a93a1; display: flex; justify-content: space-between; align-items: center;
+  }
+  .gsum-foot .go { color: #2b7cff; font-weight: 500; }
+  .borrow-tip {
+    margin: 10px 12px 0; padding: 9px 11px; border-radius: 9px;
+    background: #fff7e6; border: 1px solid #ffe2b0; font-size: 11.5px; color: #9a6226; line-height: 1.6;
+  }
+
   .date-strip {
     background: #fff; padding: 10px 8px; flex: none;
     display: flex; gap: 6px; align-items: center;
@@ -132,6 +176,27 @@
   .subcontract .pick-row:last-child { border-bottom: none; }
   .subcontract .pick-row > *:nth-child(2) { margin-left: auto; max-width: 68%; text-align: right; }
   .subcontract .pick-row .pick-val { margin-left: auto; }
+  /* 机械申请进度 */
+  .mech-line {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    margin-top: 8px; padding: 8px 10px; border-radius: 10px;
+    background: #f8fafc; border: 1px solid #eef1f5;
+    font-size: 11px; color: #666; line-height: 1.5;
+  }
+  .mech-line .ml-k { color: #98a2b3; }
+  .ms-chip { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .ms-wait { background: #fff4e8; color: #b45309; }
+  .ms-part { background: #fff4e8; color: #b45309; }
+  .ms-plan { background: #e3f0ff; color: #1b5fd0; }
+  .ms-on   { background: #e7f7ee; color: #12805c; }
+  .ms-done { background: #eef1f5; color: #667085; }
+  .ms-rej  { background: #fdecec; color: #d92d20; }
+  .ms-none { background: #f3f4f6; color: #98a2b3; }
+  .mech-apply {
+    margin-left: auto; font-size: 11px; color: #2b7cff; border: 1px solid #bcd7ff;
+    background: #fff; border-radius: 12px; padding: 3px 10px; cursor: pointer; flex: none;
+  }
+  .mech-go { margin-left: auto; font-size: 11px; color: #2b7cff; cursor: pointer; flex: none; }
 
   /* bottom bar */
   .bottom-bar {
@@ -246,7 +311,8 @@
   }
   .sheet-head .t { font-size: 16px; font-weight: 600; }
   .sheet-head .x { color: #999; font-size: 22px; cursor: pointer; padding: 0 8px; line-height: 1; }
-  .sheet-body { overflow-y: auto; padding: 10px 16px; }
+  .sheet-body { overflow-y: auto; padding: 10px 16px; flex: 1; }
+  .sheet-foot { flex: none; padding: 10px 16px 14px; border-top: 1px solid #f0f2f5; display: flex; gap: 10px; background: #fff; }
 
   /* 浮层选择卡（项目/人员） */
   .card-sheet {
@@ -452,16 +518,16 @@
       </div>
       <div class="hero">
         <div class="hero-title-row">
-          <span>日计划</span>
+          <span id="heroTitle">日计划</span>
           <span style="display:flex;gap:10px;align-items:center;font-size:12px;">
             <span class="publish-status" id="pubStatus">● 已发布</span>
-            <span class="share-btn" onclick="toast('已调起微信转发：选工作群即可')">📤 分享</span>
+            <span class="share-btn" id="shareBtn" onclick="sharePlan()">📤 分享</span>
           </span>
         </div>
         <div class="hero-main-row">
           <div>
             <div class="hero-date-row">
-              <span class="hero-date" id="heroDate">11月13日</span>
+              <span class="hero-date" id="heroDate"></span>
               <span class="hero-tag" id="heroTag">今天</span>
             </div>
             <div class="hero-sub" id="heroDept">周五 · 电网建设运维中心项目一部</div>
@@ -470,9 +536,12 @@
             <div class="hero-stat"><div class="num" id="statProj">2</div><div class="lbl">涉及项目</div></div>
             <div class="hero-stat"><div class="num" id="statTask">3</div><div class="lbl">作业内容</div></div>
             <div class="hero-stat"><div class="num" id="statPeople">14</div><div class="lbl">上场人员</div></div>
+            <div class="hero-stat"><div class="num" id="statMech">0</div><div class="lbl">机械待安排</div></div>
           </div>
         </div>
       </div>
+
+      <div class="grp-tabs" id="grpTabs"></div>
 
       <div class="date-strip" id="dateStrip"></div>
 
@@ -490,8 +559,8 @@
       </div>
       <div style="flex:1; overflow-y:auto; padding-bottom: 12px;" id="newBody"></div>
       <div class="bottom-bar">
-        <button class="btn-primary" style="margin-bottom:8px;" onclick="publishPlan()">发布日计划</button>
-        <button class="btn-secondary" onclick="toast('已存草稿，下次可继续编辑')">存草稿（暂不发布）</button>
+        <button class="btn-primary" style="margin-bottom:8px;" onclick="publishPlan()">提交审核</button>
+        <button class="btn-secondary" onclick="toast('已存草稿，下次可继续编辑')">存草稿</button>
       </div>
     </section>
 
@@ -526,10 +595,15 @@
       </div>
       <div class="sheet-body">
         <div style="margin-bottom:12px;">
-          <div style="font-size:13px;color:#888;margin-bottom:6px;"><span style="color:#e23b3b;">*</span> 项目</div>
+          <div style="font-size:13px;color:#888;margin-bottom:6px;"><span style="color:#e23b3b;">*</span> 项目（选一次，本页多条任务都归这个项目）</div>
           <input id="fProject" placeholder="点击选择项目" readonly onclick="openProjPicker()"
             style="width:100%;height:44px;border:1px solid #e0e3e8;border-radius:10px;padding:0 12px;font-size:15px;background:#fafbfc;box-sizing:border-box;color:#222;">
         </div>
+        <div id="pendingTaskBox" style="display:none;margin-bottom:12px;">
+          <div style="font-size:12px;color:#888;margin-bottom:6px;">本页已添加 <b id="pendingTaskCount" style="color:#2b7cff;">0</b> 条任务（同一项目）</div>
+          <div id="pendingTaskList"></div>
+        </div>
+        <div id="nextTaskLabel" style="display:none;font-size:12px;color:#888;margin:-4px 0 10px;padding-top:9px;border-top:1px dashed #eceff3;">正在填写下一条任务</div>
         <div style="margin-bottom:12px;">
           <div style="font-size:13px;color:#888;margin-bottom:6px;"><span style="color:#e23b3b;">*</span> 作业内容</div>
           <input id="fTaskName" placeholder="如：放线、立杆、基础开挖"
@@ -564,9 +638,8 @@
         <div style="margin-bottom:12px;">
           <div style="font-size:13px;color:#888;margin-bottom:6px;">机械安排（选类型 + 台数，每台单独安排负责人）</div>
           <div id="machList"></div>
-          <div style="display:flex;gap:8px;margin-top:8px;">
-            <button class="btn-ghost" style="flex:1.4;height:38px;font-size:13px;" onclick="openMachTypePick()">选择机械（选数量）</button>
-            <button class="btn-ghost" style="flex:1;height:38px;font-size:13px;" onclick="openMachInput()">+ 手动录入</button>
+          <div style="margin-top:8px;">
+            <button class="btn-ghost" style="width:100%;height:38px;font-size:13px;" onclick="openMachTypePick()">选择机械（选数量）</button>
           </div>
         </div>
         <div style="margin-bottom:16px;">
@@ -574,7 +647,10 @@
           <div id="taskCrew"></div>
           <input id="fPeople" type="hidden">
         </div>
-        <button class="btn-primary" onclick="saveTask()">保存任务</button>
+      </div>
+      <div class="sheet-foot">
+        <button class="btn-ghost" id="addMoreTaskBtn" style="flex:1;height:46px;font-size:15px;" onclick="addPendingTask()">+ 再加一条任务</button>
+        <button class="btn-primary" id="saveTaskBtn" style="flex:1.1;margin:0;" onclick="saveTask()">保存任务</button>
       </div>
     </div>
 
@@ -678,10 +754,24 @@
         <div class="picker-tab" data-f="out" onclick="setCrewFilter(this)">外包</div>
         <div class="picker-tab" data-f="tech" onclick="setCrewFilter(this)">技工</div>
         <div class="picker-tab" data-f="help" onclick="setCrewFilter(this)">副工</div>
+        <div class="picker-tab" data-f="grid" onclick="setCrewFilter(this)">国网准入</div>
       </div>
       <div class="cs-list" id="leadList" style="padding:0 16px 8px;"></div>
       <div style="padding:10px 16px 16px;background:#fff;">
         <button class="btn-primary" onclick="closeCrewPick()">确定选择</button>
+      </div>
+    </div>
+
+    <!-- ========== 机械申请进度 浮层 ========== -->
+    <div class="mask" id="mechMask" style="z-index:70;" onclick="closeMechProgress()"></div>
+    <div class="card-sheet" id="mechSheet" style="z-index:71;padding-bottom:0;">
+      <div class="cs-head">
+        <div class="t">机械申请进度</div>
+        <div class="x" onclick="closeMechProgress()">关闭</div>
+      </div>
+      <div class="cs-list" id="mechBody" style="padding:4px 16px 10px;max-height:54vh;"></div>
+      <div style="padding:10px 16px 16px;background:#fff;">
+        <button class="btn-primary" style="width:100%;" onclick="closeMechProgress()">关闭</button>
       </div>
     </div>
 
@@ -741,6 +831,7 @@
         <div class="picker-tab" data-f="out" onclick="setPickerFilter(this)">外包</div>
         <div class="picker-tab" data-f="tech" onclick="setPickerFilter(this)">技工</div>
         <div class="picker-tab" data-f="help" onclick="setPickerFilter(this)">副工</div>
+        <div class="picker-tab" data-f="grid" onclick="setPickerFilter(this)">国网准入</div>
       </div>
       <div class="picker-list" id="pickerList"></div>
       <div style="padding:10px 16px 20px; background:#fff; border-top:1px solid #eee;">
@@ -817,86 +908,340 @@ const VEHICLE_LIB = [
 
 // ===== 劳务人员库 =====
 const WORKERS = [
-  { name: "刘文兵", kind: "技工", src: "self", ins: "ok", insText: "保险有效" },
-  { name: "张喜明", kind: "技工", src: "self", ins: "ok", insText: "保险有效" },
-  { name: "周正权", kind: "技工", src: "out",  ins: "ok", insText: "保险有效" },
-  { name: "唐良辉", kind: "技工", src: "out",  ins: "warn", insText: "保险11/18到期" },
-  { name: "朱伟林", kind: "技工", src: "self", ins: "ok", insText: "保险有效" },
-  { name: "黄勇",   kind: "技工", src: "out",  ins: "ok", insText: "保险有效" },
-  { name: "黄政",   kind: "技工", src: "out",  ins: "bad", insText: "保险已过期" },
-  { name: "何建明", kind: "技工", src: "self", ins: "ok", insText: "保险有效" },
-  { name: "黄智高", kind: "副工", src: "out",  ins: "ok", insText: "保险有效" },
-  { name: "刘能",   kind: "副工", src: "self", ins: "ok", insText: "保险有效" },
-  { name: "张强",   kind: "副工", src: "self", ins: "warn", insText: "保险11/20到期" },
-  { name: "何文波", kind: "现场负责人", src: "self", ins: "ok", insText: "保险有效" },
-  { name: "廖贵东", kind: "现场负责人", src: "out",  ins: "ok", insText: "保险有效" },
-  { name: "张三",   kind: "现场负责人", src: "self", ins: "ok", insText: "保险有效" },
-  { name: "李四",   kind: "现场负责人", src: "self", ins: "ok", insText: "保险有效" }
+  { name: "刘文兵", kind: "技工", src: "self", ins: "ok", insText: "保险有效", grid: true },
+  { name: "张喜明", kind: "技工", src: "self", ins: "ok", insText: "保险有效", grid: true },
+  { name: "周正权", kind: "技工", src: "out",  ins: "ok", insText: "保险有效", grid: true },
+  { name: "唐良辉", kind: "技工", src: "out",  ins: "warn", insText: "保险11/18到期", grid: true },
+  { name: "朱伟林", kind: "技工", src: "self", ins: "ok", insText: "保险有效", grid: false },
+  { name: "黄勇",   kind: "技工", src: "out",  ins: "ok", insText: "保险有效", grid: true },
+  { name: "黄政",   kind: "技工", src: "out",  ins: "bad", insText: "保险已过期", grid: false },
+  { name: "何建明", kind: "技工", src: "self", ins: "ok", insText: "保险有效", grid: true },
+  { name: "黄智高", kind: "副工", src: "out",  ins: "ok", insText: "保险有效", grid: true },
+  { name: "刘能",   kind: "副工", src: "self", ins: "ok", insText: "保险有效", grid: true },
+  { name: "张强",   kind: "副工", src: "self", ins: "warn", insText: "保险11/20到期", grid: false },
+  { name: "何文波", kind: "现场负责人", src: "self", ins: "ok", insText: "保险有效", grid: true },
+  { name: "廖贵东", kind: "现场负责人", src: "out",  ins: "ok", insText: "保险有效", grid: true },
+  { name: "张三",   kind: "现场负责人", src: "self", ins: "ok", insText: "保险有效", grid: true },
+  { name: "李四",   kind: "现场负责人", src: "self", ins: "ok", insText: "保险有效", grid: false }
 ];
 
 // ===== 历史/未来日计划数据 =====
 // 键：M/D
+// 日期键统一按本机「今天」动态生成：打开原型当天就是今天，明天/后天随之顺延
+const WDS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+const TODAY = new Date();
+function dtOf(off) { return new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + off); }
+function mOf(off) { const d = dtOf(off); return (d.getMonth() + 1) + "/" + d.getDate(); }
+function wOf(off) { return WDS[dtOf(off).getDay()]; }
+
+// 本周范围：本周一 ~ 本周日（日计划只在本周内从周计划自动带出）
+const MON_OFF = -((TODAY.getDay() + 6) % 7);
+function wk(n) { return mOf(MON_OFF + n); }
+function inThisWeek(key) {
+  for (let i = 0; i < 7; i++) { if (mOf(MON_OFF + i) === key) return true; }
+  return false;
+}
+
 const PLANS = {
-  "11/08": samplePlanA(),
-  "11/09": samplePlanA(),
-  "11/10": samplePlanB(),
-  "11/11": samplePlanB(),
-  "11/12": samplePlanA(),
-  "11/13": samplePlanB(),  // 今天
-  "11/14": samplePlanA(),  // 明天（默认）
-  // 11/15、11/16 故意留空
+  [mOf(-9)]: samplePlanA(),
+  [mOf(-8)]: samplePlanA(),
+  [mOf(-7)]: samplePlanB(),
+  [mOf(-6)]: samplePlanB(),
+  [mOf(-5)]: samplePlanA(),
+  [mOf(0)]: samplePlanB(),   // 今天
+  // 本周其他天故意留空：由周计划自动带出（默认未发布，可改）
 };
 
-// ===== 周计划粗排结果（一周里每天排了哪些项目的哪些任务）=====
+// ===== 周计划粗排结果（本周每天排了哪些项目的哪些任务）=====
 // 周计划只排到：项目、任务、风险、注意事项、负责人、技工总数、副工总数、车辆、机械
 const WEEK_ROUGH = {
-  "11/14": [
+  // 周一
+  [wk(0)]: [
     { proj: "郴州市湘南物流园屋顶分布式光伏及充电桩项目", task: "放线", risk: "IV", req: "戴好安全带，注意邻近带电体",
       leader: "张三", techTotal: 12, helperTotal: 4, car: "湘L·D1234", machine: "吊车1台、挖机1台" },
-    { proj: "高速杆迁瓦窑坪项目", task: "基础开挖、砌井", risk: "I", req: "注意基坑坍塌",
-      leader: "张三", techTotal: 4, helperTotal: 2, car: "", machine: "无" }
+    { proj: "苏仙区小区供配电改造工程", task: "装表接电", risk: "I", req: "接电前确认停电措施",
+      leader: "刘建国", techTotal: 4, helperTotal: 2, car: "湘L·T5678", machine: "无" }
   ],
-  "11/16": [
+  // 周二
+  [wk(1)]: [
+    { proj: "高速杆迁瓦窑坪项目", task: "基础开挖、砌井", risk: "I", req: "注意基坑坍塌",
+      leader: "张三", techTotal: 4, helperTotal: 2, car: "", machine: "无" },
     { proj: "园垄线 10kV 线路架设工程", task: "立杆", risk: "III", req: "立杆前确认基础强度，坑边禁止站人",
       leader: "黄志远", techTotal: 3, helperTotal: 2, car: "湘L·D1234", machine: "挖机1台、吊车1台" },
+    { proj: "嘉禾县工业园区双电源工程", task: "双电源接入", risk: "II", req: "确认两路电源闭锁可靠",
+      leader: "周国华", techTotal: 5, helperTotal: 2, car: "湘L·A2233", machine: "无" }
+  ],
+  // 周三
+  [wk(2)]: [
     { proj: "珠东线电缆通道改造", task: "顶管", risk: "IV", req: "注意基坑防护，作业前通风检测",
-      leader: "陈立军", techTotal: 4, helperTotal: 1, car: "湘L·T5678", machine: "顶管机1台" }
-  ]
+      leader: "陈立军", techTotal: 4, helperTotal: 1, car: "湘L·T5678", machine: "顶管机1台" },
+    { proj: "北湖区10kV增容改造", task: "变压器更换", risk: "III", req: "吊装区域设围栏，禁止无关人员进入",
+      leader: "黄志远", techTotal: 6, helperTotal: 3, car: "湘L·D1234", machine: "吊车1台" },
+    { proj: "宜章台区改造项目", task: "台区表计轮换", risk: "I", req: "轮换前拍照留存底度",
+      leader: "刘建国", techTotal: 4, helperTotal: 1, car: "湘L·A2233", machine: "无" }
+  ],
+  // 周四
+  [wk(3)]: [
+    { proj: "10kV 白露塘线迁改工程", task: "架线", risk: "II", req: "架线时注意跨越带电线路",
+      leader: "黄志远", techTotal: 8, helperTotal: 3, car: "湘L·D1234", machine: "无" },
+    { proj: "安仁农网巩固提升工程", task: "巡视", risk: "I", req: "巡视线路时注意交通与防蛇",
+      leader: "周国华", techTotal: 3, helperTotal: 1, car: "", machine: "无" }
+  ],
+  // 周五（今天）已有日计划，不再带出
+  // 周六
+  [wk(5)]: [
+    { proj: "汝城风电送出线路工程", task: "组塔", risk: "III", req: "高空作业系好安全带，地面设警戒",
+      leader: "何文波", techTotal: 10, helperTotal: 4, car: "湘L·D1234", machine: "吊车1台" },
+    { proj: "临武变电站扩建配套工程", task: "电缆敷设", risk: "II", req: "电缆盘支架稳固，防挤压",
+      leader: "刘建国", techTotal: 6, helperTotal: 2, car: "湘L·T5678", machine: "无" },
+    { proj: "宜章台区改造项目", task: "低电压治理", risk: "II", req: "作业前确认用户停电告知已到位",
+      leader: "周国华", techTotal: 5, helperTotal: 2, car: "湘L·A2233", machine: "无" }
+  ],
+  // 周日：周计划没排任务（演示「本周计划这天没有安排任务」空态）
 };
 
-// 发布状态：排好的是已发布；从周计划继承下来的是未发布
-const PLAN_STATUS = {
-  "11/08": "published", "11/09": "published", "11/10": "published", "11/11": "published",
-  "11/12": "published", "11/13": "published", "11/14": "published"
+// ===== 作业组（一个部门按专业分组，各组独立做日计划、独立审批）=====
+const GROUPS = [
+  { id: "pw", name: "配网组", leader: "黄志远" },
+  { id: "yx", name: "营销组", leader: "周国华" },
+];
+let currentGroup = "pw";              // 用户默认进入本组
+const AUDITOR = "王敏";               // 部门审核人（项目经理）
+// 项目归属哪个组（按项目编号固定）
+const PROJ_GROUP = {
+  "XM2026-018": "pw", "XM2026-023": "pw", "XM2026-035": "pw", "XM2026-041": "pw",
+  "XM2026-042": "pw", "XM2026-048": "pw", "XM2026-052": "pw", "XM2026-058": "pw",
+  "XM2026-031": "yx", "XM2026-045": "yx", "XM2026-055": "yx", "XM2026-061": "yx",
 };
-function planStatusOf(d) { return PLAN_STATUS[d] || "published"; }
+function projGroup(p) { return p.g || PROJ_GROUP[p.code] || "pw"; }
+function gName(id) { const g = GROUPS.find(x => x.id === id); return g ? g.name : ""; }
+function gLeader(id) { const g = GROUPS.find(x => x.id === id); return g ? g.leader : ""; }
+// 跨组借调（原型示例）：借出组为 from，借入组为 to
+const BORROW = {
+  [mOf(0) + "|pw"]: [{ from: "yx", n: 2, team: "电缆班" }],
+  [mOf(0) + "|yx"]: [{ to: "pw", n: 2, team: "电缆班" }],
+};
+function borrowOf(d, gid) { return (BORROW[d + "|" + gid] || [])[0] || null; }
 
-// 当天没有任何改动 => 用周计划粗排自动生成一份未发布的日计划（人员待细化）
+// 发布状态（按「日期|组」各自独立）
+const PLAN_STATUS = {};
+[-9, -8, -7, -6, -5, 0].forEach(o => {
+  const key = mOf(o);
+  if (o !== 0 && inThisWeek(key)) return;   // 本周内的天不打「已发布」，按带出未发布演示
+  GROUPS.forEach(g => { PLAN_STATUS[key + "|" + g.id] = "published"; });
+});
+function planStatusOf(d, gid) { return PLAN_STATUS[d + "|" + (gid || currentGroup)] || "draft"; }
+function setPlanStatus(d, gid, v) { PLAN_STATUS[d + "|" + (gid || currentGroup)] = v; }
+// 演示用：今天营销组还没提交，体现各组状态互不影响
+PLAN_STATUS[mOf(0) + "|yx"] = "draft";
+
+// 演示用：今天部分任务已有机械申请/安排（申请单号与机械安排页同构）
+(function seedMechMock() {
+  const today = PLANS[mOf(0)] || [];
+  const set = (code, ti, mr) => {
+    const p = today.find(x => x.code === code);
+    if (p && p.tasks[ti]) p.tasks[ti].mr = mr;
+  };
+  set("XM2026-042", 0, { no: "JX-20261120-001", status: "wait", assigns: [] });
+  set("XM2026-023", 0, { no: "JX-20261120-002", status: "part", assigns: [
+    { type: "挖机①", plate: "湘L·E6666", rental: "顺达机械", driver: "何师傅", date: mOf(0) }
+  ] });
+  set("XM2026-045", 0, { no: "JX-20261120-003", status: "plan", assigns: [
+    { type: "吊车①", plate: "湘L·D8888", rental: "宏达吊装", driver: "王师傅", date: mOf(0) },
+    { type: "挖机①", plate: "湘L·E7777", rental: "顺达机械", driver: "李师傅", date: mOf(0) }
+  ] });
+  set("XM2026-055", 1, { no: "JX-20261119-004", status: "on", assigns: [
+    { type: "作业车①", plate: "湘L·B5678", rental: "郴州建机", driver: "李师傅", date: mOf(0) }
+  ] });
+  // 宜章「装表接电」故意不给申请，演示可「申请机械」
+})();
+
+// 本周内的某天还没排过 => 用周计划粗排自动生成一份未发布的日计划（人员待细化）
 function inheritFromWeek() {
+  if (!inThisWeek(currentDate)) return false;      // 只在本周（周一~周日）生效
   const plan = PLANS[currentDate];
-  if (plan && plan.length) return false;           // 当天已排过，以日计划为准
+  if (plan && plan.length) return false;           // 已排过，以日计划为准（不再覆盖）
   const rough = WEEK_ROUGH[currentDate];
   if (!rough || !rough.length) return false;
-  PLANS[currentDate] = rough.map(r => {
-    const task = {
+  const byCode = {};
+  rough.forEach(r => {
+    const code = projCodeOf(r.proj);
+    if (!byCode[code]) {
+      byCode[code] = {
+        code: code, name: r.proj,
+        manager: (PROJECT_LIB.find(p => p.name === r.proj) || {}).manager || "",
+        tasks: []
+      };
+    }
+    byCode[code].tasks.push({
       name: r.task, risk: r.risk, req: r.req, loc: "-", projectName: r.proj,
       techRef: r.techTotal, helperRef: r.helperTotal, car: r.car || "",
       machineRef: r.machine || "", machine: "", units: [], subs: [],
       leaders: r.leader ? [r.leader] : [], captains: [], workers: [], helpers: []
-    };
-    return {
-      code: projCodeOf(r.proj), name: r.proj,
-      manager: (PROJECT_LIB.find(p => p.name === r.proj) || {}).manager || "",
-      tasks: [task]
-    };
+    });
   });
-  PLAN_STATUS[currentDate] = "draft";
+  PLANS[currentDate] = Object.keys(byCode).map(c => byCode[c]);
+  const gids = [...new Set(PLANS[currentDate].map(projGroup))];
+  gids.forEach(g => setPlanStatus(currentDate, g, "draft"));   // 默认未发布
   PLANS[currentDate]._fromWeek = true;   // 标记：这份是周计划带下来的
   return true;
 }
 
-function samplePlanA() {
-  return [
+// ===== 机械申请联动（日计划 ↔ 机械申请 ↔ 机械安排）=====
+const LS_DP_LINK = "cj_dp_mech_link_v1";     // {planKey: 申请单号}
+const LS_MECH_REQS = "cj_mech_reqs_v1";      // 机械申请页的申请单列表
+const MECH_CIRC = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
+const MECH_ST = {
+  none: { t: "未申请", cls: "ms-none" },
+  wait: { t: "待安排", cls: "ms-wait" },
+  part: { t: "部分安排", cls: "ms-part" },
+  plan: { t: "已安排", cls: "ms-plan" },
+  on:   { t: "已进场", cls: "ms-on" },
+  done: { t: "已完成", cls: "ms-done" },
+  rej:  { t: "已驳回", cls: "ms-rej" }
+};
+function lsJson(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } }
+function mechLinks() { const o = lsJson(LS_DP_LINK); return o && typeof o === "object" ? o : {}; }
+function mechReqsLS() { const a = lsJson(LS_MECH_REQS); return Array.isArray(a) ? a : []; }
+function ymdOfKey(key) {
+  const p = String(key).split("/");
+  return TODAY.getFullYear() + "-" + String(+p[0] || 0).padStart(2, "0") + "-" + String(+p[1] || 0).padStart(2, "0");
+}
+// 任务的机械需求：有机械分组按台数算，否则解析周计划粗排的「吊车1台、挖机1台」
+function mechNeeds(t) {
+  const subs = t.subs || [];
+  if (subs.length) {
+    const by = {};
+    subs.forEach(s => { const k = s.type || "机械"; by[k] = (by[k] || 0) + 1; });
+    return Object.keys(by).map(k => ({ type: k, qty: by[k] }));
+  }
+  const out = [];
+  String(t.machineRef || "").split("、").forEach(seg => {
+    const m = seg.match(/([^\d台]+?)[（(]?(\d+)?台/);
+    if (m) out.push({ type: m[1].trim(), qty: parseInt(m[2] || "1", 10) });
+  });
+  return out;
+}
+function mechQtyOf(t) { return mechNeeds(t).reduce((a, x) => a + x.qty, 0); }
+function mechSlots(t) {
+  const out = [];
+  mechNeeds(t).forEach(n => { for (let i = 0; i < n.qty; i++) out.push(n.type); });
+  return out;
+}
+function mechKeyOf(code, t) { return currentDate + "|" + code + "|" + (t.name || ""); }
+function mechStateOf(code, t) {
+  const qty = mechQtyOf(t);
+  if (!qty) return null;
+  const key = mechKeyOf(code, t);
+  const mr = t.mr || null;
+  let no = (mr && mr.no) || mechLinks()[key] || "";
+  let st = mr ? mr.status : (no ? "wait" : "none");
+  let assigns = (mr && mr.assigns) || [];
+  const req = mechReqsLS().find(x => (no && x.no === no) || x.dpKey === key);
+  if (req) { no = req.no; st = req.status; assigns = req.assigns || []; }
+  // 机械安排页的安排记录优先：安排了就显示车牌/租赁公司，并推进状态
+  const asgAll = lsJson("cj_mech_assigns_v1");
+  if (Array.isArray(asgAll) && asgAll.length && no) {
+    const rel = asgAll.filter(a => a.reqNo === no);
+    if (rel.length) {
+      assigns = rel.map(a => ({ type: a.type, plate: a.plate, rental: a.rental, driver: a.driver, date: a.date }));
+      if (st !== "rej") st = rel.length >= qty ? "plan" : "part";
+    }
+  }
+  if (st === "rej") assigns = [];
+  if (st === "on" || st === "done") st = "plan";   // 原型只展示到「已安排」
+  const arranged = Math.min(qty, assigns.length);
+  if (["wait", "part", "plan"].indexOf(st) >= 0) {
+    st = arranged === 0 ? "wait" : (arranged >= qty ? "plan" : "part");
+  }
+  return { key: key, no: no, qty: qty, arranged: arranged, status: st, assigns: assigns, unarranged: Math.max(0, qty - arranged), slots: mechSlots(t) };
+}
+function mechUnarrangedOfPlan(list) {
+  let n = 0;
+  (list || []).forEach(p => (p.tasks || []).forEach(t => {
+    const m = mechStateOf(p.code, t);
+    if (m) n += m.unarranged;
+  }));
+  return n;
+}
+// 任务卡上的「机械申请」一行
+function mechLineHTML(code, ti, t, editable) {
+  const m = mechStateOf(code, t);
+  if (!m) return "";
+  if (m.status === "none" && !editable) return "";   // 已发布只读时不显示空壳行
+  const chip = `<span class="ms-chip ${MECH_ST[m.status].cls}">${MECH_ST[m.status].t}${m.status === "part" ? " " + m.arranged + "/" + m.qty + "台" : ""}</span>`;
+  const txt = m.arranged ? `已安排 ${m.arranged}/${m.qty} 台` : `需 ${m.qty} 台`;
+  let right = "";
+  if (m.no || m.status !== "none") {
+    right = `<span class="mech-go" onclick="event.stopPropagation();openMechProgress('${code}',${ti})">${m.no ? m.no + " · " : ""}进度 ›</span>`;
+  } else if (editable) {
+    right = `<span class="mech-apply" onclick="event.stopPropagation();mechApply('${code}',${ti})">申请机械（${m.qty}台）</span>`;
+  }
+  return `<div class="mech-line"><span class="ml-k">机械申请</span>${chip}<span>${txt}</span>${right}</div>`;
+}
+// 跳到机械申请页，自动预填本任务的项目/日期/机械台数
+function mechApply(code, ti) {
+  const p = (PLANS[currentDate] || []).find(x => x.code === code);
+  if (!p || !p.tasks[ti]) return;
+  const t = p.tasks[ti];
+  const q = new URLSearchParams();
+  q.set("from", "dp");
+  q.set("key", mechKeyOf(code, t));
+  q.set("proj", p.name);
+  q.set("code", p.code);
+  q.set("date", ymdOfKey(currentDate));
+  q.set("task", t.name);
+  q.set("mach", mechNeeds(t).map(n => n.type + ":" + n.qty).join(","));
+  location.href = "机械申请.html?" + q.toString();
+}
+// 进度浮层
+let mechCtx = { code: "", ti: -1, no: "" };
+function openMechProgress(code, ti) {
+  const p = (PLANS[currentDate] || []).find(x => x.code === code);
+  if (!p || !p.tasks[ti]) return;
+  const t = p.tasks[ti];
+  const m = mechStateOf(code, t);
+  if (!m) return;
+  mechCtx = { code: code, ti: ti, no: m.no };
+  const st = MECH_ST[m.status];
+  const slots = m.slots.map((type, i) => {
+    const a = m.assigns[i];
+    return `<div class="pick-row" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #f4f6f9;">
+      <span style="width:18px;color:#98a2b3;">${MECH_CIRC[i]}</span>
+      <b style="font-size:13px;color:#222;">${type}</b>
+      <span style="margin-left:auto;font-size:11px;color:${a ? "#12805c" : "#b45309"};text-align:right;">${a ? a.plate + (a.rental ? " · " + a.rental : "") : "未安排"}</span>
+    </div>`;
+  }).join("");
+  const stepOn = { none: 0, wait: 1, part: 1, plan: 2, rej: 1 }[m.status] || 0;
+  const steps = ["提交申请", "待安排", "已安排"];
+  const timeLine = steps.map((s, i) => {
+    const on = i <= stepOn;
+    return `<span style="display:flex;align-items:center;gap:4px;">
+      <i style="width:6px;height:6px;border-radius:50%;background:${on ? "#2b7cff" : "#dfe3e8"};display:inline-block;"></i>
+      <span style="color:${on ? "#2b7cff" : "#b9c0cb"};">${s}</span>
+      ${i < steps.length - 1 ? '<span style="color:#dfe3e8;">›</span>' : ""}
+    </span>`;
+  }).join("");
+  document.getElementById("mechBody").innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0 10px;">
+      <span class="ms-chip ${st.cls}">${st.t}</span>
+      <span style="font-size:12px;color:#666;">${m.no ? m.no : "还没提交申请"}</span>
+    </div>
+    <div style="font-size:12px;color:#666;line-height:1.7;margin-bottom:8px;">
+      项目：${p.name}<br>任务：${t.name} · 用机日期 ${ymdOfKey(currentDate)}
+    </div>
+    <div style="border:1px solid #eef1f5;border-radius:12px;overflow:hidden;margin-bottom:10px;">${slots}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;margin-bottom:8px;">${timeLine}</div>
+    <div style="font-size:11px;color:#98a2b3;line-height:1.6;">机械由机械专员在「机械安排」里安排租赁公司、车牌后回显到这里。</div>`;
+  openSheet("mechMask", "mechSheet");
+}
+function closeMechProgress() { closeSheet("mechMask", "mechSheet"); }
+function goMechArrange() {
+  const q = mechCtx.no ? "?req=" + encodeURIComponent(mechCtx.no) : "";
+  location.href = "机械安排.html" + q;
+}
+
+function samplePlanA() {  return [
     { code: "XM2026-018", name: "郴州市湘南物流园屋顶分布式光伏及充电桩项目", manager: "王建国",
       tasks: [
         { name: "放线", risk: "IV", req: "戴好安全带，注意邻近带电体", loc: "#3-#5 杆塔",
@@ -959,25 +1304,34 @@ function samplePlanB() {
               workers: ["朱新伍","何红军"],
               helpers: ["何雅强","胡向林","郭建标","邱道军","丁华亿","张义","蒋才龙","黄八俵","廖平","张友红","毛喜财"] }
           ] }
+      ] },
+    { code: "XM2026-055", name: "宜章台区改造项目", manager: "李晓东",
+      tasks: [
+        { name: "装表接电", risk: "II", req: "核验户表信息，做好现场安全措施", loc: "宜章县城关镇 3 个台区",
+          subs: [
+            { type: "作业车", plate: "湘L·B5678 李师傅", leaders: ["周国华"], captains: ["陈和平"],
+              workers: ["邓志刚","罗小军","彭建平"], helpers: ["曹小军"] }
+          ] },
+        { name: "台区表计轮换", risk: "I", req: "轮换前拍照留存底度", loc: "宜章县城关镇",
+          subs: [
+            { type: "作业车", plate: "", leaders: ["刘建国"], captains: [],
+              workers: ["彭建平","邓志刚"], helpers: [] }
+          ] }
       ] }
   ];
 }
 
 // ===== 日期条配置 =====
-const DATES = [
-  { m: "11/10", w: "周二", tag: "历史", past: true },
-  { m: "11/11", w: "周三", tag: "历史", past: true },
-  { m: "11/12", w: "周四", tag: "昨天", past: true },
-  { m: "11/13", w: "周五", tag: "今天", past: false },
-  { m: "11/14", w: "周六", tag: "", past: false },
-  { m: "11/15", w: "周日", tag: "", past: false },
-  { m: "11/16", w: "周一", tag: "", past: false },
-  { m: "11/17", w: "周二", tag: "", past: false },
-  { m: "11/18", w: "周三", tag: "", past: false },
-  { m: "11/19", w: "周四", tag: "", past: false },
-  { m: "11/20", w: "周五", tag: "", past: false }
-];
-let currentDate = "11/13";
+const DATES = [];
+for (let o = MON_OFF; o <= 7; o++) {
+  DATES.push({
+    m: mOf(o), w: wOf(o), off: o,
+    tag: o === 0 ? "今天" : o === 1 ? "明天" : o === 2 ? "后天" : o === 3 ? "大后天"
+       : o === -1 ? "昨天" : "历史",
+    past: o < 0
+  });
+}
+let currentDate = mOf(0);
 let showHistory = false;
 let homeEditing = false;
 
@@ -1007,7 +1361,7 @@ function renderDateStrip() {
   const REL = { 0: "今天", 1: "明天", 2: "后天", 3: "大后天" };
   DATES.forEach((d, idx) => {
     if (!showHistory && d.past) return;
-    const hasPlan = !!PLANS[d.m] || (draft && draft.date === d.m);
+    const hasPlan = (currentGroup === "all" ? (PLANS[d.m] || []).length : planOfGroup(d.m, currentGroup).length) || (draft && draft.date === d.m);
     const cls = [];
     if (d.m === currentDate) cls.push("active");
     if (d.past) cls.push("past");
@@ -1030,13 +1384,10 @@ function renderDateStrip() {
 }
 
 function extendFuture() {
-  const last = DATES[DATES.length - 1].m;
-  const mm = parseInt(last.split("/")[0], 10);
-  const dd = parseInt(last.split("/")[1], 10);
-  const wds = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+  const lastOff = DATES[DATES.length - 1].off;
   for (let i = 1; i <= 7; i++) {
-    const dt = new Date(2026, mm - 1, dd + i);
-    DATES.push({ m: (dt.getMonth() + 1) + "/" + dt.getDate(), w: wds[dt.getDay()], tag: "", past: false });
+    const o = lastOff + i;
+    DATES.push({ m: mOf(o), w: wOf(o), off: o, tag: "", past: false });
   }
   renderDateStrip();
   toast("已加载后面 7 天");
@@ -1045,98 +1396,190 @@ function extendFuture() {
 function selectDate(d) {
   currentDate = d;
   inheritFromWeek();        // 当天没排过 => 自动继承周计划（未发布）
-  homeEditing = planStatusOf(d) === "draft";   // 未发布 => 进来就是编辑界面
-  const meta = DATES.find(x => x.m === d);
-  document.getElementById("heroDate").textContent = d.replace("/", "月") + "日";
-  document.getElementById("heroTag").textContent = meta.tag;
-  document.getElementById("heroTag").style.display = meta.tag ? "" : "none";
-  document.getElementById("heroDept").textContent = `${meta.w} · 电网建设运维中心项目一部`;
+  homeEditing = currentGroup !== "all" && planStatusOf(d, currentGroup) === "draft";
   renderDateStrip();
   renderHome();
 }
 
+// ===== 组相关工具 =====
+function planOfGroup(d, gid) {
+  return (PLANS[d] || []).filter(p => projGroup(p) === gid);
+}
+function statsOfPlan(list) {
+  let taskCount = 0;
+  const peopleSet = new Set();
+  list.forEach(p => (p.tasks || []).forEach(t => {
+    taskCount++;
+    (t.subs || []).forEach(s => {
+      (s.leaders || []).forEach(n => peopleSet.add(n));
+      (s.captains || []).forEach(n => peopleSet.add(n));
+      (s.workers || []).forEach(n => peopleSet.add(n));
+      (s.helpers || []).forEach(n => peopleSet.add(n));
+    });
+    (t.leaders || []).forEach(n => peopleSet.add(n));
+    (t.captains || []).forEach(n => peopleSet.add(n));
+    (t.workers || []).forEach(n => peopleSet.add(n));
+    (t.helpers || []).forEach(n => peopleSet.add(n));
+  }));
+  return { proj: list.length, task: taskCount, people: peopleSet.size };
+}
+function renderGroupTabs() {
+  const el = document.getElementById("grpTabs");
+  if (!el) return;
+  const allCount = (PLANS[currentDate] || []).length;
+  let html = `<div class="grp-tab ${currentGroup === "all" ? "on" : ""}" onclick="selectGroup('all')">全部组 <span class="n">${allCount}</span></div>`;
+  GROUPS.forEach(g => {
+    const c = planOfGroup(currentDate, g.id).length;
+    html += `<div class="grp-tab ${currentGroup === g.id ? "on" : ""}" onclick="selectGroup('${g.id}')">${g.name} <span class="n">${c}</span></div>`;
+  });
+  el.innerHTML = html;
+}
+function selectGroup(gid) {
+  currentGroup = gid;
+  homeEditing = false;
+  renderDateStrip();
+  renderHome();
+}
+function sharePlan() {
+  const gn = currentGroup === "all" ? "全部组" : gName(currentGroup);
+  toast(`已调起微信转发：选工作群即可（${gn}日计划）`);
+}
+
 // ===== 渲染主界面 =====
 function renderHome() {
-  const plan = PLANS[currentDate];
-  const meta = DATES.find(x => x.m === currentDate);
+  const meta = DATES.find(x => x.m === currentDate) || { w: "", tag: "", past: false };
+  const all = PLANS[currentDate] || [];
   const list = document.getElementById("homeList");
   const bottom = document.getElementById("homeBottom");
-
-  const isDraft = planStatusOf(currentDate) === "draft";
+  const titleEl = document.getElementById("heroTitle");
   const pub = document.getElementById("pubStatus");
-  if (pub) {
-    // 未发布 / 已发布 两种状态；还没有计划的日子也算未发布
-    const draftLike = isDraft || !plan;
-    pub.textContent = draftLike ? "● 未发布" : "● 已发布";
-    pub.style.background = draftLike ? "rgba(255,214,102,.35)" : "";
-  }
+  const shareBtn = document.getElementById("shareBtn");
+  renderGroupTabs();
 
-  if (!plan) {
-    // 空状态
-    document.getElementById("statProj").textContent = "0";
-    document.getElementById("statTask").textContent = "0";
-    document.getElementById("statPeople").textContent = "0";
-    list.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">📋</div>
-        <h3>${meta.tag ? meta.tag + "还" : "还"}没排日计划</h3>
-        <p>点下面按钮新建一份，<br>也可以从最近某天的计划复制过来改。</p>
-        <button class="btn-primary" onclick="openNew('${currentDate}')" style="margin-bottom:10px;">+ 新建日计划</button>
-        <button class="btn-ghost" onclick="openCopyFrom('${currentDate}')">从已有计划复制</button>
+  document.getElementById("heroDate").textContent = currentDate.replace("/", "月") + "日";
+  document.getElementById("heroTag").textContent = meta.tag || "";
+  document.getElementById("heroTag").style.display = meta.tag ? "" : "none";
+
+  // ---- 全部组视图：每组一张汇总卡 ----
+  if (currentGroup === "all") {
+    titleEl.textContent = "日计划 · 全部组";
+    document.getElementById("heroDept").textContent =
+      `${meta.w} · 电网建设运维中心项目一部 · ${GROUPS.length} 个作业组`;
+    if (shareBtn) shareBtn.style.display = "none";
+
+    const st = statsOfPlan(all);
+    document.getElementById("statProj").textContent = st.proj;
+    document.getElementById("statTask").textContent = st.task;
+    document.getElementById("statPeople").textContent = st.people;
+    const smAll = document.getElementById("statMech");
+    if (smAll) smAll.textContent = mechUnarrangedOfPlan(all);
+
+    if (pub) {
+      const published = GROUPS.filter(g => planOfGroup(currentDate, g.id).length &&
+        planStatusOf(currentDate, g.id) === "published").length;
+      pub.textContent = `● ${published}/${GROUPS.length} 组已发布`;
+      pub.style.background = published === GROUPS.length ? "" : "rgba(255,214,102,.35)";
+    }
+
+    let html = "";
+    GROUPS.forEach(g => {
+      const gp = planOfGroup(currentDate, g.id);
+      const gs = statsOfPlan(gp);
+      const isPub = gs.proj && planStatusOf(currentDate, g.id) === "published";
+      const stTxt = !gs.proj ? "无计划" : isPub ? "已发布" : "草稿";
+      const stCls = !gs.proj ? "gs-draft" : isPub ? "gs-ok" : "gs-draft";
+      html += `<div class="gsum-card">
+        <div class="gsum-top">
+          <span class="gsum-name">${g.name}</span>
+          <span class="gsum-st ${stCls}">${stTxt}</span>
+        </div>
+        <div class="gsum-sub">组长 ${g.leader} · 审核人 ${AUDITOR}（项目经理）</div>
+        <div class="gsum-nums">
+          <span class="gsum-chip">${gs.proj} 个项目</span>
+          <span class="gsum-chip">${gs.task} 项作业</span>
+          <span class="gsum-chip">${gs.people} 人</span>
+        </div>
+        <div class="gsum-foot">
+          <span>${gs.proj ? (isPub ? "已发布，可分享到工作群" : "未发布，待提交") : "今日还没排计划"}</span>
+          <span class="go" onclick="selectGroup('${g.id}')">${isPub ? "查看" : gs.proj ? "去处理" : "去安排"} ›</span>
+        </div>
       </div>`;
-    bottom.innerHTML = "";
+    });
+    list.innerHTML = html;
+    bottom.innerHTML = `<button class="btn-secondary" onclick="toast('汇总已生成：可发部门群')">共 ${st.proj} 个项目 · ${st.task} 项作业 · ${st.people} 人</button>`;
+    bottom.style.display = "";
     return;
   }
 
-  // 有数据
-  let projCount = plan.length;
-  let taskCount = 0, peopleSet = new Set();
-  plan.forEach(p => p.tasks.forEach(t => {
-    taskCount++;
-    t.subs.forEach(s => {
-      s.leaders.forEach(n => peopleSet.add(n));
-      (s.captains||[]).forEach(n => peopleSet.add(n));
-      s.workers.forEach(n => peopleSet.add(n));
-      s.helpers.forEach(n => peopleSet.add(n));
-    });
-    (t.leaders||[]).forEach(n => peopleSet.add(n));
-    (t.captains||[]).forEach(n => peopleSet.add(n));
-    (t.workers||[]).forEach(n => peopleSet.add(n));
-    (t.helpers||[]).forEach(n => peopleSet.add(n));
-  }));
-  document.getElementById("statProj").textContent = projCount;
-  document.getElementById("statTask").textContent = taskCount;
-  document.getElementById("statPeople").textContent = peopleSet.size;
+  // ---- 本组视图 ----
+  const plan = planOfGroup(currentDate, currentGroup);
+  const isDraft = planStatusOf(currentDate) === "draft";
+  titleEl.textContent = `日计划 · ${gName(currentGroup)}`;
+  document.getElementById("heroDept").textContent =
+    `${meta.w} · 电网建设运维中心项目一部 · ${gName(currentGroup)} 组长 ${gLeader(currentGroup)}`;
+  if (shareBtn) shareBtn.style.display = "";
+
+  const st = statsOfPlan(plan);
+  document.getElementById("statProj").textContent = st.proj;
+  document.getElementById("statTask").textContent = st.task;
+  document.getElementById("statPeople").textContent = st.people;
+  const sm = document.getElementById("statMech");
+  if (sm) sm.textContent = mechUnarrangedOfPlan(plan);
+
+  if (pub) {
+    const published = plan.length && !isDraft;
+    pub.textContent = published ? "● 已发布" : "● 未发布";
+    pub.style.background = published ? "" : "rgba(255,214,102,.35)";
+  }
+  if (shareBtn) shareBtn.style.display = (plan.length && !isDraft) ? "" : "none";
+
+  // 本组当天没有计划
+  if (!plan.length) {
+    const noWeekTask = inThisWeek(currentDate) && !WEEK_ROUGH[currentDate];
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>${gName(currentGroup)}还没排日计划</h3>
+        <p>${noWeekTask ? "本周计划这天没有安排任务，<br>可直接手动新建一份。" : "点下面按钮新建一份，<br>安排当天的项目和作业任务。"}</p>
+        <button class="btn-primary" onclick="openNew('${currentDate}')" style="margin-bottom:10px;">+ 新建${gName(currentGroup)}日计划</button>
+      </div>`;
+    bottom.innerHTML = "";
+    bottom.style.display = "none";
+    return;
+  }
 
   const editable = !meta.past && (homeEditing || isDraft);
-  // 情况1：周计划已安排、还没发布 => 顶部提示还要补什么
-  const tipBar = (isDraft && plan && plan._fromWeek)
-    ? `<div style="margin:12px 12px 0;background:#fff8e6;border:1px solid #ffe1a8;border-radius:10px;padding:10px 12px;font-size:12px;color:#9a6a00;line-height:1.7;">
-        本日任务已按<b>周计划</b>自动带出，还未发布。<br>请补充：机械安排、队长、具体技工和副工。
-      </div>` : "";
+  let tipBar = "";
+  if (isDraft && PLANS[currentDate] && PLANS[currentDate]._fromWeek) {
+    tipBar += `<div style="margin:12px 12px 0;background:#fff8e6;border:1px solid #ffe1a8;border-radius:10px;padding:10px 12px;font-size:12px;color:#9a6a00;line-height:1.7;">
+      本日任务已按<b>周计划</b>自动带出，还未发布。<br>请补充：机械安排、队长、具体技工和副工。</div>`;
+  }
   list.innerHTML = tipBar + renderProjectsHTML(plan, editable);
 
-  // 底部按钮：按状态切换（未发布 = 直接就是编辑界面）
   if (meta.past) {
     bottom.innerHTML = "";
   } else if (isDraft) {
     bottom.innerHTML = `
-      <button class="btn-primary" style="margin-bottom:8px;" onclick="publishFromHome()">发布日计划</button>
-      <button class="btn-secondary" onclick="toast('已存草稿，下次进来继续改')">存草稿（暂不发布）</button>`;
+      <button class="btn-primary" style="margin-bottom:8px;" onclick="publishFromHome()">提交审核</button>
+      <button class="btn-secondary" onclick="toast('已存草稿，下次进来继续改')">存草稿</button>`;
   } else if (!homeEditing) {
-    bottom.innerHTML = `<button class="btn-primary" onclick="enterEditMode()">修改</button>`;
+    // 已发布：只读查看，不提供修改入口
+    bottom.innerHTML = "";
   } else {
     bottom.innerHTML = `
       <button class="btn-primary" style="margin-bottom:8px;" onclick="exitEditMode(true)">保存修改</button>
       <button class="btn-secondary" onclick="exitEditMode(false)">取消</button>`;
   }
+  // 没有按钮时整条底栏隐藏，避免留白条
+  bottom.style.display = bottom.innerHTML.trim() ? "" : "none";
 }
 function publishFromHome() {
-  PLAN_STATUS[currentDate] = "published";
+  const un = mechUnarrangedOfPlan(planOfGroup(currentDate, currentGroup));
+  setPlanStatus(currentDate, currentGroup, "published");
   homeEditing = false;          // 发布后转成已发布的只读列表
   renderDateStrip();
   renderHome();
-  toast("日计划已发布，可分享到工作群");
+  toast(un ? `${gName(currentGroup)}日计划已提交审核，机械还有 ${un} 台未安排` : `${gName(currentGroup)}日计划已提交审核，等待${AUDITOR}审核`);
 }
 function cancelDraftEdit() {
   renderHome();
@@ -1286,9 +1729,9 @@ function renderProjectsHTML(plan, editable) {
         <div class="task-detail" style="display:block;margin-top:8px;">
           ${(!t.subs || !t.subs.length) && t.machineRef ? `<div style="font-size:11px;color:#999;background:#f6f8fb;border:1px dashed #dfe3e8;border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.6;">周计划机械：${t.machineRef}</div>` : ""}
           ${renderUnitsHTML(true, p.code, ti, t)}
-          <div style="display:flex;gap:8px;margin-top:8px;">
-            <button class="btn-ghost" style="height:38px;font-size:13px;" onclick="openMachTypePickHome('${p.code}',${ti})">选择机械（选数量）</button>
-            <button class="btn-ghost" style="height:38px;font-size:13px;" onclick="openMachInputHome('${p.code}',${ti})">+ 手动录入</button>
+          ${mechLineHTML(p.code, ti, t, true)}
+          <div style="margin-top:8px;">
+            <button class="btn-ghost" style="width:100%;height:38px;font-size:13px;" onclick="openMachTypePickHome('${p.code}',${ti})">选择机械（选数量）</button>
           </div>
         </div>
         ` : `
@@ -1305,6 +1748,7 @@ function renderProjectsHTML(plan, editable) {
           <div style="line-height:1.7;">
             <span style="color:#999;">机械：</span><b style="color:#222;font-weight:600;">${taskStats(t).mach}</b>
           </div>
+          ${mechLineHTML(p.code, ti, t, false)}
           ${(t.cars && t.cars.length) || t.car ? `<div style="line-height:1.7;"><span style="color:#999;">车辆：</span><b style="color:#222;font-weight:600;">${(t.cars && t.cars.length) ? t.cars.join("、") : t.car}</b></div>` : ""}
         </div>
         <div class="task-detail">
@@ -1325,6 +1769,7 @@ function renderProjectsHTML(plan, editable) {
 
 // ===== 详情页 =====
 function addTaskToHome(code) {
+  pendingTasks = [];
   document.getElementById("fTaskName").value = "";
   document.getElementById("fTaskReq").value = "";
   document.getElementById("fTaskLoc").value = "";
@@ -1336,11 +1781,15 @@ function addTaskToHome(code) {
   refreshRisk5();
   editingTaskCtx = { source: "home-new", code };
   document.getElementById("taskSheetTitle").textContent = "添加任务";
+  document.getElementById("addMoreTaskBtn").style.display = "";
+  document.getElementById("saveTaskBtn").textContent = "保存任务";
+  renderPendingTasks();
   renderTaskHistory();
   openSheet("taskMask", "taskSheet");
 }
 // 新项目添加任务：项目在弹窗里选，可以选计划里还没有的项目
 function addTaskToHomeNew() {
+  pendingTasks = [];
   document.getElementById("fTaskName").value = "";
   document.getElementById("fTaskReq").value = "";
   document.getElementById("fTaskLoc").value = "";
@@ -1352,6 +1801,9 @@ function addTaskToHomeNew() {
   refreshRisk5();
   editingTaskCtx = { source: "home-new", code: null };
   document.getElementById("taskSheetTitle").textContent = "添加任务";
+  document.getElementById("addMoreTaskBtn").style.display = "";
+  document.getElementById("saveTaskBtn").textContent = "保存任务";
+  renderPendingTasks();
   renderTaskHistory();
   openSheet("taskMask", "taskSheet");
 }
@@ -1399,7 +1851,7 @@ function openDetail() {
   const meta = DATES.find(x => x.m === currentDate);
   const tip = document.getElementById("detailTip");
   const bottom = document.getElementById("detailBottom");
-  document.getElementById("detailList").innerHTML = renderProjectsHTML(PLANS[currentDate]);
+  document.getElementById("detailList").innerHTML = renderProjectsHTML(planOfGroup(currentDate, currentGroup === "all" ? GROUPS[0].id : currentGroup));
   if (meta.past) {
     tip.className = "detail-tip readonly";
     tip.textContent = "历史计划已锁定，只读不可修改。";
@@ -1466,6 +1918,7 @@ function renderNewBody() {
         </div>
         <div class="task-detail">`;
       html += renderUnitsDraftHTML(code, ti, t);
+      html += mechLineHTML(code, ti, t, true);
       html += `<div style="margin-top:8px;">
         <button class="btn-ghost" style="height:38px;font-size:13px;" onclick="openSubSheet('${code}',${ti})">+ 加一台机械（自动带一组人）</button>
       </div>`;
@@ -1490,6 +1943,10 @@ function editTaskInDraft(code, ti) {
   refreshRisk5();
   editingTaskCtx = { source: "draft", code, taskIdx: ti };
   document.getElementById("taskSheetTitle").textContent = "修改任务";
+  pendingTasks = [];
+  document.getElementById("addMoreTaskBtn").style.display = "none";
+  document.getElementById("saveTaskBtn").textContent = "保存修改";
+  renderPendingTasks();
   renderTaskHistory();
   openSheet("taskMask", "taskSheet");
 }
@@ -1939,7 +2396,8 @@ function renderCrewList() {
     if (crewFilter === "out" && w.type !== "外包") return false;
     if (crewFilter === "tech" && w.role !== "技工") return false;
     if (crewFilter === "help" && w.role !== "副工") return false;
-    if (kw && w.name.indexOf(kw) < 0 && w.role.indexOf(kw) < 0 && w.type.indexOf(kw) < 0) return false;
+    if (crewFilter === "grid" && !w.grid) return false;
+    if (kw && w.name.indexOf(kw) < 0 && w.role.indexOf(kw) < 0 && w.type.indexOf(kw) < 0 && (w.grid ? "国网准入".indexOf(kw) < 0 : true)) return false;
     return true;
   }).sort((a, b) => (a.role === role ? 0 : 1) - (b.role === role ? 0 : 1));
   if (!list.length) {
@@ -1954,7 +2412,7 @@ function renderCrewList() {
     return `<div class="worker-row ${w.ok ? "" : "disabled"}" onclick="toggleCrew('${w.name}', ${w.ok ? "true" : "false"})">
       <div class="avatar">${w.name[0]}</div>
       <div class="worker-info">
-        <div class="worker-name">${w.name}${srcTag}</div>
+        <div class="worker-name">${w.name}${srcTag}${gridBadge(w)}</div>
         <div class="worker-sub">${w.role} · <span class="ins-badge ${insCls}">${insText}</span></div>
       </div>
       <div class="check ${on ? "on" : ""}"></div>
@@ -1988,6 +2446,7 @@ function buildMachSubs() {
 function openTaskSheet(projectCode) {
   taskSheetCtx = { projectCode };
   editingTaskCtx = null;
+  pendingTasks = [];
   document.getElementById("fTaskName").value = "";
   document.getElementById("fTaskReq").value = "";
   document.getElementById("fTaskLoc").value = "";
@@ -1998,6 +2457,9 @@ function openTaskSheet(projectCode) {
   document.querySelector("#fRisk > div[data-r='I']").classList.add("on");
   refreshRisk5();
   document.getElementById("taskSheetTitle").textContent = "添加任务";
+  document.getElementById("addMoreTaskBtn").style.display = "";
+  document.getElementById("saveTaskBtn").textContent = "保存任务";
+  renderPendingTasks();
   renderTaskHistory();
   openSheet("taskMask", "taskSheet");
 }
@@ -2007,6 +2469,7 @@ function openTaskSheetFromHome(code, ti) {
   const p = PLANS[currentDate].find(x => x.code === code);
   if (!p) return;
   const t = p.tasks[ti];
+  pendingTasks = [];
   document.getElementById("fTaskName").value = t.name;
   document.getElementById("fTaskReq").value = t.req || "";
   document.getElementById("fTaskLoc").value = t.loc || "";
@@ -2019,6 +2482,9 @@ function openTaskSheetFromHome(code, ti) {
   refreshRisk5();
   editingTaskCtx = { source: "plans", code, taskIdx: ti };
   document.getElementById("taskSheetTitle").textContent = "修改任务";
+  document.getElementById("addMoreTaskBtn").style.display = "none";
+  document.getElementById("saveTaskBtn").textContent = "保存修改";
+  renderPendingTasks();
   renderTaskHistory();
   openSheet("taskMask", "taskSheet");
 }
@@ -2081,20 +2547,26 @@ function togglePeople(name){
   renderPeopleList();
 }
 const WORKER_POOL = [
-  {name:"黄志远",type:"自有",role:"现场负责人",ok:true},
-  {name:"刘建国",type:"自有",role:"队长",ok:true},
-  {name:"唐良辉",type:"自有",role:"队长",ok:true},
-  {name:"张强",type:"外包",role:"队长",ok:true},
-  {name:"王大伟",type:"自有",role:"技工",ok:true},
-  {name:"李军",type:"自有",role:"技工",ok:true},
-  {name:"赵刚",type:"自有",role:"技工",ok:true},
-  {name:"周德明",type:"外包",role:"技工",ok:true},
-  {name:"陈伟",type:"自有",role:"技工",ok:true},
-  {name:"李铁牛",type:"外包",role:"副工",ok:true},
-  {name:"刘海",type:"自有",role:"副工",ok:true},
-  {name:"陈小兵",type:"外包",role:"副工",ok:true},
-  {name:"张二狗",type:"外包",role:"副工",ok:false},
+  {name:"黄志远",type:"自有",role:"现场负责人",ok:true,grid:true},
+  {name:"刘建国",type:"自有",role:"队长",ok:true,grid:true},
+  {name:"唐良辉",type:"自有",role:"队长",ok:true,grid:true},
+  {name:"张强",type:"外包",role:"队长",ok:true,grid:true},
+  {name:"王大伟",type:"自有",role:"技工",ok:true,grid:true},
+  {name:"李军",type:"自有",role:"技工",ok:true,grid:true},
+  {name:"赵刚",type:"自有",role:"技工",ok:true,grid:true},
+  {name:"周德明",type:"外包",role:"技工",ok:true,grid:false},
+  {name:"陈伟",type:"自有",role:"技工",ok:true,grid:false},
+  {name:"李铁牛",type:"外包",role:"副工",ok:true,grid:false},
+  {name:"刘海",type:"自有",role:"副工",ok:true,grid:true},
+  {name:"陈小兵",type:"外包",role:"副工",ok:true,grid:true},
+  {name:"张二狗",type:"外包",role:"副工",ok:false,grid:false},
 ];
+// 国网准入小标签
+function gridBadge(w){
+  return w.grid
+    ? `<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#e3f0ff;color:#1b5fd0;margin-left:4px;vertical-align:middle;">国网准入</span>`
+    : `<span style="font-size:10px;font-weight:400;padding:1px 6px;border-radius:4px;background:#f3f4f6;color:#9ca3af;margin-left:4px;vertical-align:middle;">未准入</span>`;
+}
 function refreshRisk5(){
   document.querySelectorAll("#fRisk > div").forEach(o => {
     const on = o.classList.contains("on");
@@ -2108,6 +2580,101 @@ function pickRisk5(el){
   el.classList.add("on");
   refreshRisk5();
 }
+// 一个项目一次可添加多条任务：本页待保存任务
+let pendingTasks = [];
+
+function riskChip(risk){
+  const map = {
+    "I":   ["#fdecec","#d93a3a"],
+    "II":  ["#fdecec","#d93a3a"],
+    "III": ["#fff4e5","#b45309"],
+    "IV":  ["#f1f3f5","#6b7280"],
+    "V":   ["#f1f3f5","#6b7280"]
+  };
+  const c = map[risk] || map["III"];
+  return `<span style="display:inline-block;font-size:10px;font-weight:600;padding:2px 6px;border-radius:6px;background:${c[0]};color:${c[1]};vertical-align:middle;">风险${risk}</span>`;
+}
+
+function renderPendingTasks(){
+  const box = document.getElementById("pendingTaskBox");
+  const list = document.getElementById("pendingTaskList");
+  const cnt = document.getElementById("pendingTaskCount");
+  if (!box) return;
+  if (!pendingTasks.length) {
+    box.style.display = "none"; list.innerHTML = ""; cnt.textContent = "0";
+    document.getElementById("nextTaskLabel").style.display = "none";
+    return;
+  }
+  box.style.display = "block";
+  document.getElementById("nextTaskLabel").style.display = "block";
+  cnt.textContent = pendingTasks.length;
+  list.innerHTML = pendingTasks.map((t,i)=>`<div style="display:flex;align-items:flex-start;gap:8px;background:#f8fafc;border:1px solid #eceff3;border-radius:10px;padding:9px 11px;margin-bottom:6px;">
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:14px;color:#222;font-weight:600;line-height:1.35;">${i+1}. ${t.name} ${riskChip(t.risk)}</div>
+      <div style="font-size:11px;color:#888;margin-top:3px;">${t.projectName}${t.loc?" · "+t.loc:""}${t.people?" · "+t.people:""}</div>
+    </div>
+    <span onclick="delPendingTask(${i})" style="flex:none;color:#ef4444;font-size:12px;cursor:pointer;padding:2px 4px;">删除</span>
+  </div>`).join("");
+}
+function delPendingTask(i){
+  pendingTasks.splice(i,1);
+  renderPendingTasks();
+}
+function clearTaskFieldsForNext(){
+  document.getElementById("fTaskName").value = "";
+  document.getElementById("fTaskReq").value = "";
+  document.getElementById("fTaskLoc").value = "";
+  loadMachines(null); loadCars(null); loadCrew(null);
+  syncPeopleArea();
+  document.querySelectorAll("#fRisk > div").forEach(o => o.classList.remove("on"));
+  const first = document.querySelector("#fRisk > div[data-r='I']");
+  if (first) first.classList.add("on");
+  refreshRisk5();
+  renderTaskHistory();
+}
+// 读当前表单 -> 一条任务对象（校验不过返回 null）
+function newTaskObject(){
+  const name = document.getElementById("fTaskName").value.trim();
+  const req = document.getElementById("fTaskReq").value.trim();
+  const loc = document.getElementById("fTaskLoc").value.trim();
+  const proj = document.getElementById("fProject").value.trim();
+  const riskEl = document.querySelector("#fRisk > div.on");
+  if (!proj) { toast("请先选择项目"); return null; }
+  if (!name) { toast("请填作业内容"); return null; }
+  if (!riskEl) { toast("请选风险等级"); return null; }
+  const t = {
+    name, req, loc, risk: riskEl.dataset.r, projectName: proj,
+    people: document.getElementById("fPeople").value.trim(),
+    machine: machineText(tempMachines.map(m => ({ name: m.name, plate: m.plate }))),
+    subs: [], leaders: [], captains: [], workers: [], helpers: []
+  };
+  t.cars = tempCars.slice(); t.car = t.cars.join("、");
+  t.subs = buildMachSubs(); applyCrewTo(t);
+  if (!TASK_HISTORY.includes(name)) TASK_HISTORY.unshift(name);
+  if (TASK_HISTORY.length>10) TASK_HISTORY.pop();
+  lastProjName = proj;
+  return t;
+}
+function addPendingTask(){
+  const t = newTaskObject();
+  if (!t) return;
+  pendingTasks.push(t);
+  renderPendingTasks();
+  clearTaskFieldsForNext();         // 保留项目，清空任务字段，接着填下一条
+  toast(`已加入第${pendingTasks.length}条，项目保持不变`);
+}
+// 把任务插入到主界面某项目（PLANS）
+function insertTaskToPlans(t){
+  const code = (PROJECT_LIB.find(x=>x.name===t.projectName)||{}).code || t.projectName;
+  let p = PLANS[currentDate].find(x => x.code === code);
+  if (!p) {
+    const lib = PROJECT_LIB.find(x => x.name === t.projectName);
+    p = { code, name: t.projectName, manager: lib ? lib.manager : "", g: currentGroup === "all" ? "pw" : currentGroup, tasks: [] };
+    PLANS[currentDate].push(p);
+  }
+  p.tasks.push(t);
+}
+
 function saveTask() {
   const name = document.getElementById("fTaskName").value.trim();
   const req = document.getElementById("fTaskReq").value.trim();
@@ -2118,29 +2685,26 @@ function saveTask() {
   const people = document.getElementById("fPeople").value.trim();
   const riskEl = document.querySelector("#fRisk > div.on");
   if (!proj) return toast("请先选择项目");
-  if (!name) return toast("请填作业内容");
-  if (!riskEl) return toast("请选风险等级");
-  const risk = riskEl.dataset.r;
-  if (!TASK_HISTORY.includes(name)) TASK_HISTORY.unshift(name);
+  const risk = riskEl ? riskEl.dataset.r : "I";
+  if (!TASK_HISTORY.includes(name) && name) TASK_HISTORY.unshift(name);
   if (TASK_HISTORY.length>10) TASK_HISTORY.pop();
   lastProjName = proj;
 
   if (editingTaskCtx) {
+    if (!name) return toast("请填作业内容");
+    if (!riskEl) return toast("请选风险等级");
     if (editingTaskCtx.source === "home-new") {
-      const code = editingTaskCtx.code || projCodeOf(proj);
-      let p = PLANS[currentDate].find(x => x.code === code);
-      if (!p) {
-        // 计划里还没有这个项目，自动新建一个项目分组
-        const lib = PROJECT_LIB.find(x => x.name === proj);
-        p = { code: code, name: proj, manager: lib ? lib.manager : "", tasks: [] };
-        PLANS[currentDate].push(p);
-      }
+      // 主界面新增：支持本页多条一起入库
       const t0 = { name, req, loc, risk, projectName:proj, people, machine, subs: [], leaders: [], captains: [], workers: [], helpers: [] };
       t0.subs = buildMachSubs(); t0.machine = machine; t0.cars = cars.slice(); t0.car = cars.join("、"); applyCrewTo(t0);
-      p.tasks.push(t0);
+      const batch = pendingTasks.slice();
+      if (name) batch.push(t0);
+      if (!batch.length) return toast("请至少填写 1 条作业内容");
+      batch.forEach(t => insertTaskToPlans(t));
+      pendingTasks = [];
       closeTaskSheet();
       renderHome();
-      toast("任务已添加");
+      toast(`已添加 ${batch.length} 条任务`);
       return;
     }
     if (editingTaskCtx.source === "plans") {
@@ -2169,15 +2733,19 @@ function saveTask() {
     return;
   }
 
-  // 新增任务：项目由任务内选择决定
-  const code = resolveProjCode(proj);
-  if (!draft.tasks[code]) draft.tasks[code] = [];
-  const nt = { name, req, loc, risk, projectName:proj, people, machine, subs: [], leaders: [], captains: [], workers: [], helpers: [] };
-  nt.subs = buildMachSubs(); nt.machine = machine; nt.cars = cars.slice(); nt.car = cars.join("、"); applyCrewTo(nt);
-  draft.tasks[code].push(nt);
+  // 新增（可批量）：本页累积的多条 + 当前表单这一条
+  const batch = pendingTasks.slice();
+  if (name) batch.push(newTaskObject());
+  if (!batch.length) return toast("请至少填写 1 条作业内容");
+  batch.forEach(t => {
+    const code = resolveProjCode(t.projectName);
+    if (!draft.tasks[code]) draft.tasks[code] = [];
+    draft.tasks[code].push(t);
+  });
+  pendingTasks = [];
   closeTaskSheet();
   renderNewBody();
-  toast("任务已添加");
+  toast(`已添加 ${batch.length} 条任务`);
 }
 // 项目名 -> 项目编号（库里没有则用名称本身作为 key）
 function projCodeOf(name) {
@@ -2296,7 +2864,7 @@ function closePicker() { closeSheet("pickerMask", "pickerSheet"); }
 // ===== 调人浮层：按机械分组，一组一组安排 =====
 let assignCtx = null;
 function openAssign(code, ti) {
-  if (PLAN_STATUS[currentDate] === "published" && !homeEditing) { toast("已发布的计划，请先点修改"); return; }
+  if (planStatusOf(currentDate, currentGroup) === "published" && !homeEditing) { toast("已发布的计划，请先点修改"); return; }
   assignCtx = { code: code, ti: ti };
   renderAssignList();
   openSheet("assignMask", "assignSheet");
@@ -2346,7 +2914,8 @@ function renderPickerList() {
     if (pickerFilter === "out" && w.src !== "out") return false;
     if (pickerFilter === "tech" && w.kind !== "技工") return false;
     if (pickerFilter === "help" && w.kind !== "副工") return false;
-    if (kw && w.name.indexOf(kw) < 0 && w.kind.indexOf(kw) < 0) return false;
+    if (pickerFilter === "grid" && !w.grid) return false;
+    if (kw && w.name.indexOf(kw) < 0 && w.kind.indexOf(kw) < 0 && (!w.grid || "国网准入".indexOf(kw) < 0)) return false;
     return true;
   }).forEach(w => {
     const dis = w.ins === "bad";
@@ -2355,7 +2924,7 @@ function renderPickerList() {
     html += `<div class="worker-row ${dis ? "disabled" : ""}" data-name="${w.name}">
       <div class="avatar">${w.name[0]}</div>
       <div class="worker-info">
-        <div class="worker-name">${w.name}${srcTag}</div>
+        <div class="worker-name">${w.name}${srcTag}${gridBadge(w)}</div>
         <div class="worker-sub">${w.kind} · <span class="ins-badge ${insCls}">${w.insText}</span>${dis ? " · 保险异常不能选" : ""}</div>
       </div>
       <div class="check ${pickedSet.has(w.name) ? "on" : ""}"></div>
@@ -2442,18 +3011,26 @@ function doCopy(fromDate, toDate) {
 function publishPlan() {
   const codes = Object.keys(draft.tasks || {}).filter(c => (draft.tasks[c] || []).length > 0);
   if (codes.length === 0) return toast("请先添加任务");
-  PLANS[draft.date] = codes.map(code => {
+  const gid = currentGroup === "all" ? GROUPS[0].id : currentGroup;
+  const newList = codes.map(code => {
     const p = PROJECT_LIB.find(x => x.code === code);
     const pname = draft.projNames && draft.projNames[code] ? draft.projNames[code] : (p ? p.name : code);
-    return { code: code, name: pname, manager: p ? p.manager : "", tasks: draft.tasks[code] || [] };
+    return { code: code, name: pname, manager: p ? p.manager : "", g: PROJ_GROUP[code] || gid, tasks: draft.tasks[code] || [] };
   });
+  // 只替换本组那份，别把其他组的计划覆盖掉
+  const keep = (PLANS[draft.date] || []).filter(p => projGroup(p) !== gid);
+  PLANS[draft.date] = keep.concat(newList);
+  PLANS[draft.date]._fromWeek = false;
   const d = draft.date;
+  setPlanStatus(d, gid, "published");
+  currentGroup = gid;
   draft = null;
   closeSheet("taskMask","taskSheet"); closeSheet("subMask","subSheet");
   closePicker(); closeCopy();
   go("home");
   selectDate(d);
-  toast("日计划已发布，可分享到群");
+  const unLeft = mechUnarrangedOfPlan(planOfGroup(d, gid));
+  toast(unLeft ? `${gName(gid)}日计划已提交审核，机械还有 ${unLeft} 台未安排` : `${gName(gid)}日计划已提交审核，等待${AUDITOR}审核`);
 }
 
 // ===== 通用 sheet =====
@@ -2499,11 +3076,60 @@ function toast(msg) {
   toastTimer = setTimeout(() => t.classList.remove("active"), 1800);
 }
 
-// 初始
+// 初始（所有日期按本机当前日期计算）
+// 支持 #all / #pw / #yx 直接落到某个视图，方便演示；可用 #pw@1 落到明天的配网组
+const hashRaw = (location.hash || "").replace("#", "");
+const hashParts = hashRaw.split("@");
+const initG = hashParts[0];
+const initOff = hashParts.length > 1 ? parseInt(hashParts[1], 10) : 0;
+if (!isNaN(initOff) && initOff !== 0) currentDate = mOf(initOff);
+currentGroup = (initG === "all" || GROUPS.some(g => g.id === initG)) ? initG : GROUPS[0].id;
 inheritFromWeek();
-homeEditing = planStatusOf(currentDate) === "draft";   // 11/13 未发布 => 直接进编辑界面
+homeEditing = planStatusOf(currentDate, currentGroup) === "draft";
 renderDateStrip();
 renderHome();
+
+// 原型直达： #multi 打开添加任务弹层并预置两条任务
+if (initG === "multi") {  addTaskToHomeNew();
+  document.getElementById("fProject").value = "园垄线10kV线路架设工程";
+  pendingTasks = [
+    { name:"放线", req:"邻近带电体注意安全", loc:"#3-#5 杆塔", risk:"II", projectName:"园垄线10kV线路架设工程", people:"黄志远、李军", machine:"", cars:[], car:"", subs:[], leaders:[], captains:[], workers:[], helpers:[] },
+    { name:"立杆", req:"", loc:"#6-#8 杆塔", risk:"III", projectName:"园垄线10kV线路架设工程", people:"陈立军", machine:"吊车1台", cars:[], car:"", subs:[], leaders:[], captains:[], workers:[], helpers:[] }
+  ];
+  renderPendingTasks();
+}
+// 原型直达：#draft 打开新建日计划（带一条示例任务）看底部「提交审核 / 存草稿」
+if (initG === "draft") {
+  const d = mOf(2);
+  draft = { date: d, selectedProjects: ["XM2026-018"], projNames: {}, tasks: {} };
+  draft.tasks["XM2026-018"] = [samplePlanA()[0].tasks[0]];
+  document.getElementById("newTitle").textContent = `新建 ${d} 日计划`;
+  renderNewBody();
+  go("new");
+}
+// 原型直达：#mech 打开第一条有机械申请的任务的进度浮层
+if (initG === "mech") {
+  const p = (PLANS[currentDate] || []).find(x => (x.tasks || []).some(t => t.mr));
+  if (p) {
+    const ti = p.tasks.findIndex(t => t.mr);
+    openMechProgress(p.code, ti);
+  }
+}
+// 原型直达：#mapply 滚到「申请机械」按钮处（营销组草稿）
+if (initG === "mapply") {
+  selectGroup("yx");
+  setTimeout(function () {
+    const el = document.querySelector(".mech-apply");
+    if (el) el.scrollIntoView({ block: "center" });
+  }, 300);
+}
+// 原型直达：#crew 打开「选择队长」看国网准入标识
+if (initG === "crew") {
+  addTaskToHomeNew();
+  document.getElementById("fProject").value = "园垄线10kV线路架设工程";
+  document.getElementById("fTaskName").value = "立杆";
+  openCrewPick(-1, "captain");
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>履职打卡 - 郴江电力</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; background:#e9ecf1; }
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+  .phone { width:390px; height:820px; background:#f4f6f9; border-radius:36px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.18); position:relative; display:flex; flex-direction:column; }
+  .statusbar { height:44px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:14px; font-weight:600; flex-shrink:0; }
+  .statusbar .right { display:flex; align-items:center; gap:6px; font-size:12px; }
+  .navbar { height:48px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 12px; border-bottom:1px solid #f0f0f0; flex-shrink:0; }
+  .navbar .back { font-size:15px; color:#2b7cff; padding:8px 4px; cursor:pointer; }
+  .navbar .title { font-size:17px; font-weight:600; color:#222; }
+  .navbar .right { min-width:76px; text-align:right; font-size:12px; color:#66707c; }
+
+  .body { flex:1; overflow-y:auto; background:#f4f6f9; padding-bottom:24px; }
+
+  .tabs { display:flex; background:#fff; border-bottom:1px solid #f0f0f0; margin-bottom:10px; }
+  .tab { flex:1; text-align:center; padding:12px 0; font-size:13px; color:#66707c; cursor:pointer; position:relative; }
+  .tab.on { color:#2b7cff; font-weight:700; }
+  .tab.on::after { content:""; position:absolute; left:50%; transform:translateX(-50%); bottom:0; width:42px; height:2px; background:#2b7cff; border-radius:2px; }
+
+  .sec-title { font-size:11px; color:#98a2b3; padding:6px 14px 6px; }
+
+  .c-card { background:#fff; margin:0 12px 10px; border-radius:12px; padding:13px 14px; cursor:pointer; }
+  .c-top { display:flex; align-items:flex-start; gap:8px; }
+  .c-task { flex:1; min-width:0; font-size:15px; font-weight:700; color:#222; line-height:1.4; }
+  .risk { flex:none; font-size:10px; font-weight:700; padding:2px 8px; border-radius:8px; white-space:nowrap; }
+  .risk-4 { background:#fff7ed; color:#ea580c; }
+  .risk-5 { background:#fee2e2; color:#dc2626; }
+  .c-meta { font-size:12px; color:#98a2b3; margin-top:7px; line-height:1.6; }
+  .c-loc { font-size:12px; color:#66707c; margin-top:3px; }
+  .c-note {
+    font-size:12px; color:#66707c; background:#f7f9fc; border-radius:8px;
+    padding:8px 10px; margin-top:9px; line-height:1.6;
+  }
+  .c-foot { display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+  .st { font-size:11px; font-weight:600; }
+  .st-pending { color:#ea580c; }
+  .st-overdue { color:#dc2626; }
+  .st-done { color:#16a34a; }
+  .go { font-size:12px; color:#2b7cff; font-weight:600; }
+  .done-box { font-size:12px; color:#66707c; background:#f8fbf8; border-radius:8px; padding:10px 12px; margin-top:9px; line-height:1.9; }
+  .done-box .dl { display:flex; gap:8px; }
+  .done-box .dl span { flex:none; width:58px; color:#98a2b3; }
+  .done-box b { color:#16a34a; font-weight:600; }
+
+  .empty { margin:46px 12px; text-align:center; font-size:13px; color:#a7b0bd; line-height:1.9; }
+
+  /* 弹层 */
+  .mask { position:absolute; inset:0; background:rgba(0,0,0,.45); z-index:50; display:none; align-items:flex-end; }
+  .mask.open { display:flex; }
+  .sheet { background:#fff; width:100%; max-height:88%; border-radius:16px 16px 0 0; display:flex; flex-direction:column; }
+  .sheet-head { padding:14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0f0f0; }
+  .sheet-title { font-size:16px; font-weight:600; color:#222; }
+  .sheet-close { color:#888; font-size:14px; cursor:pointer; }
+  .sheet-body { flex:1; overflow-y:auto; padding:12px 16px 16px; }
+  .sheet-foot { flex-shrink:0; padding:12px 16px; border-top:1px solid #f0f0f0; display:flex; gap:10px; }
+  .btn-primary { flex:1; height:46px; border:none; border-radius:10px; background:#2b7cff; color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn-secondary { flex:1; height:46px; border:1px solid #2b7cff; border-radius:10px; background:#fff; color:#2b7cff; font-size:15px; font-weight:600; cursor:pointer; }
+
+  .task-box { background:#f7f9fc; border-radius:10px; padding:12px 14px; }
+  .tb-task { font-size:15px; font-weight:700; color:#222; line-height:1.4; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .tb-row { font-size:12px; color:#66707c; margin-top:7px; line-height:1.6; }
+  .tb-row span { color:#98a2b3; }
+
+  .f-sec { font-size:12px; font-weight:600; color:#98a2b3; margin:18px 0 2px; letter-spacing:.5px; }
+  .f-row { display:flex; align-items:flex-start; gap:10px; padding:11px 0; border-bottom:1px solid #f4f5f7; }
+  .f-row > label { flex:none; width:76px; font-size:13px; color:#66707c; padding-top:6px; }
+  .f-in { flex:1; min-width:0; width:100%; border:0; outline:none; font-size:14px; color:#222; padding:5px 0; background:transparent; font-family:inherit; }
+  .f-in::placeholder { color:#b6bfcc; }
+  .relocate { flex:none; font-size:11px; color:#2b7cff; border:1px solid #dbeafe; background:#f0f6ff; border-radius:9px; padding:2px 8px; cursor:pointer; display:inline-block; margin-left:2px; }
+  .f-tip { font-size:11px; color:#98a2b3; margin-top:2px; }
+  .f-area {
+    width:100%; min-height:64px; border:1px solid #e8ecf3; border-radius:8px;
+    padding:9px 10px; font-size:13px; color:#3a3f47; line-height:1.55; resize:vertical;
+    outline:none; background:#fbfcfe; font-family:inherit;
+  }
+  .ph-grid { display:flex; flex-wrap:wrap; gap:8px; }
+  .ph {
+    width:68px; height:68px; border-radius:8px; background:#eef2f8;
+    display:flex; align-items:center; justify-content:center; font-size:11px;
+    color:#8895a7; position:relative; cursor:pointer;
+  }
+  .ph-add { border:1px dashed #bcd6ff; background:#f7fbff; color:#2b7cff; font-size:22px; font-weight:300; }
+
+  .toast { position:absolute; left:50%; bottom:110px; transform:translateX(-50%); background:rgba(0,0,0,.78); color:#fff; font-size:13px; padding:9px 16px; border-radius:18px; opacity:0; pointer-events:none; transition:opacity .18s; z-index:80; white-space:nowrap; }
+  .toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar">
+    <span>9:41</span>
+    <div class="right"><span>信号</span><span>Wi-Fi</span><span>100%</span></div>
+  </div>
+  <div class="navbar">
+    <span class="back" onclick="goBack()">‹ 现场管理</span>
+    <span class="title">履职打卡</span>
+    <span class="right"></span>
+  </div>
+
+  <div class="body" id="bodyWrap">
+    <div class="tabs" id="tabs"></div>
+    <div id="list"></div>
+  </div>
+
+  <!-- 打卡弹层 -->
+  <div class="mask" id="checkMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title">履职打卡</div>
+        <div class="sheet-close" onclick="closeCheck()">关闭</div>
+      </div>
+      <div class="sheet-body" id="checkBody"></div>
+      <div class="sheet-foot">
+        <button class="btn-secondary" onclick="closeCheck()">取消</button>
+        <button class="btn-primary" onclick="submitCheck()">提交打卡</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ========== 当前人员（原型演示：登录人＝黄志远）==========
+const ME = "黄志远";
+
+// ========== 本周任务（由周计划生成：风险等级高于 III 级 → 待履职打卡）==========
+// off：相对今天的天数（-1 昨天、0 今天、1 明天）
+const TASKS = [
+  {
+    id: "t1", proj: "园垄线10kV线路改造工程", task: "10kV 分支箱拆除（邻近带电体）",
+    risk: "IV", off: -2, loc: "#3-#5 杆塔", note: "邻近带电体，需专人监护；作业前验电接地，禁止单人作业",
+    leader: "黄志远", captain: "唐良辉", done: false, check: null
+  },
+  {
+    id: "t2", proj: "园垄线10kV线路改造工程", task: "环网箱基础吊装（吊车作业）",
+    risk: "IV", off: 0, loc: "HA-2 环网箱基础", note: "吊装半径内严禁站人，专人指挥；六级以上大风停止吊装",
+    leader: "黄志远", captain: "李军", done: false, check: null
+  },
+  {
+    id: "t3", proj: "珠东线电缆通道改造", task: "顶管穿越河道段",
+    risk: "V", off: 1, loc: "东江路 K2+300", note: "有限空间作业，作业前通风检测，全程监护，配备正压式呼吸器",
+    leader: "周国华", captain: "黄志远", done: false, check: null
+  },
+  {
+    id: "t4", proj: "高速杆迁瓦窑坪支线工程", task: "深基坑开挖（3m 以上）",
+    risk: "IV", off: -2, loc: "瓦窑坪支线 #12 杆", note: "放坡系数不足须支护，坑边 1m 内禁止堆土",
+    leader: "黄志远", captain: "张强", done: true,
+    check: { time: "", loc: "郴州市苏仙区瓦窑坪（±6m）", note: "已支护，放坡 1:0.75，安全员全程在场", photos: 2 }
+  },
+  {
+    // 责任人不是当前登录人：列表不显示
+    id: "t5", proj: "高速杆迁瓦窑坪支线工程", task: "跨越架搭设",
+    risk: "V", off: 0, loc: "瓦窑坪支线 #15 杆", note: "跨越带电线路，须停电配合",
+    leader: "陈立军", captain: "王磊", done: false, check: null
+  }
+];
+
+// ========== 工具 ==========
+const WDS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+const TODAY = new Date();
+function dOf(off) { return new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + off); }
+function mOf(off) { const d = dOf(off); return (d.getMonth() + 1) + "/" + d.getDate(); }
+function wOf(off) { return WDS[dOf(off).getDay()]; }
+function stampOf(off) { const d = dOf(off); return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+function pad2(n) { return n < 9 ? "0" + n : "" + (n + 0); }
+function nowText() {
+  const d = new Date();
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + " " +
+         pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+}
+function riskCls(r) { return r === "V" ? "risk-5" : "risk-4"; }
+function stOf(t) {
+  if (t.done) return "done";
+  return t.off < 0 ? "overdue" : "pending";
+}
+function visibleTasks() {
+  return TASKS.filter(t => t.leader === ME || t.captain === ME);
+}
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove("show"), 1800);
+}
+function goBack() { location.href = "../site.html"; }
+
+// ========== 状态 ==========
+let filter = "pending";   // pending | done
+let openId = null;        // 当前打卡的任务
+let photos = 0;
+
+// ========== 渲染 ==========
+function render() {
+  const mine = visibleTasks();
+  const pend = mine.filter(t => !t.done);
+  const done = mine.filter(t => t.done);
+  const overdue = pend.filter(t => t.off < 0);
+  const fresh = pend.filter(t => t.off >= 0);
+
+  document.getElementById("tabs").innerHTML = `
+    <div class="tab ${filter === "pending" ? "on" : ""}" onclick="setFilter('pending')">待打卡 ${fresh.length}</div>
+    <div class="tab ${filter === "overdue" ? "on" : ""}" onclick="setFilter('overdue')">已超期 ${overdue.length}</div>
+    <div class="tab ${filter === "done" ? "on" : ""}" onclick="setFilter('done')">本周已打卡 ${done.length}</div>`;
+
+  const arr = filter === "pending" ? fresh : (filter === "overdue" ? overdue : done);
+  if (!arr.length) {
+    document.getElementById("list").innerHTML = filter === "overdue"
+      ? `<div class="empty">本周没有超期未打卡的任务</div>`
+      : (filter === "done"
+          ? `<div class="empty">本周还没有履职打卡记录</div>`
+          : `<div class="empty">本周没有待打卡的高风险任务<br>风险 IV / V 级的任务才会生成履职打卡</div>`);
+    return;
+  }
+
+  document.getElementById("list").innerHTML = arr.map(t => {
+    const st = stOf(t);
+    const stTxt = st === "done" ? "已打卡" : (st === "overdue" ? "已超期 · 未打卡" : "待打卡");
+    const stCls = st === "done" ? "st-done" : (st === "overdue" ? "st-overdue" : "st-pending");
+    const dateTxt = (t.off === 0 ? "今天 " : t.off === -1 ? "昨天 " : t.off === 1 ? "明天 " : "") +
+                    mOf(t.off) + " " + wOf(t.off);
+    return `<div class="c-card" onclick="openCheck('${t.id}')">
+      <div class="c-top">
+        <div class="c-task">${t.task}</div>
+        <span class="risk ${riskCls(t.risk)}">风险 ${t.risk}</span>
+      </div>
+      <div class="c-meta">${t.proj} · 计划 ${dateTxt}<br>责任人 ${t.leader} · 队长 ${t.captain}</div>
+      <div class="c-loc">作业地点：${t.loc || "待现场确认"}</div>
+      <div class="c-note">注意事项：${t.note || "—"}</div>
+      ${st === "done" ? `<div class="done-box">
+        <div class="dl"><span>打卡人</span><b>${t.check.by || ME}</b></div>
+        <div class="dl"><span>打卡时间</span><div style="flex:1">${t.check.time || stampOf(t.off) + " 08:00"}</div></div>
+        <div class="dl"><span>打卡地点</span><div style="flex:1">${t.check.loc}</div></div>
+        <div class="dl"><span>事项</span><div style="flex:1">${t.check.note || "无"}</div></div>
+        <div class="dl"><span>照片</span><div style="flex:1">${t.check.photos} 张</div></div>
+      </div>` : ""}
+      <div class="c-foot">
+        <span class="st ${stCls}">${stTxt}</span>
+        <span class="go">${st === "done" ? "查看打卡记录 ›" : "去打卡 ›"}</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function setFilter(f) { filter = f; render(); }
+
+// ========== 打卡弹层 ==========
+function openCheck(id) {
+  const t = TASKS.find(x => x.id === id);
+  if (!t) return;
+  openId = id;
+
+  if (t.done) {
+    photos = t.check.photos || 0;
+  } else {
+    photos = 0;
+  }
+  document.getElementById("checkBody").innerHTML = `
+    <div class="task-box">
+      <div class="tb-task">${t.task}<span class="risk ${riskCls(t.risk)}">风险 ${t.risk}</span></div>
+      <div class="tb-row"><span>项目：</span>${t.proj}</div>
+      <div class="tb-row"><span>作业地点：</span>${t.loc || "待现场确认"}</div>
+      <div class="tb-row"><span>注意事项：</span>${t.note || "—"}</div>
+      <div class="tb-row"><span>责任人：</span>${t.leader} · 队长 ${t.captain}</div>
+    </div>
+
+    <div class="f-sec">打卡内容${t.done ? "（已提交，只读）" : ""}</div>
+    <div class="f-row">
+      <label>打卡时间</label>
+      <div style="flex:1;min-width:0">
+        <div class="f-in" style="padding-top:5px;">${t.done ? t.check.time : nowText()}</div>
+        <div class="f-tip">进入页面自动取当前时间</div>
+      </div>
+    </div>
+    <div class="f-row">
+      <label>打卡地点</label>
+      <div style="flex:1;min-width:0">
+        ${t.done
+          ? `<div class="f-in" style="padding-top:5px;">${t.check.loc}</div>`
+          : `<input class="f-in" id="ckLoc" value="${GEO}">
+             <div class="f-tip">已按定位带出，可手动修改 · <span class="relocate" onclick="relocate()">重新定位</span></div>`}
+      </div>
+    </div>
+    <div class="f-row" style="border-bottom:0;align-items:flex-start;">
+      <label>备注事项</label>
+      <div style="flex:1;min-width:0">
+        ${t.done
+          ? `<div class="f-in" style="padding-top:5px;">${t.check.note || "无"}</div>`
+          : `<textarea class="f-area" id="ckNote" placeholder="如：已验电接地、安全员在场、天气与周边环境（选填）"></textarea>`}
+      </div>
+    </div>
+    <div class="f-row" style="border-bottom:0;align-items:flex-start;">
+      <label>现场照片</label>
+      <div style="flex:1;min-width:0">
+        <div class="ph-grid" id="phGrid"></div>
+        <div class="f-tip">${t.done ? "已上传 " + photos + " 张" : "选传，最多 6 张；点到现场作业面和防护措施"}</div>
+      </div>
+    </div>`;
+
+  renderPhotos(t.done);
+  document.getElementById("checkMask").classList.add("open");
+}
+
+const GEO = "湖南省郴州市北湖区人民东路";
+
+function relocate() {
+  const el = document.getElementById("ckLoc");
+  if (el) el.value = GEO;
+  toast("已重新定位");
+}
+
+function renderPhotos(readonly) {
+  const g = document.getElementById("phGrid");
+  if (!g) return;
+  let s = "";
+  for (let i = 0; i < photos; i++) {
+    s += `<div class="ph" onclick="${readonly ? "" : "delPhoto()"}">照片 ${i + 1}</div>`;
+  }
+  if (!readonly && photos < 6) s += `<div class="ph ph-add" onclick="addPhoto()">+</div>`;
+  g.innerHTML = s || `<div style="font-size:12px;color:#a7b0bd;padding:6px 0;">还没有照片</div>`;
+}
+function addPhoto() {
+  if (photos >= 6) { toast("最多上传 6 张"); return; }
+  photos++;
+  renderPhotos(false);
+  toast("已添加 1 张照片（演示）");
+}
+function delPhoto() {
+  if (photos <= 0) return;
+  photos--;
+  renderPhotos(false);
+}
+function closeCheck() {
+  document.getElementById("checkMask").classList.remove("open");
+  openId = null;
+}
+function submitCheck() {
+  const t = TASKS.find(x => x.id === openId);
+  if (!t) return;
+  if (t.done) { closeCheck(); return; }
+  const loc = (document.getElementById("ckLoc").value || "").trim();
+  if (!loc) { toast("请填写打卡地点"); return; }
+  const note = (document.getElementById("ckNote").value || "").trim();
+  t.done = true;
+  t.check = { by: ME, time: nowText(), loc: loc, note: note, photos: photos };
+  closeCheck();
+  filter = "done";
+  render();
+  toast("打卡成功，已记录履职痕迹");
+}
+
+// ========== 启动 ==========
+render();
+</script>
+</body>
+</html>

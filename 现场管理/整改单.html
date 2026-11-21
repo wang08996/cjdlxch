@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>整改单 - 郴江电力</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; background:#e9ecf1; }
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+  .phone { width:390px; height:820px; background:#f5f6f8; border-radius:36px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.18); position:relative; display:flex; flex-direction:column; }
+  .statusbar { height:44px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:14px; font-weight:600; flex-shrink:0; }
+  .statusbar .right { display:flex; align-items:center; gap:6px; font-size:12px; }
+  .navbar { height:48px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 12px; border-bottom:1px solid #f0f0f0; flex-shrink:0; }
+  .navbar .back { font-size:15px; color:#2b7cff; padding:8px 4px; cursor:pointer; }
+  .navbar .title { font-size:17px; font-weight:600; color:#222; }
+  .navbar .right { min-width:58px; text-align:right; font-size:13px; color:#2b7cff; cursor:pointer; }
+
+  .tabs { display:flex; background:#fff; flex-shrink:0; border-bottom:1px solid #f0f0f0; }
+  .tab { flex:1; text-align:center; padding:12px 0 11px; font-size:14px; color:#666; cursor:pointer; position:relative; }
+  .tab.on { color:#2b7cff; font-weight:600; }
+  .tab.on::after { content:""; position:absolute; left:50%; transform:translateX(-50%); bottom:0; width:30px; height:3px; border-radius:2px; background:#2b7cff; }
+
+  .pane { flex:1; min-height:0; overflow-y:auto; padding-bottom:16px; background:#f5f6f8; }
+  .pane.hide { display:none; }
+
+  .sec-title { padding:14px 18px 8px; font-size:12px; color:#98a2b3; }
+  .card { background:#fff; margin:0 12px; border-radius:12px; overflow:hidden; }
+  .row { display:flex; align-items:center; min-height:50px; padding:11px 14px; border-bottom:1px solid #f4f5f7; gap:10px; }
+  .row:last-child { border-bottom:none; }
+  .row.tap { cursor:pointer; }
+  .row .lbl { font-size:13px; color:#66707c; flex:none; width:92px; }
+  .row .lbl i { color:#dc2626; font-style:normal; margin-right:2px; }
+  .row .val { flex:1; min-width:0; text-align:right; font-size:14px; color:#222; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .row .val.ph { color:#b6bfcc; }
+  .row .arr { flex:none; color:#c9cdd4; font-size:13px; }
+  .inp { flex:1; min-width:0; width:100%; border:0; outline:none; font-size:14px; color:#222; background:transparent; font-family:inherit; text-align:right; }
+  .inp.ph::placeholder { color:#b6bfcc; }
+  .inp.left { text-align:left; }
+
+  /* 类型 chips */
+  .tchips { display:flex; gap:8px; flex:1; justify-content:flex-end; }
+  .tchip { font-size:12px; padding:6px 14px; border-radius:14px; border:1px solid #e5e7eb; color:#66707c; background:#f7f9fc; cursor:pointer; }
+  .tchip.on-q { background:#eef4ff; color:#1d4ed8; border-color:#c8ddff; font-weight:600; }
+  .tchip.on-s { background:#fee2e2; color:#b91c1c; border-color:#fbcaca; font-weight:600; }
+
+  .issue-box { padding:11px 14px 14px; }
+  .issue-box .lbl { font-size:13px; color:#66707c; display:block; margin-bottom:7px; }
+  .issue-box .lbl i { color:#dc2626; font-style:normal; margin-right:2px; }
+  .f-area { width:100%; min-height:84px; border:1px solid #e8ecf3; border-radius:8px; padding:9px 10px; font-size:13px; color:#333; line-height:1.6; resize:vertical; outline:none; background:#fbfcfe; font-family:inherit; }
+  .f-area::placeholder { color:#b6bfcc; }
+
+  /* 照片 */
+  .photo-card { background:#fff; margin:10px 12px 0; border-radius:12px; padding:12px 14px 14px; }
+  .photo-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .photo-head .t { font-size:13px; color:#66707c; }
+  .photo-head .t i { color:#dc2626; font-style:normal; }
+  .photo-head .c { font-size:11px; color:#98a2b3; }
+  .photo-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .thumb { position:relative; height:74px; border-radius:8px; background:#eef2f8; display:flex; align-items:center; justify-content:center; font-size:11px; color:#8895a7; }
+  .thumb .del { position:absolute; top:-5px; right:-5px; width:17px; height:17px; line-height:17px; text-align:center; border-radius:50%; background:#dc2626; color:#fff; font-size:10px; }
+  .add-photo { border:1px dashed #ccd3dc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#2b7cff; cursor:pointer; font-size:22px; font-weight:300; background:#fbfcfd; height:74px; }
+
+  .submit-bar { padding:16px 12px 6px; }
+  .btn-main { width:100%; height:46px; border:0; border-radius:23px; background:#2b7cff; color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn-ghost-wide { width:100%; height:46px; border:1px solid #2b7cff; border-radius:23px; background:#fff; color:#2b7cff; font-size:15px; font-weight:600; cursor:pointer; }
+
+  /* 搜索筛选 */
+  .search-wrap { background:#fff; padding:10px 12px 12px; border-bottom:1px solid #f0f0f0; }
+  .search { width:100%; height:36px; border:1px solid #e5e7eb; border-radius:18px; padding:0 14px; font-size:13px; background:#f7f9fc; outline:none; color:#222; }
+  .search::placeholder { color:#a7b0bd; }
+  .chips { display:flex; gap:8px; margin-top:10px; overflow-x:auto; padding-bottom:2px; }
+  .chips::-webkit-scrollbar { display:none; }
+  .fchip { flex:none; font-size:12px; color:#66707c; background:#f2f4f8; border-radius:12px; padding:5px 12px; cursor:pointer; border:1px solid transparent; }
+  .fchip.on { background:#eef4ff; color:#2b7cff; border-color:#c8ddff; font-weight:600; }
+  .list-head { font-size:11px; color:#98a2b3; padding:10px 14px 6px; }
+
+  /* 整改单卡 */
+  .r-card { background:#fff; margin:0 12px 10px; border-radius:12px; padding:13px 14px; cursor:pointer; }
+  .r-top { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .badge { flex:none; font-size:10px; font-weight:600; padding:2px 8px; border-radius:9px; line-height:16px; white-space:nowrap; }
+  .b-q { background:#eef4ff; color:#1d4ed8; }
+  .b-s { background:#fee2e2; color:#b91c1c; }
+  .b-pending { background:#fef3c7; color:#b45309; }
+  .b-replied { background:#dbeafe; color:#1d4ed8; }
+  .b-done { background:#dcfce7; color:#15803d; }
+  .b-over { background:#fee2e2; color:#b91c1c; }
+  .r-no { margin-left:auto; font-size:10px; color:#98a2b3; }
+  .r-issue { font-size:14px; font-weight:600; color:#222; line-height:1.55; margin-top:9px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .r-line { font-size:12px; color:#98a2b3; margin-top:6px; line-height:1.6; }
+  .r-line b { color:#66707c; font-weight:500; }
+  .r-foot { display:flex; justify-content:space-between; align-items:center; margin-top:9px; font-size:11px; color:#a7b0bd; }
+  .r-role { font-size:10px; color:#2b7cff; background:#f0f6ff; border-radius:8px; padding:2px 7px; }
+  .empty { margin:44px 12px; text-align:center; font-size:13px; color:#a7b0bd; line-height:1.9; }
+  .add-row { margin:8px 12px 10px; padding:12px; text-align:center; font-size:14px; color:#2b7cff; border:1px dashed #c8ddff; border-radius:10px; cursor:pointer; background:#fff; }
+
+  /* 弹层 */
+  .mask { position:absolute; inset:0; background:rgba(0,0,0,.45); z-index:50; display:none; align-items:flex-end; }
+  .mask.open { display:flex; }
+  .sheet { background:#fff; width:100%; max-height:86%; border-radius:16px 16px 0 0; display:flex; flex-direction:column; }
+  .sheet-head { padding:14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0f0f0; }
+  .sheet-title { font-size:16px; font-weight:600; color:#222; }
+  .sheet-close { color:#888; font-size:14px; cursor:pointer; }
+  .sheet-body { flex:1; overflow-y:auto; padding:12px 16px 16px; }
+  .sheet-foot { flex-shrink:0; padding:12px 16px; border-top:1px solid #f0f0f0; display:flex; gap:10px; }
+  .btn-primary { flex:1; height:46px; border:none; border-radius:10px; background:#2b7cff; color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn-secondary { flex:1; height:46px; border:1px solid #2b7cff; border-radius:10px; background:#fff; color:#2b7cff; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn-danger { flex:1; height:46px; border:1px solid #fca5a5; border-radius:10px; background:#fff; color:#dc2626; font-size:15px; font-weight:600; cursor:pointer; }
+
+  .pk-item { display:flex; align-items:center; padding:13px 4px; border-bottom:1px solid #f4f5f7; font-size:14px; color:#222; cursor:pointer; }
+  .pk-item.on { color:#2b7cff; font-weight:600; }
+  .pk-item .pk-lead { font-size:11px; color:#98a2b3; margin-left:auto; }
+  .pk-ck { margin-left:8px; color:#2b7cff; font-size:13px; }
+
+  /* 详情 */
+  .d-row { display:flex; gap:10px; padding:9px 0; border-bottom:1px solid #f4f5f7; font-size:13px; }
+  .d-row:last-child { border-bottom:0; }
+  .d-row .k { flex:none; width:74px; color:#98a2b3; }
+  .d-row .v { flex:1; min-width:0; color:#333; line-height:1.6; word-break:break-word; }
+  .d-sec { font-size:12px; font-weight:600; color:#98a2b3; margin:16px 0 4px; }
+  .d-photo { padding:10px 0 12px; border-bottom:1px solid #f4f5f7; }
+  .d-photo-t { font-size:13px; color:#98a2b3; margin-bottom:8px; display:flex; justify-content:space-between; align-items:baseline; }
+  .d-photo-t .c { font-size:11px; color:#a7b0bd; font-weight:400; }
+  .ph-none { font-size:12px; color:#b6bfcc; padding:6px 0; }
+  .reply-box { background:#f6fbf7; border:1px solid #d9f0e1; border-radius:10px; padding:11px 12px; font-size:13px; color:#3a6b4c; line-height:1.7; }
+  .reply-box .rh { font-size:11px; color:#7ba28c; margin-bottom:4px; }
+  .wait-box { background:#fafbfc; border-radius:10px; padding:11px 12px; font-size:12px; color:#98a2b3; line-height:1.7; }
+
+  .cfm-sheet { max-height:none; }
+  .cfm-body { padding:18px 16px 8px; }
+  .cfm-desc { font-size:13px; color:#66707c; margin-top:6px; line-height:1.65; }
+
+  .toast { position:absolute; left:50%; bottom:110px; transform:translateX(-50%); background:rgba(0,0,0,.78); color:#fff; font-size:13px; padding:9px 16px; border-radius:18px; opacity:0; pointer-events:none; transition:opacity .18s; z-index:80; white-space:nowrap; max-width:330px; text-align:center; }
+  .toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar">
+    <span>9:41</span>
+    <div class="right"><span>信号</span><span>Wi-Fi</span><span>100%</span></div>
+  </div>
+  <div class="navbar">
+    <span class="back" onclick="goBack()">‹ 现场管理</span>
+    <span class="title">整改单</span>
+    <span class="right" id="navRight"></span>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="pane" id="paneForm"></div>
+  <div class="pane" id="paneList"></div>
+  <div class="pane hide" id="paneMine"></div>
+
+  <!-- 记录详情 -->
+  <div class="mask" id="detailMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title">整改单详情</div>
+        <div class="sheet-close" onclick="closeMask('detailMask')">关闭</div>
+      </div>
+      <div class="sheet-body" id="detailBody"></div>
+      <div class="sheet-foot" id="detailFoot"></div>
+    </div>
+  </div>
+
+  <!-- 整改回复 -->
+  <div class="mask" id="replyMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title">提交整改回复</div>
+        <div class="sheet-close" onclick="closeMask('replyMask')">关闭</div>
+      </div>
+      <div class="sheet-body" id="replyBody"></div>
+      <div class="sheet-foot">
+        <button class="btn-secondary" onclick="closeMask('replyMask')">取消</button>
+        <button class="btn-primary" onclick="submitReply()">提交</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 项目选择 -->
+  <div class="mask" id="projMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title">选择项目</div>
+        <div class="sheet-close" onclick="closeMask('projMask')">关闭</div>
+      </div>
+      <div class="sheet-body">
+        <input class="search" id="projKw" placeholder="搜索项目名称 / 负责人" oninput="renderProjList()" style="margin-bottom:4px;">
+        <div id="projList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 部位 / 地点 弹窗输入 -->
+  <div class="mask" id="partMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title">填写部位 / 地点</div>
+        <div class="sheet-close" onclick="closeMask('partMask')">关闭</div>
+      </div>
+      <div class="sheet-body">
+        <input class="search" id="partInput" placeholder="如 HA-2 环网箱基础" style="margin-bottom:10px;">
+        <div style="font-size:12px;color:#98a2b3;margin:2px 0 8px;">常用部位</div>
+        <div id="partChips" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+      <div class="sheet-foot" style="display:flex;gap:10px;">
+        <button class="btn-secondary" onclick="closeMask('partMask')">取消</button>
+        <button class="btn-primary" onclick="savePart()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 人员选择 -->
+  <div class="mask" id="personMask">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title">选择整改人</div>
+        <div class="sheet-close" onclick="closeMask('personMask')">关闭</div>
+      </div>
+      <div class="sheet-body">
+        <input class="search" id="personKw" placeholder="搜索姓名 / 岗位 / 部门" oninput="renderPersonList()" style="margin-bottom:4px;">
+        <div id="personList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认 -->
+  <div class="mask" id="cfmMask">
+    <div class="sheet cfm-sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="cfmTitle">删除整改单</div>
+        <div class="sheet-close" onclick="closeMask('cfmMask')">关闭</div>
+      </div>
+      <div class="cfm-body"><div class="cfm-desc" id="cfmDesc"></div></div>
+      <div class="sheet-foot">
+        <button class="btn-secondary" onclick="closeMask('cfmMask')">取消</button>
+        <button class="btn-danger" id="cfmOk">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ========== 当前登录人 ==========
+const ME = "黄志远";
+
+// ========== 基础数据 ==========
+const PEOPLE = [
+  { name: "黄志远", role: "项目经理", dept: "工程部" },
+  { name: "陈立军", role: "施工队长", dept: "工程部" },
+  { name: "周国华", role: "项目经理", dept: "工程部" },
+  { name: "唐良辉", role: "安全员", dept: "安质部" },
+  { name: "李军", role: "技术员", dept: "技术部" },
+  { name: "张强", role: "施工队长", dept: "工程部" },
+  { name: "刘建国", role: "质检员", dept: "安质部" },
+  { name: "王磊", role: "班长", dept: "工程部" },
+  { name: "吴海涛", role: "外包负责人", dept: "外协单位" }
+];
+const PROJECTS = [
+  { code: "xm1", name: "园垄线10kV线路改造工程", leader: "李志强" },
+  { code: "xm2", name: "珠东线配电自动化改造", leader: "周国华" },
+  { code: "xm3", name: "高速杆迁瓦窑坪支线工程", leader: "陈立军" },
+  { code: "xm4", name: "嘉禾县农网巩固提升工程", leader: "刘建国" },
+  { code: "xm5", name: "苏仙区小区供配电改造工程", leader: "张强" }
+];
+const TYPE_TXT = { quality: "质量整改", safety: "安全整改" };
+
+const WDS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+const TODAY = new Date();
+function dOf(off) { return new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + off); }
+function pad2(n) { return n < 9 ? "0" + n : "" + (n + 0); }
+function stampOf(off) { const d = dOf(off); return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+function todayStr() { return stampOf(0); }
+function nowText() { const d = new Date(); return stampOf(0) + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes()); }
+function shortDate(ds) {
+  if (!ds) return "";
+  const p = ds.split("-");
+  const d = new Date(+p[0], +p[1] - 1, +p[2]);
+  return (+p[1]) + "/" + (+p[2]) + " " + WDS[d.getDay()];
+}
+function projOf(code) { return PROJECTS.find(p => p.code === code); }
+function projName(code) { const p = projOf(code); return p ? p.name : code; }
+function personOf(name) { return PEOPLE.find(p => p.name === name); }
+
+// ========== 整改单数据 ==========
+let SEQ = 0;
+function makeNo(dateStr) {
+  SEQ++;
+  return "ZG-" + dateStr.replace(/-/g, "") + "-" + (SEQ < 10 ? "0" + SEQ : "" + SEQ);
+}
+let RECORDS = [
+  {
+    id: 1, no: "ZG-20261116-001", proj: "xm1", part: "HA-2 环网箱基础",
+    type: "quality", issue: "环网箱基础混凝土表面出现蜂窝麻面，局部露筋，保护层厚度不足设计要求。",
+    photos: 3, due: stampOf(1), assignee: "陈立军", reporter: "黄志远", createdAt: stampOf(-2) + " 10:20",
+    reply: null, status: "pending", doneAt: ""
+  },
+  {
+    id: 2, no: "ZG-20261116-002", proj: "xm1", part: "#3-#5 杆塔作业区",
+    type: "safety", issue: "作业区未设置硬质围挡，外来人员可随意进入；接地极未按规范埋深，存在触电风险。",
+    photos: 2, due: stampOf(0), assignee: "唐良辉", reporter: "黄志远", createdAt: stampOf(-2) + " 15:40",
+    reply: {
+      by: "唐良辉", at: stampOf(-1) + " 09:10",
+      note: "已加装 1.8m 硬质围挡并挂设警示牌；接地极重新埋设，实测埋深 2.6m，已拍照上传。",
+      photos: 2
+    },
+    status: "pending", doneAt: ""
+  },
+  {
+    id: 3, no: "ZG-20261114-003", proj: "xm3", part: "瓦窑坪支线 #12 杆基坑",
+    type: "safety", issue: "深基坑放坡系数不足，坑边堆土高度超过 1m，无支护措施。",
+    photos: 4, due: stampOf(-1), assignee: "张强", reporter: "黄志远", createdAt: stampOf(-4) + " 11:05",
+    reply: {
+      by: "张强", at: stampOf(-3) + " 16:20",
+      note: "已按 1:0.75 重新放坡，坑边堆土清运至 1m 以外，增设钢板桩支护。",
+      photos: 3
+    },
+    status: "done", doneAt: stampOf(-2) + " 08:30"
+  },
+  {
+    id: 4, no: "ZG-20261117-004", proj: "xm2", part: "东江路 K2+300 顶管井",
+    type: "quality", issue: "顶管井壁预埋套管位置偏移 150mm，后期电缆敷设弯曲半径不满足要求。",
+    photos: 2, due: "", assignee: "", reporter: "周国华", createdAt: stampOf(-1) + " 14:00",
+    reply: null, status: "pending", doneAt: ""
+  },
+  {
+    id: 5, no: "ZG-20261118-005", proj: "xm3", part: "瓦窑坪支线 #15 杆",
+    type: "quality", issue: "杆塔组立后横担水平度偏差 30mm，螺栓紧固力矩未达 40N·m。",
+    photos: 2, due: stampOf(2), assignee: "黄志远", reporter: "陈立军", createdAt: stampOf(0) + " 09:15",
+    reply: null, status: "pending", doneAt: ""
+  },
+  {
+    id: 6, no: "ZG-20261113-006", proj: "xm4", part: "嘉禾 10kV 白露塘线 #8 杆",
+    type: "safety", issue: "高处作业人员未系安全带，脚手架搭设无验收记录。",
+    photos: 3, due: stampOf(-2), assignee: "王磊", reporter: "刘建国", createdAt: stampOf(-5) + " 10:30",
+    reply: null, status: "pending", doneAt: ""
+  }
+];
+
+// ========== 状态 ==========
+let curTab = "form";      // form | list | mine
+let flt = "all";          // all | q | s | pending | done
+let editingId = null;     // 编辑中的记录
+let detailId = null;      // 详情中的记录
+let replyId = null;       // 回复中的记录
+let cfmId = null;
+let replyPhotos = 0;
+let replyNote = "";
+let form = { type: "", proj: "", part: "", issue: "", photos: 0, due: "", assignee: "" };
+
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove("show"), 1900);
+}
+function goBack() { location.href = "../site.html"; }
+function closeMask(id) { document.getElementById(id).classList.remove("open"); }
+function stTxt(r) {
+  if (r.status === "done") return { txt: "已整改", cls: "b-done" };
+  if (r.reply) return { txt: "已回复·待确认", cls: "b-replied" };
+  return { txt: "待整改", cls: "b-pending" };
+}
+function isOverdue(r) {
+  return r.status !== "done" && r.due && r.due < todayStr();
+}
+
+// ========== Tab & 主渲染 ==========
+function switchTab(t) {
+  if (curTab === "form" && t !== "form") syncFormInputs();
+  curTab = t;
+  document.getElementById("paneForm").className = "pane" + (t === "form" ? "" : " hide");
+  document.getElementById("paneList").className = "pane" + (t === "list" ? "" : " hide");
+  document.getElementById("paneMine").className = "pane" + (t === "mine" ? "" : " hide");
+  render();
+}
+function render() {
+  const mineRows = RECORDS.filter(r => r.assignee === ME);
+  const tabsEl = document.getElementById("tabs");
+  tabsEl.innerHTML = `
+    <div class="tab ${curTab === "list" ? "on" : ""}" onclick="switchTab('list')">整改单 ${RECORDS.length}</div>
+    <div class="tab ${curTab === "mine" ? "on" : ""}" onclick="switchTab('mine')">待我整改 ${mineRows.length}</div>`;
+  tabsEl.style.display = curTab === "form" ? "none" : "flex";
+  const nr = document.getElementById("navRight");
+  if (curTab === "form") {
+    nr.textContent = "取消";
+    nr.onclick = function () { cancelForm(); };
+  } else {
+    nr.textContent = "+ 新增";
+    nr.onclick = function () { openForm(); };
+  }
+
+  if (curTab === "form") renderForm();
+  else if (curTab === "list") renderList();
+  else renderMine();
+}
+function openForm() {
+  editingId = null;
+  form = { type: "", proj: "", part: "", issue: "", photos: 0, due: "", assignee: "" };
+  switchTab("form");
+}
+function cancelForm() {
+  editingId = null;
+  form = { type: "", proj: "", part: "", issue: "", photos: 0, due: "", assignee: "" };
+  switchTab("list");
+}
+
+// ========== 录入表单 ==========
+function renderForm() {
+  const p = projOf(form.proj);
+  const isEdit = editingId !== null;
+  document.getElementById("paneForm").innerHTML = `
+    ${isEdit ? `<div class="sec-title" style="color:#2b7cff;">正在编辑 ${RECORDS.find(r=>r.id===editingId).no}，保存后覆盖原记录</div>` : ""}
+    <div class="sec-title">问题信息</div>
+    <div class="card">
+      <div class="row">
+        <span class="lbl"><i>*</i>整改类型</span>
+        <div class="tchips">
+          <span class="tchip ${form.type === "quality" ? "on-q" : ""}" onclick="setType('quality')">质量整改</span>
+          <span class="tchip ${form.type === "safety" ? "on-s" : ""}" onclick="setType('safety')">安全整改</span>
+        </div>
+      </div>
+      <div class="row tap" onclick="openProjPick()">
+        <span class="lbl"><i>*</i>所属项目</span>
+        <span class="val ${p ? "" : "ph"}">${p ? p.name : "请选择项目"}</span>
+        <span class="arr">›</span>
+      </div>
+      <div class="row tap" onclick="openPartPick()">
+        <span class="lbl">部位 / 地点</span>
+        <span class="val ${form.part ? '' : 'ph'}">${form.part || "如 HA-2 环网箱基础"}</span>
+        <span class="arr">›</span>
+      </div>
+    </div>
+    <div class="card" style="margin-top:10px;">
+      <div class="issue-box">
+        <span class="lbl"><i>*</i>问题内容</span>
+        <textarea class="f-area" id="fIssue" placeholder="描述发现的问题、部位、现象与依据（如不符合哪条规范）">${form.issue}</textarea>
+      </div>
+    </div>
+
+    <div class="photo-card">
+      <div class="photo-head">
+        <div class="t"><i>*</i> 问题照片</div>
+        <div class="c">${form.photos}/6 张</div>
+      </div>
+      <div class="photo-grid" id="formPhotos"></div>
+    </div>
+
+    <div class="sec-title">整改要求</div>
+    <div class="card">
+      <div class="row">
+        <span class="lbl">要求整改日期</span>
+        <input class="inp" type="date" id="fDue" value="${form.due}" min="${todayStr()}" onchange="form.due=this.value">
+      </div>
+      <div class="row tap" onclick="openPersonPick()">
+        <span class="lbl">整改人</span>
+        <span class="val ${form.assignee ? "" : "ph"}">${form.assignee || "不填则由班组长指派"}</span>
+        <span class="arr">›</span>
+      </div>
+    </div>
+
+    <div class="submit-bar">
+      <button class="btn-main" onclick="submitForm()">${isEdit ? "保存修改" : "提交整改单"}</button>
+      ${isEdit ? `<div style="margin-top:10px"><button class="btn-ghost-wide" onclick="cancelEdit()">取消编辑</button></div>` : ""}
+    </div>`;
+  renderFormPhotos();
+}
+function renderFormPhotos() {
+  const g = document.getElementById("formPhotos");
+  if (!g) return;
+  let s = "";
+  for (let i = 0; i < form.photos; i++) {
+    s += `<div class="thumb">照片 ${i + 1}<span class="del" onclick="delFormPhoto()">✕</span></div>`;
+  }
+  if (form.photos < 6) s += `<div class="add-photo" onclick="addFormPhoto()">+</div>`;
+  g.innerHTML = s;
+}
+function setType(t) { syncFormInputs(); form.type = t; renderForm(); }
+function addFormPhoto() {
+  if (form.photos >= 6) { toast("最多 6 张"); return; }
+  form.photos++; renderFormPhotos(); toast("已添加 1 张照片（演示）");
+}
+function delFormPhoto() { if (form.photos > 0) { form.photos--; renderFormPhotos(); } }
+function cancelEdit() {
+  editingId = null;
+  form = { type: "", proj: "", part: "", issue: "", photos: 0, due: "", assignee: "" };
+  render();
+}
+function submitForm() {
+  const fp = document.getElementById("fPart");
+  if (fp) form.part = (fp.value || "").trim();
+  form.issue = (document.getElementById("fIssue").value || "").trim();
+  form.due = (document.getElementById("fDue").value || "").trim();
+  if (!form.type) { toast("请选择整改类型"); return; }
+  if (!form.proj) { toast("请选择所属项目"); return; }
+  if (!form.issue) { toast("请填写问题内容"); return; }
+  if (form.photos < 1) { toast("请至少上传 1 张问题照片"); return; }
+
+  if (editingId === null) {
+    const id = RECORDS.reduce((m, r) => Math.max(m, r.id), 0) + 1;
+    const now = nowText();
+    RECORDS.unshift({
+      id: id, no: makeNo(todayStr().replace(/-/g, "")), proj: form.proj, part: form.part,
+      type: form.type, issue: form.issue, photos: form.photos, due: form.due,
+      assignee: form.assignee, reporter: ME, createdAt: now,
+      reply: null, status: "pending", doneAt: ""
+    });
+    toast("整改单已提交");
+  } else {
+    const r = RECORDS.find(x => x.id === editingId);
+    r.proj = form.proj; r.part = form.part; r.type = form.type; r.issue = form.issue;
+    r.photos = form.photos; r.due = form.due; r.assignee = form.assignee;
+    toast("整改单已更新");
+  }
+  editingId = null;
+  form = { type: "", proj: "", part: "", issue: "", photos: 0, due: "", assignee: "" };
+  switchTab("list");
+}
+
+// ========== 列表 ==========
+function matchKw(r) {
+  const kw = (document.getElementById("kw") ? document.getElementById("kw").value : "").trim().toLowerCase();
+  if (!kw) return true;
+  return (r.issue + " " + projName(r.proj) + " " + (r.part || "") + " " + (r.assignee || "") + " " + r.no + " " + r.reporter)
+    .toLowerCase().indexOf(kw) >= 0;
+}
+function filterRows(rows) {
+  return rows.filter(r => {
+    if (!matchKw(r)) return false;
+    if (flt === "q") return r.type === "quality";
+    if (flt === "s") return r.type === "safety";
+    if (flt === "pending") return r.status === "pending";
+    if (flt === "done") return r.status === "done";
+    return true;
+  });
+}
+function cardHtml(r, showRole) {
+  const st = stTxt(r);
+  const over = isOverdue(r);
+  const roleTag = showRole
+    ? (r.reporter === ME ? "我发起" : (r.assignee === ME ? "我整改" : ""))
+    : "";
+  return `<div class="r-card" onclick="openDetail(${r.id})">
+    <div class="r-top">
+      <span class="badge ${r.type === "quality" ? "b-q" : "b-s"}">${TYPE_TXT[r.type]}</span>
+      <span class="badge ${st.cls}">${st.txt}</span>
+      ${over ? `<span class="badge b-over">已超期</span>` : ""}
+      <span class="r-no">${r.no}</span>
+    </div>
+    <div class="r-issue">${r.issue}</div>
+    <div class="r-line"><b>${projName(r.proj)}</b>${r.part ? " · " + r.part : ""}</div>
+    <div class="r-line">要求整改 ${r.due ? shortDate(r.due) : "未设期限"} · 整改人 ${r.assignee || "待指派"}</div>
+    <div class="r-foot">
+      <span>照片 ${r.photos} 张</span>
+      <span>${r.reporter} · ${r.createdAt.slice(5)}</span>
+    </div>
+    ${roleTag ? `<div class="r-line" style="margin-top:8px"><span class="r-role">${roleTag}</span></div>` : ""}
+  </div>`;
+}
+function renderList() {
+  const q = RECORDS.filter(matchKw);
+  const cnt = {
+    all: q.length,
+    q: q.filter(r => r.type === "quality").length,
+    s: q.filter(r => r.type === "safety").length,
+    pending: q.filter(r => r.status === "pending").length,
+    done: q.filter(r => r.status === "done").length
+  };
+  const rows = filterRows(RECORDS);
+  document.getElementById("paneList").innerHTML = `
+    <div class="search-wrap">
+      <input class="search" id="kw" placeholder="搜索问题内容 / 项目 / 整改人 / 编号" oninput="render()">
+      <div class="chips">
+        <span class="fchip ${flt === "all" ? "on" : ""}" onclick="setFlt('all')">全部 ${cnt.all}</span>
+        <span class="fchip ${flt === "q" ? "on" : ""}" onclick="setFlt('q')">质量 ${cnt.q}</span>
+        <span class="fchip ${flt === "s" ? "on" : ""}" onclick="setFlt('s')">安全 ${cnt.s}</span>
+        <span class="fchip ${flt === "pending" ? "on" : ""}" onclick="setFlt('pending')">待整改 ${cnt.pending}</span>
+        <span class="fchip ${flt === "done" ? "on" : ""}" onclick="setFlt('done')">已整改 ${cnt.done}</span>
+      </div>
+    </div>
+    <div class="list-head">共 ${rows.length} 条整改单</div>
+    ${rows.length ? rows.map(r => cardHtml(r, false)).join("") : `<div class="empty">没有符合条件的整改单</div>`}
+    <div class="add-row" onclick="switchTab('form')">+ 录入整改单</div>`;
+}
+function setFlt(f) { flt = f; render(); }
+function renderMine() {
+  const rows = RECORDS.filter(r => r.assignee === ME);
+  document.getElementById("paneMine").innerHTML = `
+    <div class="list-head">待我整改 ${rows.length} 条</div>
+    ${rows.length ? rows.map(r => cardHtml(r, true)).join("") :
+      `<div class="empty">暂无指派给你的整改单<br>管理员指派整改人后会出现在这里</div>`}`;
+}
+
+// ========== 详情 ==========
+function openDetail(id) {
+  const r = RECORDS.find(x => x.id === id);
+  if (!r) return;
+  detailId = id;
+  const st = stTxt(r);
+  const over = isOverdue(r);
+  const canReply = r.status === "pending" && !r.reply && (r.assignee === ME || !r.assignee);
+  const canConfirm = r.status === "pending" && !!r.reply && r.reporter === ME;
+  const canEdit = r.reporter === ME && r.status === "pending" && !r.reply;
+  const canDel = r.reporter === ME && r.status === "pending" && !r.reply;
+
+  document.getElementById("detailBody").innerHTML = `
+    <div class="r-top" style="margin-bottom:12px;">
+      <span class="badge ${r.type === "quality" ? "b-q" : "b-s"}">${TYPE_TXT[r.type]}</span>
+      <span class="badge ${st.cls}">${st.txt}</span>
+      ${over ? `<span class="badge b-over">已超期</span>` : ""}
+      <span class="r-no">${r.no}</span>
+    </div>
+    <div class="d-sec" style="margin-top:0;">问题信息</div>
+    <div class="d-row"><span class="k">项目</span><span class="v">${projName(r.proj)}</span></div>
+    <div class="d-row"><span class="k">部位</span><span class="v">${r.part || "—"}</span></div>
+    <div class="d-row"><span class="k">问题内容</span><span class="v">${r.issue}</span></div>
+    <div class="d-photo">
+      <div class="d-photo-t">问题照片 <span class="c">${r.photos} 张</span></div>
+      <div class="photo-grid" id="detailProbGrid"></div>
+    </div>
+    <div class="d-sec">整改要求</div>
+    <div class="d-row"><span class="k">要求日期</span><span class="v">${r.due ? shortDate(r.due) : "未设期限"}</span></div>
+    <div class="d-row"><span class="k">整改人</span><span class="v">${r.assignee || "待指派"}</span></div>
+    <div class="d-row"><span class="k">发现人</span><span class="v">${r.reporter} · ${r.createdAt}</span></div>
+    <div class="d-sec">整改回复</div>
+    ${r.reply ? `<div class="reply-box">
+        <div class="rh">${r.reply.by} 于 ${r.reply.at} 提交 · 整改后照片 ${r.reply.photos} 张</div>
+        ${r.reply.note}
+        ${r.status === "done"
+          ? `<div style="margin-top:8px;color:#15803d;font-weight:600;">已由 ${r.reporter} 确认完成（${r.doneAt}）</div>`
+          : `<div style="margin-top:8px;color:#b45309;font-weight:600;">等待发起人 ${r.reporter} 确认</div>`}
+      </div>`
+      : `<div class="wait-box">整改人尚未提交整改回复${r.assignee ? "，" + r.assignee + " 提交后需由发起人确认" : "，当前待指派"}</div>`}
+    ${(r.reply || canReply) ? `<div class="d-photo" style="border-bottom:0;">
+      <div class="d-photo-t">整改照片 <span class="c">${r.reply ? "整改人上传" : "先拍照上传，提交回复时一并提交"}</span></div>
+      <div class="photo-grid" id="detailRepGrid"></div>
+    </div>` : ""}`;
+
+  let foot = "";
+  if (canEdit || canDel) {
+    foot += `<div style="display:flex;gap:10px;">
+      ${canEdit ? `<button class="btn-ghost-wide" style="flex:1" onclick="editRecord(${r.id})">编辑</button>` : ""}
+      ${canDel ? `<button class="btn-ghost-wide" style="flex:1;border-color:#fca5a5;color:#dc2626" onclick="askDelete(${r.id})">删除</button>` : ""}
+    </div>`;
+  }
+  let mainBtn = "";
+  if (canReply) mainBtn = `<button class="btn-primary" onclick="openReply(${r.id})">提交整改回复</button>`;
+  else if (canConfirm) mainBtn = `<button class="btn-primary" onclick="askConfirm(${r.id})">确认完成（闭环）</button>`;
+  else mainBtn = `<button class="btn-secondary" onclick="closeMask('detailMask')">关闭</button>`;
+  document.getElementById("detailFoot").innerHTML =
+    `<div style="width:100%">${foot}${foot ? '<div style="height:10px"></div>' : ""}<div style="display:flex;gap:10px">${mainBtn}</div></div>`;
+  document.getElementById("detailMask").classList.add("open");
+  renderDetailPhotos();
+}
+
+// 详情照片（问题照片只读 / 整改照片可上传）
+function renderDetailPhotos() {
+  const r = RECORDS.find(x => x.id === detailId);
+  if (!r) return;
+  const g1 = document.getElementById("detailProbGrid");
+  if (g1) {
+    let s = "";
+    for (let i = 0; i < r.photos; i++) s += `<div class="thumb">问题 ${i + 1}</div>`;
+    g1.innerHTML = s || `<div class="ph-none">暂无照片</div>`;
+  }
+  const g2 = document.getElementById("detailRepGrid");
+  if (!g2) return;
+  const n = r.reply ? r.reply.photos : (r.photoCount || 0);
+  let s = "";
+  for (let i = 0; i < n; i++) {
+    s += `<div class="thumb">整改 ${i + 1}${r.reply ? "" : `<span class="del" onclick="delDetailPhoto()">✕</span>`}</div>`;
+  }
+  if (!r.reply && n < 6) s += `<div class="add-photo" onclick="addDetailPhoto()">+</div>`;
+  g2.innerHTML = s || `<div class="ph-none">还没有上传整改照片</div>`;
+}
+function addDetailPhoto() {
+  const r = RECORDS.find(x => x.id === detailId);
+  if (!r || r.reply) return;
+  r.photoCount = Math.min(6, (r.photoCount || 0) + 1);
+  renderDetailPhotos();
+  toast("已上传 1 张整改照片（演示）");
+}
+function delDetailPhoto() {
+  const r = RECORDS.find(x => x.id === detailId);
+  if (!r || r.reply) return;
+  r.photoCount = Math.max(0, (r.photoCount || 0) - 1);
+  renderDetailPhotos();
+}
+
+// ========== 整改回复 ==========
+function openReply(id) {
+  const r = RECORDS.find(x => x.id === id);
+  if (!r) return;
+  replyId = id; replyPhotos = r.photoCount || 0; replyNote = "";
+  document.getElementById("replyBody").innerHTML = `
+    <div class="d-row" style="padding-top:0"><span class="k">整改单</span><span class="v">${r.no} · ${projName(r.proj)}</span></div>
+    <div class="d-row" style="border-bottom:0;"><span class="k">问题</span><span class="v">${r.issue}</span></div>
+    <div class="d-sec">整改说明<span style="color:#dc2626">*</span></div>
+    <textarea class="f-area" id="rNote" placeholder="写清整改措施、整改结果、复测数据（如支护高度、紧固力矩）">${replyNote}</textarea>
+    <div class="photo-card" style="margin:12px 0 0;padding:12px 0 0;">
+      <div class="photo-head">
+        <div class="t"><i>*</i> 整改后照片</div>
+        <div class="c" id="replyCnt">${replyPhotos}/6 张</div>
+      </div>
+      <div class="photo-grid" id="replyPhotoGrid"></div>
+    </div>`;
+  renderReplyPhotos();
+  document.getElementById("replyMask").classList.add("open");
+}
+function renderReplyPhotos() {
+  const g = document.getElementById("replyPhotoGrid");
+  if (!g) return;
+  let s = "";
+  for (let i = 0; i < replyPhotos; i++) {
+    s += `<div class="thumb">照片 ${i + 1}<span class="del" onclick="delReplyPhoto()">✕</span></div>`;
+  }
+  if (replyPhotos < 6) s += `<div class="add-photo" onclick="addReplyPhoto()">+</div>`;
+  g.innerHTML = s;
+  const c = document.getElementById("replyCnt");
+  if (c) c.textContent = replyPhotos + "/6 张";
+}
+function addReplyPhoto() {
+  if (replyPhotos >= 6) { toast("最多 6 张"); return; }
+  replyPhotos++; renderReplyPhotos(); toast("已添加 1 张照片（演示）");
+}
+function delReplyPhoto() { if (replyPhotos > 0) { replyPhotos--; renderReplyPhotos(); } }
+function submitReply() {
+  const r = RECORDS.find(x => x.id === replyId);
+  if (!r) return;
+  replyNote = (document.getElementById("rNote").value || "").trim();
+  if (!replyNote) { toast("请填写整改说明"); return; }
+  if (replyPhotos < 1) { toast("请至少上传 1 张整改后照片"); return; }
+  r.reply = { by: ME, at: nowText(), note: replyNote, photos: replyPhotos };
+  r.photoCount = replyPhotos;
+  closeMask("replyMask");
+  render();
+  toast("整改回复已提交，等待发起人确认");
+  openDetail(r.id);
+}
+
+// ========== 确认闭环 ==========
+function askConfirm(id) {
+  const r = RECORDS.find(x => x.id === id);
+  if (!r) return;
+  cfmId = id;
+  document.getElementById("cfmTitle").textContent = "确认整改完成";
+  document.getElementById("cfmDesc").innerHTML =
+    `确认 <b>${r.assignee || "整改人"}</b> 对「${projName(r.proj)}」问题已完成整改？<br>` +
+    `确认后整改单状态变为「已整改」，不可再编辑或删除。`;
+  const ok = document.getElementById("cfmOk");
+  ok.textContent = "确认完成";
+  ok.className = "btn-primary";
+  ok.onclick = function () { doConfirm(); };
+  document.getElementById("cfmMask").classList.add("open");
+}
+function doConfirm() {
+  const r = RECORDS.find(x => x.id === cfmId);
+  if (!r) return;
+  r.status = "done";
+  r.doneAt = nowText();
+  closeMask("cfmMask");
+  render();
+  toast("已确认完成，整改单闭环");
+  openDetail(r.id);
+}
+
+// ========== 编辑 / 删除 ==========
+function editRecord(id) {
+  const r = RECORDS.find(x => x.id === id);
+  if (!r) return;
+  editingId = id;
+  form = { type: r.type, proj: r.proj, part: r.part, issue: r.issue, photos: r.photos, due: r.due, assignee: r.assignee };
+  closeMask("detailMask");
+  switchTab("form");
+}
+function askDelete(id) {
+  const r = RECORDS.find(x => x.id === id);
+  if (!r) return;
+  cfmId = id;
+  document.getElementById("cfmTitle").textContent = "删除整改单";
+  document.getElementById("cfmDesc").innerHTML =
+    `确定删除整改单 <b>${r.no}</b>？<br>${projName(r.proj)} · ${r.issue.slice(0, 28)}…<br>删除后不可恢复。`;
+  const ok = document.getElementById("cfmOk");
+  ok.textContent = "删除";
+  ok.className = "btn-danger";
+  ok.onclick = function () { doDelete(); };
+  document.getElementById("cfmMask").classList.add("open");
+}
+function doDelete() {
+  RECORDS = RECORDS.filter(x => x.id !== cfmId);
+  closeMask("cfmMask");
+  closeMask("detailMask");
+  render();
+  toast("整改单已删除");
+}
+
+// ========== 部位 / 地点 弹窗输入 ==========
+const PART_PRESETS = ["HA-2 环网箱基础", "开关柜（10kV）", "电缆井 / 工井", "杆塔基础", "顶管段", "表箱安装位置", "变压器台架"];
+function openPartPick() {
+  syncFormInputs();
+  document.getElementById("partInput").value = form.part || "";
+  renderPartChips();
+  document.getElementById("partMask").classList.add("open");
+  setTimeout(() => document.getElementById("partInput").focus(), 80);
+}
+function renderPartChips() {
+  document.getElementById("partChips").innerHTML = PART_PRESETS.map(t =>
+    `<span class="tchip ${form.part === t ? "on-q" : ""}" onclick="pickPart('${t}')">${t}</span>`
+  ).join("");
+}
+function pickPart(t) {
+  form.part = t;
+  document.getElementById("partInput").value = t;
+  renderPartChips();
+}
+function savePart() {
+  form.part = (document.getElementById("partInput").value || "").trim();
+  closeMask("partMask");
+  render();
+  toast(form.part ? "部位已填写" : "已清空部位");
+}
+
+// ========== 项目 / 人员选择 ==========
+function syncFormInputs() {
+  const p = document.getElementById("fPart");
+  const i = document.getElementById("fIssue");
+  const d = document.getElementById("fDue");
+  if (p) form.part = p.value;
+  if (i) form.issue = i.value;
+  if (d) form.due = d.value;
+}
+function openProjPick() {
+  syncFormInputs();
+  document.getElementById("projKw").value = "";
+  renderProjList();
+  document.getElementById("projMask").classList.add("open");
+}
+function renderProjList() {
+  const kw = (document.getElementById("projKw").value || "").trim().toLowerCase();
+  const rows = PROJECTS.filter(p => !kw || (p.name + " " + p.leader).toLowerCase().indexOf(kw) >= 0);
+  document.getElementById("projList").innerHTML = rows.length
+    ? rows.map(p => `<div class="pk-item ${form.proj === p.code ? "on" : ""}" data-code="${p.code}" onclick="pickProj(this.dataset.code)">
+        ${p.name}<span class="pk-lead">负责人 ${p.leader}</span>
+        ${form.proj === p.code ? '<span class="pk-ck">已选</span>' : ""}
+      </div>`).join("")
+    : `<div class="empty" style="margin:24px 0;">没有匹配的项目</div>`;
+}
+function pickProj(code) {
+  form.proj = code;
+  closeMask("projMask");
+  renderForm();
+}
+function openPersonPick() {
+  syncFormInputs();
+  document.getElementById("personKw").value = "";
+  renderPersonList();
+  document.getElementById("personMask").classList.add("open");
+}
+function renderPersonList() {
+  const kw = (document.getElementById("personKw").value || "").trim().toLowerCase();
+  const rows = PEOPLE.filter(p => !kw || (p.name + " " + p.role + " " + p.dept).toLowerCase().indexOf(kw) >= 0);
+  const none = `<div class="pk-item ${form.assignee ? "" : "on"}" onclick="pickPerson('')">不指派<span class="pk-lead">由班组长后续指派</span>${form.assignee ? "" : '<span class="pk-ck">已选</span>'}</div>`;
+  document.getElementById("personList").innerHTML = none + (rows.length
+    ? rows.map(p => `<div class="pk-item ${form.assignee === p.name ? "on" : ""}" data-nm="${p.name}" onclick="pickPerson(this.dataset.nm)">
+        ${p.name}<span class="pk-lead">${p.role} · ${p.dept}</span>
+        ${form.assignee === p.name ? '<span class="pk-ck">已选</span>' : ""}
+      </div>`).join("")
+    : `<div class="empty" style="margin:20px 0;">没有匹配的人员</div>`);
+}
+function pickPerson(name) {
+  form.assignee = name;
+  closeMask("personMask");
+  renderForm();
+}
+
+// ========== 启动 ==========
+(function boot() {
+  var qs = new URLSearchParams(location.search);
+  var p = qs.get("proj");
+  var issue = qs.get("issue");
+  if (p && projOf(p)) {
+    openForm();
+    form.proj = p;
+    if (issue) form.issue = issue;
+    renderForm();
+    toast("已从项目日报带入项目与问题描述");
+  } else {
+    switchTab("form");
+  }
+  if ((location.hash || "").indexOf("part") >= 0) setTimeout(() => openPartPick(), 60);
+})();
+</script>
+</body>
+</html>
